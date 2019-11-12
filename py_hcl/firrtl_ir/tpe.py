@@ -1,12 +1,14 @@
 """
-The tpe module provides type nodes in firrtl IR.
+The tpe module provides type nodes in FIRRTL IR.
 
 At the top level of types include UnknownType, GroundType, AggregateType.
 GroundType acts as a primitive type, and AggregateType is similar to a
 data structure composed of GroundType.
 
-GroundType includes UIntType, unsigned integer; SIntType, signed integer;
-and ClockType, represents the clock.
+GroundType includes
+  UIntType:  unsigned integer;
+  SIntType:  signed integer;
+  ClockType: represents the clock.
 
 AggregateType includes BundleType, similar to the structs in high-level
 languages, composed of various fields of different types. VectorType
@@ -58,9 +60,10 @@ class BundleType(AggregateType):
 
     def serialize(self, output):
         output.write(b"{")
-        for f in self.fields:
+        for f in self.fields[:-1]:
             f.serialize(output)
             output.write(b", ")
+        self.fields[-1].serialize(output)
         output.write(b"}")
 
 
