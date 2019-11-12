@@ -10,6 +10,18 @@ def test_clock_type():
     serialize_equal(tpe.ClockType(), "Clock")
 
 
+def test_uint_type():
+    serialize_equal(tpe.UIntType(width.UnknownWidth()), "UInt")
+    serialize_equal(tpe.UIntType(width.IntWidth(8)), "UInt<8>")
+    serialize_equal(tpe.UIntType(width.IntWidth(32)), "UInt<32>")
+
+
+def test_sint_type():
+    serialize_equal(tpe.SIntType(width.UnknownWidth()), "SInt")
+    serialize_equal(tpe.SIntType(width.IntWidth(8)), "SInt<8>")
+    serialize_equal(tpe.SIntType(width.IntWidth(32)), "SInt<32>")
+
+
 def test_vector_type():
     vt = tpe.VectorType(tpe.UIntType(width.UnknownWidth()), 16)
     serialize_equal(vt, "UInt[16]")
