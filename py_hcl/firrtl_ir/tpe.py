@@ -13,6 +13,7 @@ languages, composed of various fields of different types. VectorType
 is similar to arrays in high-level languages, holds multiple elements of
 the same type.
 """
+from .utils import serialize_num
 
 
 class UnknownType(object):
@@ -71,5 +72,5 @@ class VectorType(AggregateType):
     def serialize(self, output):
         self.elem_type.serialize(output)
         output.write(b"[")
-        output.write(bin(self.size))
+        output.write(serialize_num(self.size))
         output.write(b"]")
