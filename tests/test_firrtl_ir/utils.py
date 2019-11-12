@@ -5,5 +5,10 @@ def serialize_equal(serializable, target):
     output = BytesIO()
     serializable.serialize(output)
     output.flush()
-    assert str(output.getvalue(), "utf-8") == target
+    str_equal(str(output.getvalue(), "utf-8"), target)
     output.close()
+
+
+def str_equal(lf, rt):
+    # for the more precise error report
+    assert lf == rt
