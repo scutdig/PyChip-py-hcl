@@ -1,6 +1,6 @@
 from .expression import Expression
-from .utils import serialize_num
-from .tpe import UIntType, SIntType, ClockType
+from ..utils import serialize_num
+from ..tpe import UIntType, SIntType, ClockType
 
 
 def type_in(obj, *types):
