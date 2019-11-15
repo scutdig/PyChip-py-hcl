@@ -25,3 +25,12 @@ class Field(object):
         output.write(serialize_str(self.name))
         output.write(b" : ")
         self.tpe.serialize(output)
+
+    def field_eq(self, other):
+        if type(other) != type(self):
+            return False
+        if self.name != other.name:
+            return False
+        if self.is_flipped != other.is_flipped:
+            return False
+        return self.tpe.type_eq(other.tpe)

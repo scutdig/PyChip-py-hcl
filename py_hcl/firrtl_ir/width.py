@@ -19,7 +19,17 @@ class IntWidth(Width):
         output.write(serialize_num(self.width))
         output.write(b">")
 
+    def width_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return self.width == other.width
+
 
 class UnknownWidth(Width):
     def serialize(self, output):
         pass
+
+    def width_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return True
