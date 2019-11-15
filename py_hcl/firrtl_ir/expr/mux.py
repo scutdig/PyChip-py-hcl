@@ -8,9 +8,6 @@ class Mux(Expression):
         self.fval = fval
         self.tpe = tpe
 
-    def check_type(self):
-        return True
-
     def serialize(self, output):
         output.write(b"mux(")
         self.cond.serialize(output)
