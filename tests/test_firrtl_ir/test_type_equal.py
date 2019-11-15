@@ -1,7 +1,7 @@
 from py_hcl.firrtl_ir.field import Field
 from py_hcl.firrtl_ir.tpe import UnknownType, ClockType, \
     UIntType, SIntType, VectorType, BundleType
-from py_hcl.firrtl_ir.width import IntWidth, UnknownWidth
+from py_hcl.firrtl_ir.width import Width
 
 
 def test_type_eq():
@@ -11,28 +11,22 @@ def test_type_eq():
     assert ClockType().type_eq(
         ClockType()
     )
-    assert UIntType(IntWidth(10)).type_eq(
-        UIntType(IntWidth(10))
+    assert UIntType(Width(10)).type_eq(
+        UIntType(Width(10))
     )
-    assert UIntType(UnknownWidth()).type_eq(
-        UIntType(UnknownWidth())
+    assert SIntType(Width(10)).type_eq(
+        SIntType(Width(10))
     )
-    assert SIntType(IntWidth(10)).type_eq(
-        SIntType(IntWidth(10))
-    )
-    assert SIntType(UnknownWidth()).type_eq(
-        SIntType(UnknownWidth())
-    )
-    assert VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
+    assert VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(UIntType(Width(10)), 8)
     )
     assert BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
@@ -42,290 +36,183 @@ def test_type_neq():
         ClockType()
     )
     assert not UnknownType().type_eq(UIntType(
-        IntWidth(10))
-    )
-    assert not UnknownType().type_eq(UIntType(
-        UnknownWidth())
+        Width(10))
     )
     assert not UnknownType().type_eq(SIntType(
-        IntWidth(10))
-    )
-    assert not UnknownType().type_eq(SIntType(
-        UnknownWidth())
+        Width(10))
     )
     assert not UnknownType().type_eq(VectorType(
-        UIntType(IntWidth(10)), 8)
+        UIntType(Width(10)), 8)
     )
     assert not UnknownType().type_eq(VectorType(
-        UIntType(UnknownWidth()), 8)
-    )
-    assert not UnknownType().type_eq(VectorType(
-        SIntType(IntWidth(10)), 8)
-    )
-    assert not UnknownType().type_eq(VectorType(
-        SIntType(UnknownWidth()), 8)
+        SIntType(Width(10)), 8)
     )
     assert not UnknownType().type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
     assert not ClockType().type_eq(
-        UIntType(IntWidth(10))
+        UIntType(Width(10))
     )
     assert not ClockType().type_eq(
-        UIntType(UnknownWidth())
+        SIntType(Width(10))
     )
     assert not ClockType().type_eq(
-        SIntType(IntWidth(10))
-    )
-    assert not ClockType().type_eq(
-        SIntType(UnknownWidth())
-    )
-    assert not ClockType().type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
+        VectorType(UIntType(Width(10)), 8)
 
     )
     assert not ClockType().type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-    )
-    assert not ClockType().type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
-    )
-    assert not ClockType().type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
+        VectorType(SIntType(Width(10)), 8)
     )
     assert not ClockType().type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
-    assert not UIntType(IntWidth(10)).type_eq(
-        UIntType(UnknownWidth())
+    assert not UIntType(Width(10)).type_eq(
+        UIntType(Width(8))
     )
-    assert not UIntType(UnknownWidth()).type_eq(
-        UIntType(IntWidth(10))
+    assert not UIntType(Width(10)).type_eq(
+        SIntType(Width(10))
     )
-    assert not UIntType(IntWidth(10)).type_eq(
-        UIntType(IntWidth(8))
+    assert not UIntType(Width(10)).type_eq(
+        VectorType(UIntType(Width(10)), 8)
     )
-    assert not UIntType(IntWidth(10)).type_eq(
-        SIntType(IntWidth(10))
+    assert not UIntType(Width(10)).type_eq(
+        VectorType(SIntType(Width(10)), 8)
     )
-    assert not UIntType(IntWidth(10)).type_eq(
-        SIntType(UnknownWidth())
-    )
-    assert not UIntType(IntWidth(10)).type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
-    )
-    assert not UIntType(IntWidth(10)).type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-    )
-    assert not UIntType(IntWidth(10)).type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
-    )
-    assert not UIntType(IntWidth(10)).type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
-    )
-    assert not UIntType(IntWidth(10)).type_eq(
+    assert not UIntType(Width(10)).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
-    assert not UIntType(UnknownWidth()).type_eq(
-        SIntType(IntWidth(10))
+    assert not SIntType(Width(10)).type_eq(
+        SIntType(Width(8))
     )
-    assert not UIntType(UnknownWidth()).type_eq(
-        SIntType(UnknownWidth())
+    assert not SIntType(Width(10)).type_eq(
+        VectorType(UIntType(Width(10)), 8)
     )
-    assert not UIntType(UnknownWidth()).type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
+    assert not SIntType(Width(10)).type_eq(
+        VectorType(SIntType(Width(10)), 8)
     )
-    assert not UIntType(UnknownWidth()).type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-    )
-    assert not UIntType(UnknownWidth()).type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
-    )
-    assert not UIntType(UnknownWidth()).type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
-    )
-    assert not UIntType(UnknownWidth()).type_eq(
+    assert not SIntType(Width(10)).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
-    assert not SIntType(IntWidth(10)).type_eq(
-        SIntType(UnknownWidth())
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(UIntType(Width(8)), 8)
     )
-    assert not SIntType(IntWidth(10)).type_eq(
-        SIntType(IntWidth(8))
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(UIntType(Width(10)), 6)
     )
-    assert not SIntType(IntWidth(10)).type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(SIntType(Width(10)), 8)
     )
-    assert not SIntType(IntWidth(10)).type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(SIntType(Width(8)), 8)
     )
-    assert not SIntType(IntWidth(10)).type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
+        VectorType(SIntType(Width(10)), 6)
     )
-    assert not SIntType(IntWidth(10)).type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
-    )
-    assert not SIntType(IntWidth(10)).type_eq(
-        BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
-        ])
-    )
-
-    assert not SIntType(UnknownWidth()).type_eq(
-        VectorType(UIntType(IntWidth(10)), 8)
-    )
-    assert not SIntType(UnknownWidth()).type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-    )
-    assert not SIntType(UnknownWidth()).type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
-    )
-    assert not SIntType(UnknownWidth()).type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
-    )
-    assert not SIntType(UnknownWidth()).type_eq(
-        BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
-        ])
-    )
-
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(UIntType(IntWidth(8)), 8)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(UIntType(IntWidth(10)), 6)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(UIntType(UnknownWidth()), 8)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(SIntType(IntWidth(10)), 8)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(SIntType(IntWidth(8)), 8)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(SIntType(IntWidth(10)), 6)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
-        VectorType(SIntType(UnknownWidth()), 8)
-    )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
         VectorType(UnknownType(), 8)
     )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
         VectorType(ClockType(), 8)
     )
-    assert not VectorType(UIntType(IntWidth(10)), 8).type_eq(
+    assert not VectorType(UIntType(Width(10)), 8).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
 
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("c", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("c", VectorType(UIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("b", VectorType(UIntType(IntWidth(10)), 8)),
-            Field("a", UIntType(IntWidth(10)))
+            Field("b", VectorType(UIntType(Width(10)), 8)),
+            Field("a", UIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(8)), 8)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(8)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 6)),
-            Field("b", UIntType(IntWidth(10)))
+            Field("a", VectorType(UIntType(Width(10)), 6)),
+            Field("b", UIntType(Width(10)))
+        ])
+    )
+
+    assert not BundleType([
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
+    ]).type_eq(
+        BundleType([
+            Field("a", VectorType(SIntType(Width(10)), 8)),
+            Field("b", UIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
-    ]).type_eq(
-        BundleType([
-            Field("a", VectorType(UIntType(UnknownWidth()), 8)),
-            Field("b", UIntType(IntWidth(10)))
-        ])
-    )
-    assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
-    ]).type_eq(
-        BundleType([
-            Field("a", VectorType(SIntType(IntWidth(10)), 8)),
-            Field("b", UIntType(IntWidth(10)))
-        ])
-    )
-    assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
             Field("a", UnknownType()),
-            Field("b", UIntType(IntWidth(10)))
+            Field("b", UIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
             Field("b", UnknownType()),
-            Field("a", SIntType(IntWidth(10)))
+            Field("a", SIntType(Width(10)))
         ])
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
-        UIntType(IntWidth(10))
+        UIntType(Width(10))
     )
     assert not BundleType([
-        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
-        Field("b", UIntType(IntWidth(10)))
+        Field("a", VectorType(UIntType(Width(10)), 8)),
+        Field("b", UIntType(Width(10)))
     ]).type_eq(
         BundleType([
-            Field("a", VectorType(UIntType(IntWidth(10)), 8), True),
-            Field("b", UIntType(IntWidth(10)), True)
+            Field("a", VectorType(UIntType(Width(10)), 8), True),
+            Field("b", UIntType(Width(10)), True)
         ])
     )

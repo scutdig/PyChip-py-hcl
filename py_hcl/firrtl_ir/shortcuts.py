@@ -1,20 +1,20 @@
 from .field import Field
-from .reference import Reference
-from .literal import UIntLiteral, SIntLiteral
+from .expr.reference import Reference
+from .expr.literal import UIntLiteral, SIntLiteral
 from .tpe import SIntType, UIntType, VectorType, BundleType
-from .width import IntWidth
+from .width import Width
 
 
 def sw(width):
-    return SIntType(IntWidth(width))
+    return SIntType(Width(width))
 
 
 def uw(width):
-    return UIntType(IntWidth(width))
+    return UIntType(Width(width))
 
 
 def w(width):
-    return IntWidth(width)
+    return Width(width)
 
 
 def u(value, width):

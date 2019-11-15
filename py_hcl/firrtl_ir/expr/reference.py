@@ -1,4 +1,4 @@
-from .utils import serialize_str
+from ..utils import serialize_str
 from .expression import Expression
 
 

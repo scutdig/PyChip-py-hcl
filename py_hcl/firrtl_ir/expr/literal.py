@@ -1,6 +1,6 @@
-from .tpe import UIntType, SIntType
+from ..tpe import UIntType, SIntType
 from .expression import Expression
-from .utils import serialize_str
+from ..utils import serialize_str
 
 
 class UIntLiteral(Expression):
