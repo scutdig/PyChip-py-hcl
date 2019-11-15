@@ -22,6 +22,11 @@ class UnknownType(object):
     def serialize(self, output):
         output.write(b"?")
 
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return True
+
 
 class GroundType(object):
     pass
@@ -35,6 +40,11 @@ class UIntType(GroundType):
         output.write(b"UInt")
         self.width.serialize(output)
 
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return self.width.width_eq(other.width)
+
 
 class SIntType(GroundType):
     def __init__(self, width):
@@ -44,10 +54,20 @@ class SIntType(GroundType):
         output.write(b"SInt")
         self.width.serialize(output)
 
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return self.width.width_eq(other.width)
+
 
 class ClockType(GroundType):
     def serialize(self, output):
         output.write(b"Clock")
+
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        return True
 
 
 class AggregateType(object):
@@ -66,6 +86,14 @@ class BundleType(AggregateType):
         self.fields[-1].serialize(output)
         output.write(b"}")
 
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        for (a, b) in zip(self.fields, other.fields):
+            if not a.field_eq(b):
+                return False
+        return True
+
 
 class VectorType(AggregateType):
     def __init__(self, elem_type, size):
@@ -77,3 +105,12 @@ class VectorType(AggregateType):
         output.write(b"[")
         output.write(serialize_num(self.size))
         output.write(b"]")
+
+    def type_eq(self, other):
+        if type(other) != type(self):
+            return False
+        if not self.elem_type.type_eq(other.elem_type):
+            return False
+        if self.size != other.size:
+            return False
+        return True
