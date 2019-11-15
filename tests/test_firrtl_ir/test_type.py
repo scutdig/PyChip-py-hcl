@@ -175,6 +175,9 @@ def test_type_neq():
     assert not UIntType(IntWidth(10)).type_eq(
         UIntType(UnknownWidth())
     )
+    assert not UIntType(UnknownWidth()).type_eq(
+        UIntType(IntWidth(10))
+    )
     assert not UIntType(IntWidth(10)).type_eq(
         UIntType(IntWidth(8))
     )
@@ -377,5 +380,20 @@ def test_type_neq():
         BundleType([
             Field("b", UnknownType()),
             Field("a", SIntType(IntWidth(10)))
+        ])
+    )
+    assert not BundleType([
+        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
+        Field("b", UIntType(IntWidth(10)))
+    ]).type_eq(
+        UIntType(IntWidth(10))
+    )
+    assert not BundleType([
+        Field("a", VectorType(UIntType(IntWidth(10)), 8)),
+        Field("b", UIntType(IntWidth(10)))
+    ]).type_eq(
+        BundleType([
+            Field("a", VectorType(UIntType(IntWidth(10)), 8), True),
+            Field("b", UIntType(IntWidth(10)), True)
         ])
     )
