@@ -1,6 +1,6 @@
-from .type_measurer import TypeMeasurer
-from .width_measurer import WidthMeasurer
-from .field_measurer import FieldMeasurer
+from .type import TypeMeasurer
+from .width import WidthMeasurer
+from .field import FieldMeasurer
 
 
 def equal(x, y):

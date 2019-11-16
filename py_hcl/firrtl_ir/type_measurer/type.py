@@ -28,13 +28,13 @@ def _(t1, t2):
 
 @measurer(UIntType, UIntType)
 def _(t1, t2):
-    from .width_measurer import WidthMeasurer
+    from .width import WidthMeasurer
     return WidthMeasurer.equal(t1.width, t2.width)
 
 
 @measurer(SIntType, SIntType)
 def _(t1, t2):
-    from .width_measurer import WidthMeasurer
+    from .width import WidthMeasurer
     return WidthMeasurer.equal(t1.width, t2.width)
 
 
@@ -47,7 +47,7 @@ def _(t1, t2):
 def _(t1, t2):
     if len(t1.fields) != len(t2.fields):
         return False
-    from .field_measurer import FieldMeasurer
+    from .field import FieldMeasurer
     for (a, b) in zip(t1.fields, t2.fields):
         if not FieldMeasurer.equal(a, b):
             return False

@@ -27,5 +27,5 @@ def _(f1, f2):
     if f1.is_flipped != f2.is_flipped:
         return False
 
-    from .type_measurer import TypeMeasurer
+    from .type import TypeMeasurer
     return TypeMeasurer.equal(f1.tpe, f2.tpe)

@@ -1,5 +1,6 @@
-from .mux_checker import MuxTypeChecker
-from .op_checker import OpTypeChecker
+from .mux import MuxTypeChecker
+from .op import OpTypeChecker
+from .accessor import AccessorTypeChecker
 
 
 def check(obj):
@@ -10,6 +11,11 @@ def check(obj):
 
     try:
         return MuxTypeChecker.check(obj)
+    except NotImplementedError:
+        pass
+
+    try:
+        return AccessorTypeChecker.check(obj)
     except NotImplementedError:
         pass
 
