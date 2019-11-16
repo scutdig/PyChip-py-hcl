@@ -31,6 +31,10 @@ def checker(*op):
 
 @checker(Add)
 def _(add):
+    from . import check_all
+    if not check_all(*add.args):
+        return False
+
     if not check_all_same_uint_sint(add.args[0].tpe,
                                     add.args[1].tpe,
                                     add.tpe):
@@ -46,6 +50,10 @@ def _(add):
 
 @checker(Sub)
 def _(sub):
+    from . import check_all
+    if not check_all(*sub.args):
+        return False
+
     if not check_all_same_uint_sint(sub.args[0].tpe,
                                     sub.args[1].tpe):
         return False
@@ -63,6 +71,10 @@ def _(sub):
 
 @checker(Mul)
 def _(mul):
+    from . import check_all
+    if not check_all(*mul.args):
+        return False
+
     if not check_all_same_uint_sint(mul.args[0].tpe,
                                     mul.args[1].tpe,
                                     mul.tpe):
@@ -78,6 +90,10 @@ def _(mul):
 
 @checker(Div)
 def _(div):
+    from . import check_all
+    if not check_all(*div.args):
+        return False
+
     if not check_all_same_uint_sint(div.args[0].tpe,
                                     div.args[1].tpe,
                                     div.tpe):
@@ -94,6 +110,10 @@ def _(div):
 
 @checker(Rem)
 def _(rem):
+    from . import check_all
+    if not check_all(*rem.args):
+        return False
+
     if not check_all_same_uint_sint(rem.args[0].tpe,
                                     rem.args[1].tpe,
                                     rem.tpe):
@@ -109,6 +129,10 @@ def _(rem):
 
 @checker(Lt, Leq, Gt, Geq, Eq, Neq)
 def _(comparison):
+    from . import check_all
+    if not check_all(*comparison.args):
+        return False
+
     if not check_all_same_uint_sint(comparison.args[0].tpe,
                                     comparison.args[1].tpe):
         return False
@@ -124,6 +148,10 @@ def _(comparison):
 
 @checker(And, Or, Xor)
 def _(binary_bit):
+    from . import check_all
+    if not check_all(*binary_bit.args):
+        return False
+
     if not check_all_same_uint_sint(binary_bit.args[0].tpe,
                                     binary_bit.args[1].tpe,
                                     binary_bit.tpe):
@@ -139,6 +167,10 @@ def _(binary_bit):
 
 @checker(Not)
 def _(n):
+    from . import check
+    if not check(n.arg):
+        return False
+
     if not check_all_same_uint_sint(n.arg.tpe,
                                     n.tpe):
         return False
@@ -152,6 +184,10 @@ def _(n):
 
 @checker(Neg)
 def _(neg):
+    from . import check
+    if not check(neg.arg):
+        return False
+
     if not check_all_same_uint_sint(neg.arg.tpe,
                                     neg.tpe):
         return False
@@ -165,6 +201,10 @@ def _(neg):
 
 @checker(Cat)
 def _(cat):
+    from . import check_all
+    if not check_all(*cat.args):
+        return False
+
     if not check_all_same_uint_sint(cat.args[0].tpe,
                                     cat.args[1].tpe,
                                     cat.tpe):
@@ -180,6 +220,10 @@ def _(cat):
 
 @checker(Bits)
 def _(bits):
+    from . import check
+    if not check(bits.ir_arg):
+        return False
+
     if not check_all_same_uint_sint(bits.ir_arg.tpe):
         return False
 
@@ -201,6 +245,10 @@ def _(bits):
 
 @checker(AsUInt)
 def _(as_uint):
+    from . import check
+    if not check(as_uint.arg):
+        return False
+
     if not type_in(as_uint.arg.tpe, UIntType, SIntType, ClockType):
         return False
 
@@ -218,6 +266,10 @@ def _(as_uint):
 
 @checker(AsSInt)
 def _(as_sint):
+    from . import check
+    if not check(as_sint.arg):
+        return False
+
     if not type_in(as_sint.arg.tpe, UIntType, SIntType, ClockType):
         return False
 
@@ -235,6 +287,10 @@ def _(as_sint):
 
 @checker(Shl)
 def _(shl):
+    from . import check
+    if not check(shl.ir_arg):
+        return False
+
     if not check_all_same_uint_sint(shl.ir_arg.tpe, shl.tpe):
         return False
 
@@ -247,6 +303,10 @@ def _(shl):
 
 @checker(Shr)
 def _(shr):
+    from . import check
+    if not check(shr.ir_arg):
+        return False
+
     if not check_all_same_uint_sint(shr.ir_arg.tpe, shr.tpe):
         return False
 
@@ -260,6 +320,10 @@ def _(shr):
 
 @checker(Dshl)
 def _(dshl):
+    from . import check_all
+    if not check_all(*dshl.args):
+        return False
+
     if not check_all_same_uint_sint(dshl.args[0].tpe,
                                     dshl.tpe):
         return False
@@ -277,6 +341,10 @@ def _(dshl):
 
 @checker(Dshr)
 def _(dshr):
+    from . import check_all
+    if not check_all(*dshr.args):
+        return False
+
     if not check_all_same_uint_sint(dshr.args[0].tpe,
                                     dshr.tpe):
         return False

@@ -24,7 +24,10 @@ def checker(mux):
 
 @checker(Mux)
 def _(mux):
-    if not equal(mux.cond, uw(1)):
+    from . import check_all
+    if not check_all(mux.cond, mux.tval, mux.fval):
+        return False
+    if not equal(mux.cond.tpe, uw(1)):
         return False
     if not equal(mux.tval.tpe, mux.fval.tpe):
         return False
