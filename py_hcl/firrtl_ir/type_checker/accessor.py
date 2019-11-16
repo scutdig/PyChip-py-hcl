@@ -25,14 +25,17 @@ def checker(accessor):
     return f
 
 
+###############################################################
+#                      TYPE CHECKERS                          #
+###############################################################
+
 @checker(SubField)
 def _(sub_field):
     from . import check
-
-    if not type_in(sub_field.bundle_ref.tpe, BundleType):
+    if not check(sub_field.bundle_ref):
         return False
 
-    if not check(sub_field.bundle_ref):
+    if not type_in(sub_field.bundle_ref.tpe, BundleType):
         return False
 
     field = None
@@ -40,11 +43,7 @@ def _(sub_field):
         if f.name == sub_field.name:
             field = f
             break
-
     if field is None:
-        return False
-
-    if field.is_flipped == sub_field.is_left_value:
         return False
 
     if not equal(field.tpe, sub_field.tpe):
@@ -62,7 +61,7 @@ def _(sub_index):
     if not type_in(sub_index.vector_ref.tpe, VectorType):
         return False
 
-    if sub_index.vector_ref.tpe.size >= sub_index.index:
+    if sub_index.vector_ref.tpe.size <= sub_index.index or sub_index.index < 0:
         return False
 
     if not equal(sub_index.vector_ref.tpe.elem_type, sub_index.tpe):

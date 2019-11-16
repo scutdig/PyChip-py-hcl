@@ -3,11 +3,10 @@ from .expression import Expression
 
 
 class SubField(Expression):
-    def __init__(self, bundle_ref, name, tpe, is_left_value=False):
+    def __init__(self, bundle_ref, name, tpe):
         self.bundle_ref = bundle_ref
         self.name = name
         self.tpe = tpe
-        self.is_left_value = is_left_value
 
     def serialize(self, output):
         self.bundle_ref.serialize(output)
