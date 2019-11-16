@@ -22,6 +22,10 @@ def checker(literal):
     return f
 
 
+###############################################################
+#                      TYPE CHECKERS                          #
+###############################################################
+
 @checker(UIntLiteral)
 def _(uint):
     if not type_in(uint.tpe, UIntType):

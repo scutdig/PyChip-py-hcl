@@ -14,8 +14,3 @@ class Width(object):
         output.write(b"<")
         output.write(serialize_num(self.width))
         output.write(b">")
-
-    def width_eq(self, other):
-        if type(other) != type(self):
-            return False
-        return self.width == other.width
