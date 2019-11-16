@@ -1,4 +1,5 @@
 from py_hcl.firrtl_ir.expr.literal import SIntLiteral, UIntLiteral
+from py_hcl.firrtl_ir.type import UnknownType
 from py_hcl.firrtl_ir.type_checker import check, LiteralTypeChecker
 from py_hcl.firrtl_ir.width import Width
 from ..utils import serialize_equal
@@ -33,6 +34,11 @@ def test_uint_literal():
     assert not LiteralTypeChecker.check(ui)
     assert not check(ui)
 
+    ui = UIntLiteral(10, Width(3))
+    ui.tpe = UnknownType()
+    assert not LiteralTypeChecker.check(ui)
+    assert not check(ui)
+
 
 def test_sint_literal():
     si = SIntLiteral(10, Width(5))
@@ -62,3 +68,15 @@ def test_sint_literal():
     si = SIntLiteral(-10, Width(4))
     assert not LiteralTypeChecker.check(si)
     assert not check(si)
+
+    si = SIntLiteral(10, Width(5))
+    si.tpe = UnknownType()
+    assert not LiteralTypeChecker.check(si)
+    assert not check(si)
+
+
+def test_checker():
+    try:
+        LiteralTypeChecker.check(123)
+    except NotImplementedError:
+        assert True
