@@ -1,5 +1,5 @@
 from .utils import type_in, check_all_same_uint_sint
-from ..tpe import UIntType, SIntType, ClockType
+from ..type import UIntType, SIntType, ClockType
 from ..expr.prim_ops import Add, Sub, Mul, Div, Rem, \
     Lt, Leq, Gt, Geq, Eq, Neq, Xor, Or, And, Not, Neg, \
     Cat, Bits, AsUInt, AsSInt, Shl, Shr, Dshl, Dshr
@@ -47,8 +47,10 @@ def _(add):
 @checker(Sub)
 def _(sub):
     if not check_all_same_uint_sint(sub.args[0].tpe,
-                                    sub.args[1].tpe,
-                                    sub.tpe):
+                                    sub.args[1].tpe):
+        return False
+
+    if not type_in(sub.tpe, SIntType):
         return False
 
     expected_type_width = max(sub.args[0].tpe.width.width,

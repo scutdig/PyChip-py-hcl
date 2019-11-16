@@ -1,5 +1,5 @@
 from ..type_measurer import equal
-from ..tpe import BundleType, VectorType, UIntType
+from ..type import BundleType, VectorType, UIntType
 from .utils import type_in
 from ..expr.accessor import SubField, SubIndex, SubAccess
 

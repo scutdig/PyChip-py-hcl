@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.shortcuts import uw, sw, vec, bdl
-from py_hcl.firrtl_ir.tpe import UnknownType, ClockType
+from py_hcl.firrtl_ir.type import UnknownType, ClockType
 from py_hcl.firrtl_ir.type_measurer import equal
 
 

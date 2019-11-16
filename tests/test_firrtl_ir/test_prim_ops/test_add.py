@@ -1,6 +1,6 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Add
 from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.tpe import UnknownType
+from py_hcl.firrtl_ir.type import UnknownType
 from py_hcl.firrtl_ir.type_checker import check
 from ..utils import serialize_equal
 

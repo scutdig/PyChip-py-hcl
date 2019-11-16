@@ -1,4 +1,4 @@
-from ..tpe import UnknownType, UIntType, SIntType, \
+from ..type import UnknownType, UIntType, SIntType, \
     ClockType, BundleType, VectorType
 
 
