@@ -17,9 +17,9 @@ class AccessorTypeChecker(object):
             raise NotImplementedError(type(op_obj))
 
 
-def checker(mux):
+def checker(accessor):
     def f(func):
-        AccessorTypeChecker.accessor_checker_map[mux] = func
+        AccessorTypeChecker.accessor_checker_map[accessor] = func
         return func
 
     return f
@@ -27,7 +27,12 @@ def checker(mux):
 
 @checker(SubField)
 def _(sub_field):
+    from . import check
+
     if not type_in(sub_field.bundle_ref.tpe, BundleType):
+        return False
+
+    if not check(sub_field.bundle_ref):
         return False
 
     field = None
@@ -50,6 +55,10 @@ def _(sub_field):
 
 @checker(SubIndex)
 def _(sub_index):
+    from . import check
+    if not check(sub_index.vector_ref):
+        return False
+
     if not type_in(sub_index.vector_ref.tpe, VectorType):
         return False
 
@@ -64,6 +73,10 @@ def _(sub_index):
 
 @checker(SubAccess)
 def _(sub_access):
+    from . import check_all
+    if not check_all(sub_access.vector_ref, sub_access.index_ref):
+        return False
+
     if not type_in(sub_access.vector_ref.tpe, VectorType):
         return False
 
