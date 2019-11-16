@@ -153,8 +153,10 @@ def _(binary_bit):
         return False
 
     if not check_all_same_uint_sint(binary_bit.args[0].tpe,
-                                    binary_bit.args[1].tpe,
-                                    binary_bit.tpe):
+                                    binary_bit.args[1].tpe):
+        return False
+
+    if not type_in(binary_bit.tpe, UIntType):
         return False
 
     expected_type_width = max(binary_bit.args[0].tpe.width.width,
@@ -171,8 +173,10 @@ def _(n):
     if not check(n.arg):
         return False
 
-    if not check_all_same_uint_sint(n.arg.tpe,
-                                    n.tpe):
+    if not check_all_same_uint_sint(n.arg.tpe):
+        return False
+
+    if not type_in(n.tpe, UIntType):
         return False
 
     expected_type_width = n.arg.tpe.width.width
@@ -188,8 +192,10 @@ def _(neg):
     if not check(neg.arg):
         return False
 
-    if not check_all_same_uint_sint(neg.arg.tpe,
-                                    neg.tpe):
+    if not check_all_same_uint_sint(neg.arg.tpe):
+        return False
+
+    if not type_in(neg.tpe, SIntType):
         return False
 
     expected_type_width = neg.arg.tpe.width.width + 1
@@ -206,8 +212,10 @@ def _(cat):
         return False
 
     if not check_all_same_uint_sint(cat.args[0].tpe,
-                                    cat.args[1].tpe,
-                                    cat.tpe):
+                                    cat.args[1].tpe):
+        return False
+
+    if not type_in(cat.tpe, UIntType):
         return False
 
     expected_type_width = \
@@ -231,7 +239,7 @@ def _(bits):
         return False
 
     if not \
-            bits.tpe.width.width >= \
+            bits.ir_arg.tpe.width.width > \
             bits.const_args[0] >= \
             bits.const_args[1] >= 0:
         return False
