@@ -1,7 +1,7 @@
 from .field import Field
 from .expr.reference import Reference
 from .expr.literal import UIntLiteral, SIntLiteral
-from .tpe import SIntType, UIntType, VectorType, BundleType
+from .type import SIntType, UIntType, VectorType, BundleType
 from .width import Width
 
 

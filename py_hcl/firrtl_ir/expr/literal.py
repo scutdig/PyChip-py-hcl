@@ -1,4 +1,4 @@
-from ..tpe import UIntType, SIntType
+from ..type import UIntType, SIntType
 from .expression import Expression
 from ..utils import serialize_str
 

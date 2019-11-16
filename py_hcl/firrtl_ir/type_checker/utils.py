@@ -1,4 +1,4 @@
-from ..tpe import UIntType, SIntType
+from ..type import UIntType, SIntType
 
 
 def type_in(obj, *types):
