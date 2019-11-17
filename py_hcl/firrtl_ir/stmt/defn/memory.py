@@ -32,7 +32,7 @@ class DefMemReadPort(Statement):
         self.clock_ref.serialize(output)
 
 
-class DefMemWriteRead(Statement):
+class DefMemWritePort(Statement):
     def __init__(self, name, mem_ref, index_ref, clock_ref):
         self.name = name
         self.mem_ref = mem_ref

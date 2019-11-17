@@ -169,8 +169,8 @@ def _(binary_bit):
 
 @checker(Not)
 def _(n):
-    from .. import check
-    if not check(n.arg):
+    from .. import check_all_expr
+    if not check_all_expr(n.arg):
         return False
 
     if not check_all_same_uint_sint(n.arg.tpe):
@@ -188,8 +188,8 @@ def _(n):
 
 @checker(Neg)
 def _(neg):
-    from .. import check
-    if not check(neg.arg):
+    from .. import check_all_expr
+    if not check_all_expr(neg.arg):
         return False
 
     if not check_all_same_uint_sint(neg.arg.tpe):
@@ -228,8 +228,8 @@ def _(cat):
 
 @checker(Bits)
 def _(bits):
-    from .. import check
-    if not check(bits.ir_arg):
+    from .. import check_all_expr
+    if not check_all_expr(bits.ir_arg):
         return False
 
     if not check_all_same_uint_sint(bits.ir_arg.tpe):
@@ -253,8 +253,8 @@ def _(bits):
 
 @checker(AsUInt)
 def _(as_uint):
-    from .. import check
-    if not check(as_uint.arg):
+    from .. import check_all_expr
+    if not check_all_expr(as_uint.arg):
         return False
 
     if not type_in(as_uint.arg.tpe, UIntType, SIntType, ClockType):
@@ -274,8 +274,8 @@ def _(as_uint):
 
 @checker(AsSInt)
 def _(as_sint):
-    from .. import check
-    if not check(as_sint.arg):
+    from .. import check_all_expr
+    if not check_all_expr(as_sint.arg):
         return False
 
     if not type_in(as_sint.arg.tpe, UIntType, SIntType, ClockType):
@@ -295,8 +295,8 @@ def _(as_sint):
 
 @checker(Shl)
 def _(shl):
-    from .. import check
-    if not check(shl.ir_arg):
+    from .. import check_all_expr
+    if not check_all_expr(shl.ir_arg):
         return False
 
     if not check_all_same_uint_sint(shl.ir_arg.tpe, shl.tpe):
@@ -311,8 +311,8 @@ def _(shl):
 
 @checker(Shr)
 def _(shr):
-    from .. import check
-    if not check(shr.ir_arg):
+    from .. import check_all_expr
+    if not check_all_expr(shr.ir_arg):
         return False
 
     if not check_all_same_uint_sint(shr.ir_arg.tpe, shr.tpe):
