@@ -25,7 +25,7 @@ class OpCase(object):
 
 
 def name_gen():
-    return "n" + str(uuid.uuid4()).replace("-", "_")
+    return "n" + str(uuid.uuid4()).replace("-", "")
 
 
 def u_gen():
@@ -70,40 +70,35 @@ def unknown_gen():
 
 def vec_gen():
     rand_num = random.randint(1, 100)
-    seed = random.choices(population=[1, 2, 3, 4, 5],
-                          weights=[0.3, 0.3, 0.3, 0.05, 0.05],
+    seed = random.choices(population=[1, 2, 3, 4],
+                          weights=[0.4, 0.4, 0.1, 0.1],
                           k=1)[0]
     if seed == 1:
         return vec(uw_gen(), rand_num)
     elif seed == 2:
         return vec(sw_gen(), rand_num)
     elif seed == 3:
-        return vec(unknown_gen(), rand_num)
-    elif seed == 4:
         return vec(vec_gen(), rand_num)
-    elif seed == 5:
+    elif seed == 4:
         return vec(bdl_gen(), rand_num)
 
 
 def bdl_gen():
-    # rand_num = random.randint(1, 10)
-    rand_num = 1
+    rand_num = random.randint(1, 5)
     fields = []
     for i in range(rand_num):
         rand_name = name_gen()
         rand_bool = random.choice([True, False])
-        seed = random.choices(population=[1, 2, 3, 4, 5],
-                              weights=[0.3, 0.3, 0.3, 0.05, 0.05],
+        seed = random.choices(population=[1, 2, 3, 4],
+                              weights=[0.4, 0.4, 0.1, 0.1],
                               k=1)[0]
         if seed == 1:
             fields.append(Field(rand_name, uw_gen(), rand_bool))
         elif seed == 2:
             fields.append(Field(rand_name, sw_gen(), rand_bool))
         elif seed == 3:
-            fields.append(Field(rand_name, unknown_gen(), rand_bool))
-        elif seed == 4:
             fields.append(Field(rand_name, vec_gen(), rand_bool))
-        elif seed == 5:
+        elif seed == 4:
             fields.append(Field(rand_name, bdl_gen(), rand_bool))
     return BundleType(fields)
 
@@ -125,7 +120,7 @@ def obj_gen(case):
 
 def basis_tester(cases):
     for case in cases:
-        for i in range(10):
+        for i in range(5):
             obj = obj_gen(case)
             assert OpTypeChecker.check(obj)
             assert check(obj)
@@ -133,7 +128,17 @@ def basis_tester(cases):
 
 def encounter_error_tester(cases):
     for case in cases:
-        for i in range(10):
+        for i in range(5):
             obj = obj_gen(case)
             assert not OpTypeChecker.check(obj)
             assert not check(obj)
+
+
+if __name__ == '__main__':
+    from io import BytesIO
+
+    output = BytesIO()
+    vec_gen().serialize(output)
+    output.flush()
+
+    print(str(output.getvalue(), "utf-8"))
