@@ -7,4 +7,8 @@ def serialize_str(s):
 
 
 def signed_num_bin_len(num):
-    return len(bin(abs(num))) - 1
+    return len("{:+b}".format(num))
+
+
+def unsigned_num_bin_len(num):
+    return len("{:b}".format(num))

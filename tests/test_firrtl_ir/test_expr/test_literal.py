@@ -12,9 +12,8 @@ def test_uint_literal():
     serialize_equal(ui, 'UInt<4>("a")')
 
     ui = UIntLiteral(-10, Width(5))
-    assert LiteralTypeChecker.check(ui)
-    assert check(ui)
-    serialize_equal(ui, 'UInt<5>("-a")')
+    assert not LiteralTypeChecker.check(ui)
+    assert not check(ui)
 
     ui = UIntLiteral(1023, Width(10))
     assert LiteralTypeChecker.check(ui)
@@ -22,9 +21,8 @@ def test_uint_literal():
     serialize_equal(ui, 'UInt<10>("3ff")')
 
     ui = UIntLiteral(-1023, Width(11))
-    assert LiteralTypeChecker.check(ui)
-    assert check(ui)
-    serialize_equal(ui, 'UInt<11>("-3ff")')
+    assert not LiteralTypeChecker.check(ui)
+    assert not check(ui)
 
     ui = UIntLiteral(10, Width(3))
     assert not LiteralTypeChecker.check(ui)

@@ -1,87 +1,83 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Add
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check, OpTypeChecker
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, sw
+from py_hcl.firrtl_ir.type import UIntType, SIntType, VectorType, BundleType
+from .helper import OpCase, basis_tester, encounter_error_tester
 
 
-def test_basis():
-    args = [u(20, w(5)), u(15, w(4))]
-    add = Add(args, uw(6))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(UInt<5>("14"), UInt<4>("f"))')
-
-    args = [n("a", uw(6)), u(15, w(4))]
-    add = Add(args, uw(7))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(a, UInt<4>("f"))')
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    add = Add(args, uw(7))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(a, b)')
-
-    args = [s(20, w(6)), s(15, w(5))]
-    add = Add(args, sw(7))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(SInt<6>("14"), SInt<5>("f"))')
-
-    args = [n("a", sw(6)), s(-15, w(5))]
-    add = Add(args, sw(7))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(a, SInt<5>("-f"))')
-
-    args = [n("a", sw(6)), n("b", sw(6))]
-    add = Add(args, sw(7))
-    assert OpTypeChecker.check(add)
-    assert check(add)
-    serialize_equal(add, 'add(a, b)')
+def max_width(x, y):
+    return max(x.tpe.width.width, y.tpe.width.width)
 
 
-def test_type_is_wrong():
-    args = [n("a", UnknownType()), n("b", sw(6))]
-    add = Add(args, sw(7))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+add_basis_cases = [
+    OpCase(
+        Add
+    ).arg_types(
+        UIntType, UIntType
+    ).res_type(
+        lambda x, y: uw(max_width(x, y) + 1)
+    ),
 
-    args = [n("a", uw(6)), n("b", UnknownType())]
-    add = Add(args, sw(7))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+    OpCase(
+        Add
+    ).arg_types(
+        SIntType, SIntType
+    ).res_type(
+        lambda x, y: sw(max_width(x, y) + 1)
+    ),
+]
 
-    args = [n("a", vec(sw(10), 8)), n("b", sw(6))]
-    add = Add(args, sw(7))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+add_type_wrong_cases = [
+    OpCase(
+        Add
+    ).arg_types(
+        UIntType, VectorType
+    ).res_type(
+        lambda x, y: uw(5)
+    ),
 
-    args = [n("a", uw(6)), n("b", bdl(a=[uw(20), True]))]
-    add = Add(args, sw(7))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+    OpCase(
+        Add
+    ).arg_types(
+        UIntType, BundleType
+    ).res_type(
+        lambda x, y: uw(5)
+    ),
 
+    OpCase(
+        Add
+    ).arg_types(
+        SIntType, VectorType
+    ).res_type(
+        lambda x, y: sw(5)
+    ),
 
-def test_width_is_wrong():
-    args = [n("a", sw(6)), n("b", sw(6))]
-    add = Add(args, sw(6))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+    OpCase(
+        Add
+    ).arg_types(
+        SIntType, BundleType
+    ).res_type(
+        lambda x, y: sw(5)
+    ),
+]
 
-    args = [n("a", uw(6)), n("b", uw(6))]
-    add = Add(args, uw(6))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+add_width_wrong_cases = [
+    OpCase(
+        Add
+    ).arg_types(
+        UIntType, UIntType
+    ).res_type(
+        lambda x, y: uw(max_width(x, y))
+    ),
 
-    args = [n("b", sw(6)), n("a", sw(6))]
-    add = Add(args, sw(1))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+    OpCase(
+        Add
+    ).arg_types(
+        SIntType, SIntType
+    ).res_type(
+        lambda x, y: sw(max_width(x, y))
+    ),
+]
 
-    args = [n("a", uw(6)), n("b", uw(6))]
-    add = Add(args, uw(10))
-    assert not OpTypeChecker.check(add)
-    assert not check(add)
+basis_tester(add_basis_cases)
+encounter_error_tester(add_type_wrong_cases)
+encounter_error_tester(add_width_wrong_cases)

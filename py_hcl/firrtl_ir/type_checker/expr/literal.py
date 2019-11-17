@@ -1,6 +1,6 @@
-from ...type_checker.utils import type_in
+from ..utils import type_in
 from ...expr.literal import SIntLiteral, SIntType, UIntLiteral, UIntType
-from ...utils import signed_num_bin_len
+from ...utils import signed_num_bin_len, unsigned_num_bin_len
 
 
 class LiteralTypeChecker(object):
@@ -31,9 +31,10 @@ def _(uint):
     if not type_in(uint.tpe, UIntType):
         return False
 
-    at_least_width = signed_num_bin_len(uint.value) - 1
-    at_least_width += (1 if uint.value < 0 else 0)
-    if at_least_width > uint.tpe.width.width:
+    if uint.value < 0:
+        return False
+
+    if unsigned_num_bin_len(uint.value) > uint.tpe.width.width:
         return False
 
     return True
