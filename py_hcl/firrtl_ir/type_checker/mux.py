@@ -1,4 +1,4 @@
-from ..shortcuts import uw
+from py_hcl.firrtl_ir.shortcuts import uw
 from ..type_measurer import equal
 from ..expr.mux import Mux
 

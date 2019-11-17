@@ -1,7 +1,7 @@
-from py_hcl.firrtl_ir.field import Field
+from py_hcl.firrtl_ir.type.field import Field
 from py_hcl.firrtl_ir.type import UnknownType, ClockType, \
     UIntType, SIntType, VectorType, BundleType
-from py_hcl.firrtl_ir.width import Width
+from py_hcl.firrtl_ir.type.width import Width
 from .utils import serialize_equal
 
 

@@ -10,7 +10,7 @@ Each field includes
   type:        defined type;
   orientation: flipped or not.
 """
-from .utils import serialize_str
+from ..utils import serialize_str
 
 
 class Field(object):

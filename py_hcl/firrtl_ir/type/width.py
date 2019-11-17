@@ -3,7 +3,7 @@ The width module provides bit width information for UIntType
 and SIntType.
 """
 
-from .utils import serialize_num
+from ..utils import serialize_num
 
 
 class Width(object):

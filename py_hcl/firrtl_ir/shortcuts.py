@@ -1,8 +1,8 @@
-from .field import Field
+from .type.field import Field
 from .expr.reference import Reference
 from .expr.literal import UIntLiteral, SIntLiteral
 from .type import SIntType, UIntType, VectorType, BundleType
-from .width import Width
+from .type.width import Width
 
 
 def sw(width):
