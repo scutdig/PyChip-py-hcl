@@ -15,6 +15,8 @@ class Conditionally(Statement):
         indent += 1
         output.write(serialize_str("  " * indent))
         self.seq.serialize_stmt(output, indent)
-        output.write(b"\nelse :\n")
+        output.write(b"\n")
+        output.write(serialize_str("  " * (indent - 1)))
+        output.write(b"else :\n")
         output.write(serialize_str("  " * indent))
         self.alt.serialize_stmt(output, indent)

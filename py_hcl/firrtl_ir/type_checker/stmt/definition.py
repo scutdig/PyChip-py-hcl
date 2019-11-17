@@ -136,6 +136,9 @@ def _(mod):
     if not check_all_stmt(mod.body):
         return False
 
+    if len(mod.ports) == 0:
+        return False
+
     for port in mod.ports:
         if not type_in(port, InputPort, OutputPort):
             return False
@@ -145,6 +148,9 @@ def _(mod):
 
 @checker(DefExtModule)
 def _(mod):
+    if len(mod.ports) == 0:
+        return False
+
     for port in mod.ports:
         if not type_in(port, InputPort, OutputPort):
             return False
@@ -162,7 +168,7 @@ def _(circuit):
     for mod in circuit.def_modules:
         if not type_in(mod, DefModule, DefExtModule):
             return False
-        if mod.name == circuit.name:
+        if mod.name == circuit.main:
             name_found = True
 
     if not name_found:
