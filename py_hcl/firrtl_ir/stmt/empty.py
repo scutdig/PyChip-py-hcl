@@ -2,5 +2,5 @@ from . import Statement
 
 
 class EmptyStmt(Statement):
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"skip")

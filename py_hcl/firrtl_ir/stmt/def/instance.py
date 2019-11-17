@@ -7,7 +7,7 @@ class DefInstance(Statement):
         self.name = name
         self.module_name = module_name
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"inst ")
         output.write(serialize_str(self.name))
         output.write(b" of ")

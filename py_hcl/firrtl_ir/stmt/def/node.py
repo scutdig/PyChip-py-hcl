@@ -7,7 +7,7 @@ class DefNode(Statement):
         self.name = name
         self.expr_ref = expr_ref
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"node ")
         output.write(serialize_str(self.name))
         output.write(b" = ")

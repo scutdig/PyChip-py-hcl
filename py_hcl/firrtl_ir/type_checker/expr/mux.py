@@ -1,6 +1,6 @@
-from py_hcl.firrtl_ir.shortcuts import uw
-from ..type_measurer import equal
-from ..expr.mux import Mux
+from ...shortcuts import uw
+from ...type_measurer import equal
+from ...expr.mux import Mux
 
 
 class MuxTypeChecker(object):
@@ -28,8 +28,8 @@ def checker(mux):
 
 @checker(Mux)
 def _(mux):
-    from . import check_all
-    if not check_all(mux.cond, mux.tval, mux.fval):
+    from .. import check_all_expr
+    if not check_all_expr(mux.cond, mux.tval, mux.fval):
         return False
     if not equal(mux.cond.tpe, uw(1)):
         return False
