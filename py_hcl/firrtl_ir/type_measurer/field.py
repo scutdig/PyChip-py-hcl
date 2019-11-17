@@ -1,4 +1,4 @@
-from ..field import Field
+from py_hcl.firrtl_ir.type.field import Field
 
 
 class FieldMeasurer(object):

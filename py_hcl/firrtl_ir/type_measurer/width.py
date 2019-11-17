@@ -1,4 +1,4 @@
-from ..width import Width
+from py_hcl.firrtl_ir.type.width import Width
 
 
 class WidthMeasurer(object):
