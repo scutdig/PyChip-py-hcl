@@ -1,4 +1,4 @@
-from .expression import Expression
+from . import Expression
 from ..utils import serialize_num
 
 

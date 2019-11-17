@@ -1,5 +1,5 @@
 from ..utils import serialize_str, serialize_num
-from .expression import Expression
+from . import Expression
 
 
 class SubField(Expression):

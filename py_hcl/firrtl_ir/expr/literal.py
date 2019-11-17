@@ -1,5 +1,5 @@
 from ..type import UIntType, SIntType
-from .expression import Expression
+from . import Expression
 from ..utils import serialize_str
 
 
