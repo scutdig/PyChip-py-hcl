@@ -7,7 +7,7 @@ class DefMemory(Statement):
         self.name = name
         self.tpe = tpe
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"cmem ")
         output.write(serialize_str(self.name))
         output.write(b" : ")
@@ -21,7 +21,7 @@ class DefMemReadPort(Statement):
         self.index_ref = index_ref
         self.clock_ref = clock_ref
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"read mport ")
         output.write(serialize_str(self.name))
         output.write(b" = ")
@@ -39,7 +39,7 @@ class DefMemWriteRead(Statement):
         self.index_ref = index_ref
         self.clock_ref = clock_ref
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"write mport ")
         output.write(serialize_str(self.name))
         output.write(b" = ")

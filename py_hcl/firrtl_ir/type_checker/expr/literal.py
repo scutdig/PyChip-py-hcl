@@ -1,6 +1,6 @@
-from .utils import type_in
-from ..expr.literal import SIntLiteral, SIntType, UIntLiteral, UIntType
-from ..utils import signed_num_bin_len
+from ...type_checker.utils import type_in
+from ...expr.literal import SIntLiteral, SIntType, UIntLiteral, UIntType
+from ...utils import signed_num_bin_len
 
 
 class LiteralTypeChecker(object):

@@ -8,7 +8,7 @@ class DefRegister(Statement):
         self.tpe = tpe
         self.clock_ref = clock_ref
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"reg ")
         output.write(serialize_str(self.name))
         output.write(b" : ")
@@ -25,14 +25,16 @@ class DefInitRegister(Statement):
         self.reset_ref = reset_ref
         self.init_ref = init_ref
 
-    def serialize(self, output):
+    def serialize_stmt(self, output, indent):
         output.write(b"reg ")
         output.write(serialize_str(self.name))
         output.write(b" : ")
         self.tpe.serialize(output)
         output.write(b", ")
         self.clock_ref.serialize(output)
-        output.write(b" with : \n  (")
+        output.write(b" with :\n")
+        output.write(serialize_str("  " * indent))
+        output.write(b"  (")
         self.reset_ref.serialize(output)
         output.write(b", ")
         self.init_ref.serialize(output)

@@ -1,7 +1,7 @@
-from ..type_measurer import equal
-from ..type import BundleType, VectorType, UIntType
-from .utils import type_in
-from ..expr.accessor import SubField, SubIndex, SubAccess
+from ...type_measurer import equal
+from ...type import BundleType, VectorType, UIntType
+from ...type_checker.utils import type_in
+from ...expr.accessor import SubField, SubIndex, SubAccess
 
 
 class AccessorTypeChecker(object):
@@ -31,7 +31,7 @@ def checker(accessor):
 
 @checker(SubField)
 def _(sub_field):
-    from . import check
+    from .. import check
     if not check(sub_field.bundle_ref):
         return False
 
@@ -54,7 +54,7 @@ def _(sub_field):
 
 @checker(SubIndex)
 def _(sub_index):
-    from . import check
+    from .. import check
     if not check(sub_index.vector_ref):
         return False
 
@@ -72,8 +72,8 @@ def _(sub_index):
 
 @checker(SubAccess)
 def _(sub_access):
-    from . import check_all
-    if not check_all(sub_access.vector_ref, sub_access.index_ref):
+    from .. import check_all_expr
+    if not check_all_expr(sub_access.vector_ref, sub_access.index_ref):
         return False
 
     if not type_in(sub_access.vector_ref.tpe, VectorType):
