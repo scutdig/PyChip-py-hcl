@@ -1,5 +1,5 @@
 from ..utils import serialize_str
-from .expression import Expression
+from . import Expression
 
 
 class Reference(Expression):

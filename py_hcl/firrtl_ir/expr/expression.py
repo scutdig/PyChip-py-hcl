@@ -1,2 +1,0 @@
-class Expression(object):
-    pass

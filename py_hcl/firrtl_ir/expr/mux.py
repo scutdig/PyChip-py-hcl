@@ -1,4 +1,4 @@
-from .expression import Expression
+from . import Expression
 
 
 class Mux(Expression):
