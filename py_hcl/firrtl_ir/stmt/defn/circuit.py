@@ -12,9 +12,7 @@ class DefCircuit(Statement):
         output.write(serialize_str(self.main))
         output.write(b" :\n")
         indent += 1
-        output.write(serialize_str("  " * indent))
         for def_module in self.def_modules:
+            output.write(serialize_str("  " * indent))
             def_module.serialize_stmt(output, indent)
             output.write(b"\n\n")
-            output.write(serialize_str("  " * indent))
-        output.write(b"\n")

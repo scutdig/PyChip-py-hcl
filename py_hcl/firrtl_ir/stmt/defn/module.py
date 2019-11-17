@@ -41,8 +41,9 @@ class DefModule(Statement):
             output.write(serialize_str("  " * indent))
             port.serialize(output)
             output.write(b"\n")
+        output.write(b"\n")
         output.write(serialize_str("  " * indent))
-        self.body.sertialize_stmt(output, indent)
+        self.body.serialize_stmt(output, indent)
 
 
 class DefExtModule(Statement):
@@ -60,6 +61,7 @@ class DefExtModule(Statement):
             output.write(serialize_str("  " * indent))
             port.serialize(output)
             output.write(b"\n")
+        output.write(b"\n")
         output.write(serialize_str("  " * indent))
         output.write(b"defname = ")
         output.write(serialize_str(self.def_name))

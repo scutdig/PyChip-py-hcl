@@ -30,4 +30,7 @@ def _(block):
     if not check_all_stmt(*block.statements):
         return False
 
+    if len(block.statements) == 0:
+        return False
+
     return True
