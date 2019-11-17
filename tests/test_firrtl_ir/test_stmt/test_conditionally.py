@@ -13,7 +13,10 @@ def test_conditionally_basis():
     cn = Conditionally(n("a", uw(1)), s1, s2)
     assert ConditionallyTypeChecker.check(cn)
     assert check(cn)
-    serialize_stmt_equal(cn, "when a :\n  skip\nelse :\n  a <= b")
+    serialize_stmt_equal(cn, "when a :\n"
+                             "  skip\n"
+                             "else :\n"
+                             "  a <= b")
 
     s1 = Block([
         Connect(n("a", uw(8)), n("b", uw(8))),
@@ -24,7 +27,11 @@ def test_conditionally_basis():
     assert ConditionallyTypeChecker.check(cn)
     assert check(cn)
     serialize_stmt_equal(
-        cn, 'when UInt<1>("1") :\n  a <= b\n  c <= d\nelse :\n  skip')
+        cn, 'when UInt<1>("1") :\n'
+            '  a <= b\n'
+            '  c <= d\n'
+            'else :\n'
+            '  skip')
 
 
 def test_conditionally_type_wrong():

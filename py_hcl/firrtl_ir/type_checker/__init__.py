@@ -1,3 +1,4 @@
+from .stmt.definition import DefinitionTypeChecker
 from .stmt.block import BlockTypeChecker
 from .stmt.conditionally import ConditionallyTypeChecker
 from ..stmt import Statement
@@ -27,6 +28,7 @@ final_map = {
     **ConnectTypeChecker.connect_checker_map,
     **ConditionallyTypeChecker.conditionally_checker_map,
     **BlockTypeChecker.block_checker_map,
+    **DefinitionTypeChecker.definition_checker_map,
 
     # simple statement
     EmptyStmt: true,

@@ -31,8 +31,8 @@ def checker(accessor):
 
 @checker(SubField)
 def _(sub_field):
-    from .. import check
-    if not check(sub_field.bundle_ref):
+    from .. import check_all_expr
+    if not check_all_expr(sub_field.bundle_ref):
         return False
 
     if not type_in(sub_field.bundle_ref.tpe, BundleType):
@@ -54,8 +54,8 @@ def _(sub_field):
 
 @checker(SubIndex)
 def _(sub_index):
-    from .. import check
-    if not check(sub_index.vector_ref):
+    from .. import check_all_expr
+    if not check_all_expr(sub_index.vector_ref):
         return False
 
     if not type_in(sub_index.vector_ref.tpe, VectorType):
