@@ -1,5 +1,6 @@
 from py_hcl.firrtl_ir.shortcuts import vec, uw, bdl, n, u, w, s
-from py_hcl.firrtl_ir.stmt.defn.memory import DefMemory, DefMemWritePort, DefMemReadPort
+from py_hcl.firrtl_ir.stmt.defn.memory import DefMemory, \
+    DefMemWritePort, DefMemReadPort
 from py_hcl.firrtl_ir.type import ClockType
 from py_hcl.firrtl_ir.type_checker import check, DefinitionTypeChecker
 from ...utils import serialize_stmt_equal
@@ -60,7 +61,8 @@ def test_read_port_index_wrong():
     assert not check(mr)
 
     mem_ref = n("m", vec(bdl(a=(uw(8), False)), 10))
-    mr = DefMemReadPort("mr", mem_ref, n("a", vec(uw(1), 10)), n("clock", ClockType()))
+    mr = DefMemReadPort("mr", mem_ref,
+                        n("a", vec(uw(1), 10)), n("clock", ClockType()))
     assert not DefinitionTypeChecker.check(mr)
     assert not check(mr)
 
@@ -110,7 +112,8 @@ def test_write_port_index_wrong():
     assert not check(mw)
 
     mem_ref = n("m", vec(bdl(a=(uw(8), False)), 10))
-    mw = DefMemWritePort("mw", mem_ref, n("a", vec(uw(1), 10)), n("clock", ClockType()))
+    mw = DefMemWritePort("mw", mem_ref,
+                         n("a", vec(uw(1), 10)), n("clock", ClockType()))
     assert not DefinitionTypeChecker.check(mw)
     assert not check(mw)
 
@@ -122,6 +125,7 @@ def test_write_port_mem_wrong():
     assert not check(mw)
 
     mem_ref = n("m", uw(9))
-    mw = DefMemWritePort("mw", mem_ref, n("a", uw(2)), n("clock", ClockType()))
+    mw = DefMemWritePort("mw", mem_ref,
+                         n("a", uw(2)), n("clock", ClockType()))
     assert not DefinitionTypeChecker.check(mw)
     assert not check(mw)
