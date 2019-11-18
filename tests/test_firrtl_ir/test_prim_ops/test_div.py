@@ -1,73 +1,39 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Div
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, sw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, type_wrong_cases_2_args_gen, width
 
 
-def test_basis():
-    args = [u(20, w(5)), u(15, w(4))]
-    div = Div(args, uw(5))
-    assert check(div)
-    serialize_equal(div, 'div(UInt<5>("14"), UInt<4>("f"))')
+def args(*arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(Div).arg_types(*arg_types).res_type(res_type)
 
-    args = [n("a", uw(6)), u(15, w(4))]
-    div = Div(args, uw(6))
-    assert check(div)
-    serialize_equal(div, 'div(a, UInt<4>("f"))')
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    div = Div(args, uw(6))
-    assert check(div)
-    serialize_equal(div, 'div(a, b)')
-
-    args = [s(20, w(6)), s(15, w(5))]
-    div = Div(args, sw(7))
-    assert check(div)
-    serialize_equal(div, 'div(SInt<6>("14"), SInt<5>("f"))')
-
-    args = [n("a", sw(6)), s(-15, w(5))]
-    div = Div(args, sw(7))
-    assert check(div)
-    serialize_equal(div, 'div(a, SInt<5>("-f"))')
-
-    args = [n("a", sw(6)), n("b", sw(6))]
-    div = Div(args, sw(7))
-    assert check(div)
-    serialize_equal(div, 'div(a, b)')
+    return C
 
 
-def test_type_is_wrong():
-    args = [n("a", UnknownType()), n("b", sw(6))]
-    div = Div(args, sw(7))
-    assert not check(div)
+div_basis_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x))),
+    args(SIntType, SIntType).tpe(lambda x, y: sw(width(x) + 1)),
+]
 
-    args = [n("a", uw(6)), n("b", UnknownType())]
-    div = Div(args, uw(6))
-    assert not check(div)
+div_type_wrong_cases = type_wrong_cases_2_args_gen(Div)
 
-    args = [n("a", vec(sw(10), 8)), n("b", sw(6))]
-    div = Div(args, sw(11))
-    assert not check(div)
-
-    args = [n("a", uw(6)), n("b", bdl(a=[uw(20), True]))]
-    div = Div(args, uw(6))
-    assert not check(div)
+div_width_wrong_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x) + 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: sw(width(x) + 2)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x) - 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: sw(width(x))),
+    args(SIntType, SIntType).tpe(lambda x, y: sw(1)),
+]
 
 
-def test_width_is_wrong():
-    args = [n("a", sw(6)), n("b", sw(6))]
-    div = Div(args, sw(6))
-    assert not check(div)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    div = Div(args, uw(7))
-    assert not check(div)
-
-    args = [n("b", sw(6)), n("a", sw(6))]
-    div = Div(args, sw(1))
-    assert not check(div)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    div = Div(args, uw(13))
-    assert not check(div)
+def test_div():
+    basis_tester(div_basis_cases)
+    encounter_error_tester(div_type_wrong_cases)
+    encounter_error_tester(div_width_wrong_cases)
+    serialize_equal(Div([u(20, w(5)), u(15, w(4))], uw(5)),
+                    'div(UInt<5>("14"), UInt<4>("f"))')

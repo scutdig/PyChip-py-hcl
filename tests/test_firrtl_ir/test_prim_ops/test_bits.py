@@ -1,82 +1,91 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Bits
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType, \
+    UnknownType, VectorType, BundleType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, width
 
 
-def test_basis():
-    arg = u(20, w(5))
-    bits = Bits(arg, [4, 4], uw(1))
-    assert check(bits)
-    serialize_equal(bits, 'bits(UInt<5>("14"), 4, 4)')
+def args(*arg_types):
+    class A:
+        @staticmethod
+        def const(*const_types):
+            class B:
+                @staticmethod
+                def filter(valid_fn):
+                    class C:
+                        @staticmethod
+                        def tpe(res_type):
+                            return OpCase(Bits) \
+                                .arg_types(*arg_types) \
+                                .const_arg_types(*const_types) \
+                                .filter(valid_fn) \
+                                .res_type(res_type)
 
-    arg = u(20, w(5))
-    bits = Bits(arg, [4, 2], uw(3))
-    assert check(bits)
-    serialize_equal(bits, 'bits(UInt<5>("14"), 4, 2)')
+                    return C
 
-    arg = n("a", uw(6))
-    bits = Bits(arg, [4, 2], uw(3))
-    assert check(bits)
-    serialize_equal(bits, 'bits(a, 4, 2)')
+            return B
 
-    arg = s(20, w(6))
-    bits = Bits(arg, [4, 2], uw(3))
-    assert check(bits)
-    serialize_equal(bits, 'bits(SInt<6>("14"), 4, 2)')
-
-    arg = n("a", sw(6))
-    bits = Bits(arg, [4, 2], uw(3))
-    assert check(bits)
-    serialize_equal(bits, 'bits(a, 4, 2)')
+    return A
 
 
-def test_type_is_wrong():
-    arg = UnknownType()
-    bits = Bits(arg, [4, 2], uw(3))
-    assert not check(bits)
+bits_basis_cases = [
+    args(UIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+    args(SIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+]
 
-    arg = vec(sw(10), 8)
-    bits = Bits(arg, [6, 2], uw(5))
-    assert not check(bits)
+bits_type_wrong_cases = [
+    args(UnknownType).const(int, int).filter(
+        lambda u, a, b: a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+    args(VectorType).const(int, int).filter(
+        lambda u, a, b: a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+    args(BundleType).const(int, int).filter(
+        lambda u, a, b: a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+]
 
-    arg = bdl(a=[uw(20), True])
-    bits = Bits(arg, [18, 2], uw(17))
-    assert not check(bits)
+bits_width_wrong_cases = [
+    args(UIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 2)),
+    args(SIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 2)),
+    args(UIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b)),
+    args(SIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b)),
+]
+
+bits_invalid_cases = [
+    args(UIntType).const(int, int).filter(
+        lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+    args(SIntType).const(int, int).filter(
+        lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
+        lambda u, a, b: uw(a - b + 1)),
+    args(UIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a and b > a >= 0).tpe(
+        lambda u, a, b: uw(b - a + 1)),
+    args(SIntType).const(int, int).filter(
+        lambda u, a, b: width(u) > a and b > a >= 0).tpe(
+        lambda u, a, b: uw(b - a + 1)),
+]
 
 
-def test_width_is_wrong():
-    arg = u(20, w(5))
-    bits = Bits(arg, [4, 2], uw(2))
-    assert not check(bits)
-
-    arg = n("a", uw(6))
-    bits = Bits(arg, [4, 2], uw(4))
-    assert not check(bits)
-
-    arg = s(20, w(6))
-    bits = Bits(arg, [4, 2], uw(2))
-    assert not check(bits)
-
-    arg = n("a", sw(6))
-    bits = Bits(arg, [4, 2], uw(4))
-    assert not check(bits)
-
-
-def test_over_bound():
-    arg = u(20, w(5))
-    bits = Bits(arg, [5, 2], uw(4))
-    assert not check(bits)
-
-    arg = n("a", uw(5))
-    bits = Bits(arg, [2, -1], uw(4))
-    assert not check(bits)
-
-    arg = s(20, w(6))
-    bits = Bits(arg, [7, 4], uw(4))
-    assert not check(bits)
-
-    arg = n("a", sw(6))
-    bits = Bits(arg, [2, -1], uw(4))
-    assert not check(bits)
+def test_bits():
+    basis_tester(bits_basis_cases)
+    encounter_error_tester(bits_type_wrong_cases)
+    encounter_error_tester(bits_width_wrong_cases)
+    encounter_error_tester(bits_invalid_cases)
+    serialize_equal(Bits(u(20, w(5)), [4, 4], uw(1)),
+                    'bits(UInt<5>("14"), 4, 4)')

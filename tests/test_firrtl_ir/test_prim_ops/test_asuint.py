@@ -1,6 +1,6 @@
-from py_hcl.firrtl_ir.expr.prim_ops import Not
+from py_hcl.firrtl_ir.expr.prim_ops import AsUInt
 from py_hcl.firrtl_ir.shortcuts import uw, sw, u, w
-from py_hcl.firrtl_ir.type import UIntType, SIntType
+from py_hcl.firrtl_ir.type import UIntType, SIntType, ClockType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import OpCase, basis_tester, \
     encounter_error_tester, type_wrong_cases_1_arg_gen, width
@@ -10,32 +10,35 @@ def args(*arg_types):
     class C:
         @staticmethod
         def tpe(res_type):
-            return OpCase(Not).arg_types(*arg_types).res_type(res_type)
+            return OpCase(AsUInt).arg_types(*arg_types).res_type(res_type)
 
     return C
 
 
-not_basis_cases = [
+asuint_basis_cases = [
     args(UIntType).tpe(lambda x: uw(width(x))),
     args(SIntType).tpe(lambda x: uw(width(x))),
+    args(ClockType).tpe(lambda x: uw(1)),
 ]
 
-not_type_wrong_cases = type_wrong_cases_1_arg_gen(Not) + [
+asuint_type_wrong_cases = type_wrong_cases_1_arg_gen(AsUInt) + [
     args(UIntType).tpe(lambda x: sw(width(x))),
     args(SIntType).tpe(lambda x: sw(width(x))),
+    args(ClockType).tpe(lambda x: sw(1)),
 ]
 
-not_width_wrong_cases = [
+asuint_width_wrong_cases = [
     args(UIntType).tpe(lambda x: uw(width(x) + 1)),
     args(SIntType).tpe(lambda x: uw(width(x) + 1)),
     args(UIntType).tpe(lambda x: uw(width(x) - 1)),
     args(SIntType).tpe(lambda x: uw(width(x) - 1)),
+    args(ClockType).tpe(lambda x: uw(2)),
 ]
 
 
-def test_not():
-    basis_tester(not_basis_cases)
-    encounter_error_tester(not_type_wrong_cases)
-    encounter_error_tester(not_width_wrong_cases)
-    serialize_equal(Not(u(20, w(5)), uw(5)),
-                    'not(UInt<5>("14"))')
+def test_asuint():
+    basis_tester(asuint_basis_cases)
+    encounter_error_tester(asuint_type_wrong_cases)
+    encounter_error_tester(asuint_width_wrong_cases)
+    serialize_equal(AsUInt(u(20, w(5)), uw(5)),
+                    'asUInt(UInt<5>("14"))')

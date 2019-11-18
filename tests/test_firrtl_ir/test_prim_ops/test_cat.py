@@ -1,73 +1,41 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Cat
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, sw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, type_wrong_cases_2_args_gen, sum_width
 
 
-def test_basis():
-    args = [u(20, w(5)), u(15, w(4))]
-    cat = Cat(args, uw(9))
-    assert check(cat)
-    serialize_equal(cat, 'cat(UInt<5>("14"), UInt<4>("f"))')
+def args(*arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(Cat).arg_types(*arg_types).res_type(res_type)
 
-    args = [n("a", uw(6)), u(15, w(4))]
-    cat = Cat(args, uw(10))
-    assert check(cat)
-    serialize_equal(cat, 'cat(a, UInt<4>("f"))')
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    cat = Cat(args, uw(12))
-    assert check(cat)
-    serialize_equal(cat, 'cat(a, b)')
-
-    args = [s(20, w(6)), s(15, w(5))]
-    cat = Cat(args, uw(11))
-    assert check(cat)
-    serialize_equal(cat, 'cat(SInt<6>("14"), SInt<5>("f"))')
-
-    args = [n("a", sw(6)), s(-15, w(5))]
-    cat = Cat(args, uw(11))
-    assert check(cat)
-    serialize_equal(cat, 'cat(a, SInt<5>("-f"))')
-
-    args = [n("a", sw(6)), n("b", sw(6))]
-    cat = Cat(args, uw(12))
-    assert check(cat)
-    serialize_equal(cat, 'cat(a, b)')
+    return C
 
 
-def test_type_is_wrong():
-    args = [n("a", UnknownType()), n("b", sw(6))]
-    cat = Cat(args, uw(6))
-    assert not check(cat)
+cat_basis_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(sum_width(x, y))),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(sum_width(x, y))),
+]
 
-    args = [n("a", uw(6)), n("b", UnknownType())]
-    cat = Cat(args, uw(6))
-    assert not check(cat)
+cat_type_wrong_cases = type_wrong_cases_2_args_gen(Cat) + [
+    args(UIntType, UIntType).tpe(lambda x, y: sw(sum_width(x, y))),
+    args(SIntType, SIntType).tpe(lambda x, y: sw(sum_width(x, y))),
+]
 
-    args = [n("a", vec(sw(10), 8)), n("b", sw(6))]
-    cat = Cat(args, uw(14))
-    assert not check(cat)
+cat_width_wrong_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(sum_width(x, y) + 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(sum_width(x, y) + 1)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(sum_width(x, y) - 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(sum_width(x, y) - 1)),
+]
 
-    args = [n("a", uw(6)), n("b", bdl(a=[uw(20), True]))]
-    cat = Cat(args, uw(26))
-    assert not check(cat)
 
-
-def test_width_is_wrong():
-    args = [n("a", sw(6)), n("b", sw(6))]
-    cat = Cat(args, uw(6))
-    assert not check(cat)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    cat = Cat(args, uw(6))
-    assert not check(cat)
-
-    args = [n("b", sw(6)), n("a", sw(6))]
-    cat = Cat(args, uw(11))
-    assert not check(cat)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    cat = Cat(args, uw(13))
-    assert not check(cat)
+def test_cat():
+    basis_tester(cat_basis_cases)
+    encounter_error_tester(cat_type_wrong_cases)
+    encounter_error_tester(cat_width_wrong_cases)
+    serialize_equal(Cat([u(20, w(5)), u(15, w(4))], uw(9)),
+                    'cat(UInt<5>("14"), UInt<4>("f"))')

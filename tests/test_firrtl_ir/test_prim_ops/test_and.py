@@ -1,87 +1,38 @@
 from py_hcl.firrtl_ir.expr.prim_ops import And
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check, OpTypeChecker
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, type_wrong_cases_2_args_gen, max_width
 
 
-def test_basis():
-    args = [u(20, w(5)), u(15, w(4))]
-    simple_and = And(args, uw(5))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(UInt<5>("14"), UInt<4>("f"))')
+def args(*arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(And).arg_types(*arg_types).res_type(res_type)
 
-    args = [n("a", uw(6)), u(15, w(4))]
-    simple_and = And(args, uw(6))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(a, UInt<4>("f"))')
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_and = And(args, uw(6))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(a, b)')
-
-    args = [s(20, w(6)), s(15, w(5))]
-    simple_and = And(args, uw(6))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(SInt<6>("14"), SInt<5>("f"))')
-
-    args = [n("a", sw(6)), s(-15, w(5))]
-    simple_and = And(args, uw(6))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(a, SInt<5>("-f"))')
-
-    args = [n("a", sw(6)), n("b", sw(6))]
-    simple_and = And(args, uw(6))
-    assert OpTypeChecker.check(simple_and)
-    assert check(simple_and)
-    serialize_equal(simple_and, 'and(a, b)')
+    return C
 
 
-def test_type_is_wrong():
-    args = [n("a", UnknownType()), n("b", sw(6))]
-    simple_and = And(args, uw(6))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
+and_basis_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y))),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y))),
+]
 
-    args = [n("a", uw(6)), n("b", UnknownType())]
-    simple_and = And(args, uw(6))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
+and_type_wrong_cases = type_wrong_cases_2_args_gen(And)
 
-    args = [n("a", vec(sw(10), 8)), n("b", sw(6))]
-    simple_and = And(args, uw(8))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
-
-    args = [n("a", uw(6)), n("b", bdl(a=[uw(20), True]))]
-    simple_and = And(args, uw(20))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
+and_width_wrong_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y) + 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y) + 1)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y) - 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y) - 1)),
+]
 
 
-def test_width_is_wrong():
-    args = [n("a", sw(6)), n("b", sw(6))]
-    simple_and = And(args, uw(7))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_and = And(args, uw(7))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
-
-    args = [n("b", sw(6)), n("a", sw(6))]
-    simple_and = And(args, uw(1))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_and = And(args, uw(10))
-    assert not OpTypeChecker.check(simple_and)
-    assert not check(simple_and)
+def test_and():
+    basis_tester(and_basis_cases)
+    encounter_error_tester(and_type_wrong_cases)
+    encounter_error_tester(and_width_wrong_cases)
+    serialize_equal(And([u(20, w(5)), u(15, w(4))], uw(5)),
+                    'and(UInt<5>("14"), UInt<4>("f"))')
