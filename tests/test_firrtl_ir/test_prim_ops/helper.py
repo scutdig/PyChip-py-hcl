@@ -3,7 +3,7 @@ import uuid
 
 from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec
 from py_hcl.firrtl_ir.type import UIntType, SIntType, \
-    UnknownType, BundleType, VectorType
+    UnknownType, BundleType, VectorType, ClockType
 from py_hcl.firrtl_ir.type.field import Field
 from py_hcl.firrtl_ir.type_checker import check, OpTypeChecker
 from py_hcl.firrtl_ir.utils import unsigned_num_bin_len, signed_num_bin_len
@@ -12,16 +12,30 @@ from py_hcl.firrtl_ir.utils import unsigned_num_bin_len, signed_num_bin_len
 class OpCase(object):
     def __init__(self, op):
         self.op = op
-        self.args = None
+        self.args = []
+        self.const_args = []
         self.res_type_fn = None
+        self.valid_filter = lambda *_: True
 
     def arg_types(self, *arg_types):
         self.args = arg_types
         return self
 
+    def const_arg_types(self, *const_arg_types):
+        self.const_args = const_arg_types
+        return self
+
     def res_type(self, res_type_fn):
         self.res_type_fn = res_type_fn
         return self
+
+    def filter(self, valid_fn):
+        self.valid_filter = valid_fn
+        return self
+
+
+def int_gen():
+    return random.randint(0, 20)
 
 
 def name_gen():
@@ -65,7 +79,11 @@ def sw_gen():
 
 
 def unknown_gen():
-    return UnknownType()
+    return n(name_gen(), UnknownType())
+
+
+def clock_gen():
+    return n(name_gen(), ClockType())
 
 
 def vec_gen():
@@ -107,15 +125,35 @@ obj_gen_map = {
     UIntType: u_gen,
     SIntType: s_gen,
     UnknownType: unknown_gen,
+    ClockType: clock_gen,
     VectorType: vec_gen,
-    BundleType: bdl_gen
+    BundleType: bdl_gen,
+    int: int_gen,
 }
 
 
 def obj_gen(case):
-    args = [obj_gen_map[a]() for a in case.args]
-    res_type = case.res_type_fn(*args)
-    return case.op(args, res_type)
+    while True:
+        args = [obj_gen_map[a]() for a in case.args]
+        const_args = [obj_gen_map[a]() for a in case.const_args]
+
+        construct_args = []
+        if len(args) > 1:
+            construct_args.append(args)
+        elif len(args) == 1:
+            construct_args.append(args[0])
+
+        if len(const_args) > 1:
+            construct_args.append(const_args)
+        elif len(const_args) == 1:
+            construct_args.append(const_args[0])
+
+        if case.valid_filter(*args, *const_args):
+            break
+
+    construct_args.append(case.res_type_fn(*args, *const_args))
+
+    return case.op(*construct_args)
 
 
 def basis_tester(cases):
@@ -134,11 +172,61 @@ def encounter_error_tester(cases):
             assert not check(obj)
 
 
-if __name__ == '__main__':
-    from io import BytesIO
+def op_args(op, *arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(op).arg_types(*arg_types).res_type(res_type)
 
-    output = BytesIO()
-    vec_gen().serialize(output)
-    output.flush()
+    return C
 
-    print(str(output.getvalue(), "utf-8"))
+
+def type_wrong_cases_2_args_gen(op):
+    wrong_cases = [
+        op_args(op, UnknownType, UnknownType).tpe(lambda x, y: uw(32)),
+        op_args(op, UnknownType, UIntType).tpe(lambda x, y: uw(32)),
+        op_args(op, UnknownType, SIntType).tpe(lambda x, y: sw(32)),
+        op_args(op, UnknownType, VectorType).tpe(lambda x, y: sw(32)),
+        op_args(op, UnknownType, BundleType).tpe(lambda x, y: sw(32)),
+        op_args(op, UIntType, VectorType).tpe(lambda x, y: uw(32)),
+        op_args(op, UIntType, BundleType).tpe(lambda x, y: uw(32)),
+        op_args(op, UIntType, UnknownType).tpe(lambda x, y: uw(32)),
+        op_args(op, SIntType, VectorType).tpe(lambda x, y: sw(32)),
+        op_args(op, SIntType, BundleType).tpe(lambda x, y: sw(32)),
+        op_args(op, SIntType, UnknownType).tpe(lambda x, y: sw(32)),
+        op_args(op, VectorType, UIntType).tpe(lambda x, y: uw(32)),
+        op_args(op, VectorType, SIntType).tpe(lambda x, y: sw(32)),
+        op_args(op, VectorType, VectorType).tpe(lambda x, y: uw(32)),
+        op_args(op, VectorType, BundleType).tpe(lambda x, y: uw(32)),
+        op_args(op, BundleType, UIntType).tpe(lambda x, y: uw(32)),
+        op_args(op, BundleType, SIntType).tpe(lambda x, y: uw(32)),
+        op_args(op, BundleType, VectorType).tpe(lambda x, y: uw(32)),
+        op_args(op, BundleType, UnknownType).tpe(lambda x, y: uw(32)),
+        op_args(op, BundleType, BundleType).tpe(lambda x, y: uw(32)),
+    ]
+    return wrong_cases
+
+
+def type_wrong_cases_1_arg_gen(op):
+    wrong_cases = [
+        op_args(op, UnknownType).tpe(lambda x: uw(32)),
+        op_args(op, VectorType).tpe(lambda x: uw(32)),
+        op_args(op, BundleType).tpe(lambda x: uw(32)),
+    ]
+    return wrong_cases
+
+
+def width(x):
+    return x.tpe.width.width
+
+
+def max_width(x, y):
+    return max(width(x), width(y))
+
+
+def min_width(x, y):
+    return min(width(x), width(y))
+
+
+def sum_width(x, y):
+    return width(x) + width(y)

@@ -1,59 +1,43 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Neg
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, type_wrong_cases_1_arg_gen, width
 
 
-def test_basis():
-    arg = u(20, w(5))
-    neg = Neg(arg, sw(6))
-    assert check(neg)
-    serialize_equal(neg, 'neg(UInt<5>("14"))')
+def args(*arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(Neg).arg_types(*arg_types).res_type(res_type)
 
-    arg = n("a", uw(6))
-    neg = Neg(arg, sw(7))
-    assert check(neg)
-    serialize_equal(neg, 'neg(a)')
-
-    arg = s(20, w(6))
-    neg = Neg(arg, sw(7))
-    assert check(neg)
-    serialize_equal(neg, 'neg(SInt<6>("14"))')
-
-    arg = n("a", sw(6))
-    neg = Neg(arg, sw(7))
-    assert check(neg)
-    serialize_equal(neg, 'neg(a)')
+    return C
 
 
-def test_type_is_wrong():
-    arg = UnknownType()
-    neg = Neg(arg, sw(1))
-    assert not check(neg)
+neg_basis_cases = [
+    args(UIntType).tpe(lambda x: sw(width(x) + 1)),
+    args(SIntType).tpe(lambda x: sw(width(x) + 1)),
+]
 
-    arg = vec(sw(10), 8)
-    neg = Neg(arg, sw(9))
-    assert not check(neg)
+neg_type_wrong_cases = type_wrong_cases_1_arg_gen(Neg) + [
+    args(UIntType).tpe(lambda x: uw(width(x) + 1)),
+    args(SIntType).tpe(lambda x: uw(width(x) + 1)),
+]
 
-    arg = bdl(a=[uw(20), True])
-    neg = Neg(arg, sw(21))
-    assert not check(neg)
+neg_width_wrong_cases = [
+    args(UIntType).tpe(lambda x: sw(width(x) + 2)),
+    args(SIntType).tpe(lambda x: sw(width(x) + 2)),
+    args(UIntType).tpe(lambda x: sw(width(x))),
+    args(SIntType).tpe(lambda x: sw(width(x))),
+    args(UIntType).tpe(lambda x: sw(1)),
+    args(SIntType).tpe(lambda x: sw(1)),
+]
 
 
-def test_width_is_wrong():
-    arg = u(20, w(6))
-    neg = Neg(arg, sw(4))
-    assert not check(neg)
-
-    arg = n("a", uw(6))
-    neg = Neg(arg, sw(6))
-    assert not check(neg)
-
-    arg = s(20, w(6))
-    neg = Neg(arg, sw(8))
-    assert not check(neg)
-
-    arg = n("a", sw(6))
-    neg = Neg(arg, sw(6))
-    assert not check(neg)
+def test_neg():
+    basis_tester(neg_basis_cases)
+    encounter_error_tester(neg_type_wrong_cases)
+    encounter_error_tester(neg_width_wrong_cases)
+    serialize_equal(Neg(u(20, w(5)), uw(6)),
+                    'neg(UInt<5>("14"))')

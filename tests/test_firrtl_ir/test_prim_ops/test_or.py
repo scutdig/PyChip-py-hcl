@@ -1,73 +1,38 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Or
-from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec, bdl
-from py_hcl.firrtl_ir.type import UnknownType
-from py_hcl.firrtl_ir.type_checker import check
-from ..utils import serialize_equal
+from py_hcl.firrtl_ir.shortcuts import uw, u, w
+from py_hcl.firrtl_ir.type import UIntType, SIntType
+from tests.test_firrtl_ir.utils import serialize_equal
+from .helper import OpCase, basis_tester, \
+    encounter_error_tester, type_wrong_cases_2_args_gen, max_width
 
 
-def test_basis():
-    args = [u(20, w(5)), u(15, w(4))]
-    simple_or = Or(args, uw(5))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(UInt<5>("14"), UInt<4>("f"))')
+def args(*arg_types):
+    class C:
+        @staticmethod
+        def tpe(res_type):
+            return OpCase(Or).arg_types(*arg_types).res_type(res_type)
 
-    args = [n("a", uw(6)), u(15, w(4))]
-    simple_or = Or(args, uw(6))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(a, UInt<4>("f"))')
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_or = Or(args, uw(6))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(a, b)')
-
-    args = [s(20, w(6)), s(15, w(5))]
-    simple_or = Or(args, uw(6))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(SInt<6>("14"), SInt<5>("f"))')
-
-    args = [n("a", sw(6)), s(-15, w(5))]
-    simple_or = Or(args, uw(6))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(a, SInt<5>("-f"))')
-
-    args = [n("a", sw(6)), n("b", sw(6))]
-    simple_or = Or(args, uw(6))
-    assert check(simple_or)
-    serialize_equal(simple_or, 'or(a, b)')
+    return C
 
 
-def test_type_is_wrong():
-    args = [n("a", UnknownType()), n("b", sw(6))]
-    simple_or = Or(args, uw(6))
-    assert not check(simple_or)
+or_basis_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y))),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y))),
+]
 
-    args = [n("a", uw(6)), n("b", UnknownType())]
-    simple_or = Or(args, uw(6))
-    assert not check(simple_or)
+or_type_wrong_cases = type_wrong_cases_2_args_gen(Or)
 
-    args = [n("a", vec(sw(10), 8)), n("b", sw(6))]
-    simple_or = Or(args, uw(8))
-    assert not check(simple_or)
-
-    args = [n("a", uw(6)), n("b", bdl(a=[uw(20), True]))]
-    simple_or = Or(args, uw(20))
-    assert not check(simple_or)
+or_width_wrong_cases = [
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y) + 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y) + 1)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(max_width(x, y) - 1)),
+    args(SIntType, SIntType).tpe(lambda x, y: uw(max_width(x, y) - 1)),
+]
 
 
-def test_width_is_wrong():
-    args = [n("a", sw(6)), n("b", sw(6))]
-    simple_or = Or(args, uw(7))
-    assert not check(simple_or)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_or = Or(args, uw(7))
-    assert not check(simple_or)
-
-    args = [n("b", sw(6)), n("a", sw(6))]
-    simple_or = Or(args, uw(1))
-    assert not check(simple_or)
-
-    args = [n("a", uw(6)), n("b", uw(6))]
-    simple_or = Or(args, uw(10))
-    assert not check(simple_or)
+def test_or():
+    basis_tester(or_basis_cases)
+    encounter_error_tester(or_type_wrong_cases)
+    encounter_error_tester(or_width_wrong_cases)
+    serialize_equal(Or([u(20, w(5)), u(15, w(4))], uw(5)),
+                    'or(UInt<5>("14"), UInt<4>("f"))')

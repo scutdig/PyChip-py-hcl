@@ -263,9 +263,11 @@ def _(as_uint):
     if not type_in(as_uint.tpe, UIntType):
         return False
 
-    expected_type_width = as_uint.arg.width.width
-    if type_in(as_uint.tpe, ClockType):
+    if type_in(as_uint.arg.tpe, ClockType):
         expected_type_width = 1
+    else:
+        expected_type_width = as_uint.arg.tpe.width.width
+
     if as_uint.tpe.width.width != expected_type_width:
         return False
 
@@ -284,9 +286,11 @@ def _(as_sint):
     if not type_in(as_sint.tpe, SIntType):
         return False
 
-    expected_type_width = as_sint.arg.width.width
-    if type_in(as_sint.tpe, ClockType):
+    if type_in(as_sint.arg.tpe, ClockType):
         expected_type_width = 1
+    else:
+        expected_type_width = as_sint.arg.tpe.width.width
+
     if as_sint.tpe.width.width != expected_type_width:
         return False
 
@@ -302,7 +306,7 @@ def _(shl):
     if not check_all_same_uint_sint(shl.ir_arg.tpe, shl.tpe):
         return False
 
-    expected_type_width = shl.ir_arg.width.width + shl.const_arg
+    expected_type_width = shl.ir_arg.tpe.width.width + shl.const_arg
     if shl.tpe.width.width != expected_type_width:
         return False
 
@@ -318,7 +322,7 @@ def _(shr):
     if not check_all_same_uint_sint(shr.ir_arg.tpe, shr.tpe):
         return False
 
-    expected_type_width = shr.ir_arg.width.width - shr.const_arg
+    expected_type_width = shr.ir_arg.tpe.width.width - shr.const_arg
     expected_type_width = max(expected_type_width, 1)
     if shr.tpe.width.width != expected_type_width:
         return False
@@ -336,11 +340,11 @@ def _(dshl):
                                     dshl.tpe):
         return False
 
-    if type_in(dshl.args[1].tpe, UIntType):
+    if not type_in(dshl.args[1].tpe, UIntType):
         return False
 
     expected_type_width = \
-        dshl.args[0].width.width + 2 ** dshl.args[1].width.width - 1
+        dshl.args[0].tpe.width.width + 2 ** dshl.args[1].tpe.width.width - 1
     if dshl.tpe.width.width != expected_type_width:
         return False
 
@@ -357,10 +361,10 @@ def _(dshr):
                                     dshr.tpe):
         return False
 
-    if type_in(dshr.args[1].tpe, UIntType):
+    if not type_in(dshr.args[1].tpe, UIntType):
         return False
 
-    expected_type_width = dshr.args[0].width.width
+    expected_type_width = dshr.args[0].tpe.width.width
     if dshr.tpe.width.width != expected_type_width:
         return False
 
