@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Shr
-from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w
+from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w, s
 from py_hcl.firrtl_ir.type import BundleType, SIntType, \
     UIntType, UnknownType, VectorType
 from tests.test_firrtl_ir.utils import serialize_equal
@@ -48,3 +48,5 @@ def test_shr():
     encounter_error_tester(shr_width_wrong_cases)
     serialize_equal(Shr(u(20, w(5)), 3, uw(2)),
                     'shr(UInt<5>("14"), 3)')
+    serialize_equal(Shr(s(-20, w(6)), 3, uw(3)),
+                    'shr(SInt<6>("-14"), 3)')

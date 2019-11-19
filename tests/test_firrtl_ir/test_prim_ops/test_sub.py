@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Sub
-from py_hcl.firrtl_ir.shortcuts import sw, u, w
+from py_hcl.firrtl_ir.shortcuts import sw, u, w, s
 from py_hcl.firrtl_ir.type import SIntType, UIntType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import basis_tester, encounter_error_tester, OpCase, \
@@ -44,3 +44,5 @@ def test_sub():
     encounter_error_tester(sub_width_wrong_cases)
     serialize_equal(Sub([u(20, w(5)), u(15, w(4))], sw(6)),
                     'sub(UInt<5>("14"), UInt<4>("f"))')
+    serialize_equal(Sub([s(-20, w(6)), s(-15, w(5))], sw(7)),
+                    'sub(SInt<6>("-14"), SInt<5>("-f"))')
