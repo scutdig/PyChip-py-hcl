@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Neg
-from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w
+from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w, s
 from py_hcl.firrtl_ir.type import UIntType, SIntType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import OpCase, basis_tester, \
@@ -39,5 +39,7 @@ def test_neg():
     basis_tester(neg_basis_cases)
     encounter_error_tester(neg_type_wrong_cases)
     encounter_error_tester(neg_width_wrong_cases)
-    serialize_equal(Neg(u(20, w(5)), uw(6)),
+    serialize_equal(Neg(u(20, w(5)), sw(6)),
                     'neg(UInt<5>("14"))')
+    serialize_equal(Neg(s(-20, w(6)), sw(7)),
+                    'neg(SInt<6>("-14"))')

@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import And
-from py_hcl.firrtl_ir.shortcuts import uw, u, w
+from py_hcl.firrtl_ir.shortcuts import uw, u, w, s
 from py_hcl.firrtl_ir.type import UIntType, SIntType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import OpCase, basis_tester, \
@@ -36,3 +36,5 @@ def test_and():
     encounter_error_tester(and_width_wrong_cases)
     serialize_equal(And([u(20, w(5)), u(15, w(4))], uw(5)),
                     'and(UInt<5>("14"), UInt<4>("f"))')
+    serialize_equal(And([s(-20, w(6)), s(-15, w(5))], uw(6)),
+                    'and(SInt<6>("-14"), SInt<5>("-f"))')

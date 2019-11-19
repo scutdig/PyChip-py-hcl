@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Mul
-from py_hcl.firrtl_ir.shortcuts import uw, sw, u, w
+from py_hcl.firrtl_ir.shortcuts import uw, sw, u, w, s
 from py_hcl.firrtl_ir.type import UIntType, SIntType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import OpCase, basis_tester, \
@@ -38,3 +38,5 @@ def test_mul():
     encounter_error_tester(mul_width_wrong_cases)
     serialize_equal(Mul([u(20, w(5)), u(15, w(4))], uw(9)),
                     'mul(UInt<5>("14"), UInt<4>("f"))')
+    serialize_equal(Mul([s(-20, w(6)), s(-15, w(5))], sw(11)),
+                    'mul(SInt<6>("-14"), SInt<5>("-f"))')

@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import AsSInt
-from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w
+from py_hcl.firrtl_ir.shortcuts import sw, uw, u, w, s, n
 from py_hcl.firrtl_ir.type import UIntType, SIntType, ClockType
 from tests.test_firrtl_ir.utils import serialize_equal
 from .helper import OpCase, basis_tester, \
@@ -42,3 +42,7 @@ def test_assint():
     encounter_error_tester(assint_width_wrong_cases)
     serialize_equal(AsSInt(u(20, w(5)), sw(5)),
                     'asSInt(UInt<5>("14"))')
+    serialize_equal(AsSInt(s(-20, w(6)), sw(5)),
+                    'asSInt(SInt<6>("-14"))')
+    serialize_equal(AsSInt(n("clock", ClockType()), sw(1)),
+                    'asSInt(clock)')

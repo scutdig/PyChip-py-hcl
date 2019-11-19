@@ -1,5 +1,5 @@
 from py_hcl.firrtl_ir.expr.prim_ops import Bits
-from py_hcl.firrtl_ir.shortcuts import uw, u, w
+from py_hcl.firrtl_ir.shortcuts import uw, u, w, s
 from py_hcl.firrtl_ir.type import UIntType, SIntType, \
     UnknownType, VectorType, BundleType
 from tests.test_firrtl_ir.utils import serialize_equal
@@ -89,3 +89,5 @@ def test_bits():
     encounter_error_tester(bits_invalid_cases)
     serialize_equal(Bits(u(20, w(5)), [4, 4], uw(1)),
                     'bits(UInt<5>("14"), 4, 4)')
+    serialize_equal(Bits(s(-20, w(6)), [4, 3], uw(2)),
+                    'bits(SInt<6>("-14"), 4, 3)')
