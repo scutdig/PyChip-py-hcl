@@ -1,13 +1,14 @@
 import pytest
 
-from py_hcl.core.module_constructor import ModuleErr
-from py_hcl.dsl.expression import Expression
+from py_hcl.core.module_constructor import ModuleError
+from py_hcl.dsl.expr.expression import Expression
+from py_hcl.dsl.expr.io import IO, Input
 from py_hcl.dsl.module import Module
 
 
 def test_module():
     class A(Module):
-        io = Expression()
+        io = IO()
         a = Expression()
 
     assert hasattr(A, "packed_module")
@@ -16,18 +17,18 @@ def test_module():
 
 
 def test_module_not_contains_io():
-    with pytest.raises(ModuleErr, match='not contains io'):
+    with pytest.raises(ModuleError, match='^.*lack of io.*$'):
         class A(Module):
             b = Expression()
 
 
 def test_module_inherit():
     class A(Module):
-        io = Expression()
+        io = IO()
         a = Expression()
 
     class B(A):
-        io = Expression()
+        io = IO()
         b = Expression()
 
     assert hasattr(B, "packed_module")
@@ -36,11 +37,22 @@ def test_module_inherit():
 
 
 def test_module_duplicate_name():
-    with pytest.raises(ModuleErr, match='duplicate names'):
+    with pytest.raises(ModuleError, match='^.*duplicate.*$'):
         class A(Module):
-            io = Expression()
+            io = IO()
             a = Expression()
 
         class B(A):
-            io = Expression()
+            io = IO()
+            a = Expression()
+
+
+def test_module_io_duplicate_name():
+    with pytest.raises(ModuleError, match='^.*duplicate.*$'):
+        class A(Module):
+            io = IO(i=Input(Expression()))
+            a = Expression()
+
+        class B(A):
+            io = IO(i=Input(Expression()))
             a = Expression()
