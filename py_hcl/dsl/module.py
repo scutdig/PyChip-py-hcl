@@ -1,8 +1,9 @@
+from py_hcl.dsl.expr.io import IO
 from ..core.module_constructor.meta_module import MetaModule
-from .expression import Expression
+from py_hcl.dsl.expr.expression import Expression
 
 
 class Module(metaclass=MetaModule):
-    io = Expression()  # TODO
+    io = IO()  # TODO
     clock = Expression()  # TODO
     reset = Expression()  # TODO

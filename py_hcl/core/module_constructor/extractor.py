@@ -1,15 +1,20 @@
-from . import module_err
-from ...dsl.expression import Expression
+from py_hcl.core.module_constructor import ModuleError
+from py_hcl.dsl.expr.expression import Expression
 
 
-def extract(dct):
+def extract(dct, name):
     res = {}
 
-    for k in dct:
-        if isinstance(dct[k], Expression):
-            res[k] = dct[k]
+    for k, v in dct.items():
+        if isinstance(v, Expression):
+            res[k] = v
 
-    if 'io' not in res:
-        raise module_err('NotContainsIO')
+    check_io_exist(res, name)
 
     return res
+
+
+def check_io_exist(res, name):
+    if 'io' not in res:
+        raise ModuleError.not_contains_io(
+            'module {} lack of io attribute'.format(name))
