@@ -1,5 +1,5 @@
 from py_hcl.dsl.expr.io import IO
-from ..core.module_constructor.meta_module import MetaModule
+from ..core.module_factory.meta_module import MetaModule
 from py_hcl.dsl.expr.expression import Expression
 
 

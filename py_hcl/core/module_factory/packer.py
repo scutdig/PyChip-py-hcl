@@ -1,11 +1,12 @@
-from .merger import merge_expr, merge_scope
-from .extractor import extract
+from ..stmt_factory.trapper import StatementTrapper
+from . import merger
+from . import extractor
 from .packed_module import PackedModule
 
 
 def pack(bases, dct, name):
-    raw_expr = extract(dct, name)
-    raw_scope = ...  # TODO
+    raw_expr = extractor.extract(dct, name)
+    raw_scope = StatementTrapper.trap()
 
     named_expression, top_scope = \
         handle_inherit(bases, raw_expr, raw_scope, name)
@@ -23,7 +24,8 @@ def handle_inherit(bases, named_expression, top_scope, name):
         expr = pm.named_expressions
         ts = pm.top_scope
 
-        named_expression = merge_expr(named_expression, expr, (name, pm.name))
-        top_scope = merge_scope(top_scope, ts, (name, pm.name))
+        named_expression = merger.merge_expr(named_expression, expr,
+                                             (name, pm.name))
+        top_scope = merger.merge_scope(top_scope, ts, (name, pm.name))
 
     return named_expression, top_scope

@@ -1,4 +1,4 @@
-from py_hcl.core.module_constructor import ModuleError
+from py_hcl.core.module_factory import ModuleError
 from py_hcl.dsl.expr.io import IO
 
 
@@ -7,10 +7,10 @@ def merge_expr(dest, src, mod_names):
     io_src = src['io']
     assert isinstance(io_dest, IO)
     assert isinstance(io_src, IO)
+    io_dest = merge_io(io_dest, io_src, mod_names)
 
     check_dup_mod(dest, src, mod_names)
 
-    io_dest = merge_io(io_dest, io_src, mod_names)
     res = {**dest, **src, 'io': io_dest}
     return res
 
@@ -47,4 +47,6 @@ def check_dup_io(dest, src, mod_names):
 
 
 def merge_scope(dest, src, mod_names):
-    return dest, src  # TODO
+    dest.statements.extend(src.statements)
+
+    return dest

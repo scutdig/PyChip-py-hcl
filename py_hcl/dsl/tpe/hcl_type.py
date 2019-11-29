@@ -1,0 +1,2 @@
+class HclType(object):
+    pass

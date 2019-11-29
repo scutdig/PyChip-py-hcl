@@ -1,9 +1,10 @@
 import pytest
 
-from py_hcl.core.module_constructor import ModuleError
+from py_hcl.core.module_factory import ModuleError
 from py_hcl.dsl.expr.expression import Expression
 from py_hcl.dsl.expr.io import IO, Input
 from py_hcl.dsl.module import Module
+from py_hcl.dsl.tpe.hcl_type import HclType
 
 
 def test_module():
@@ -50,9 +51,7 @@ def test_module_duplicate_name():
 def test_module_io_duplicate_name():
     with pytest.raises(ModuleError, match='^.*duplicate.*$'):
         class A(Module):
-            io = IO(i=Input(Expression()))
-            a = Expression()
+            io = IO(i=Input(HclType()))
 
         class B(A):
-            io = IO(i=Input(Expression()))
-            a = Expression()
+            io = IO(i=Input(HclType()))
