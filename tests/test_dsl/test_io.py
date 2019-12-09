@@ -13,7 +13,7 @@ def test_io():
             o=Output(HclType()))
 
     ps = A.packed_module.named_expressions['io'].ports
-    assert len(ps) == 2
+    assert len(ps) == 4
 
 
 def test_io_no_wrap_io():

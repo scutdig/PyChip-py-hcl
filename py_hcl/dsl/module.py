@@ -1,9 +1,11 @@
-from py_hcl.dsl.expr.io import IO
+from py_hcl.dsl.expr.io import IO, Input
+from py_hcl.dsl.tpe.clock import Clock
+from py_hcl.dsl.tpe.uint import Bool
 from ..core.module_factory.meta_module import MetaModule
-from py_hcl.dsl.expr.expression import Expression
 
 
 class Module(metaclass=MetaModule):
-    io = IO()  # TODO
-    clock = Expression()  # TODO
-    reset = Expression()  # TODO
+    io = IO(
+        clock=Input(Clock),
+        reset=Input(Bool),
+    )
