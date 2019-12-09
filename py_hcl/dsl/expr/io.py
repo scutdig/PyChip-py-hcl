@@ -1,8 +1,8 @@
 from py_hcl.dsl.expr import ExprError
-from py_hcl.dsl.expr.expression import Expression
+from py_hcl.dsl.expr.hclexpr import HclExpr
 
 
-class IO(Expression):
+class IO(HclExpr):
     def __init__(self, **named_ports):
         self.ports = IO.handle_args(named_ports)
 

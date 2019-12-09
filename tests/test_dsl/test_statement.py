@@ -1,5 +1,5 @@
 from py_hcl.core.stmt_factory.connect import Connect
-from py_hcl.dsl.expr.expression import Expression
+from py_hcl.dsl.expr.hclexpr import HclExpr
 from py_hcl.dsl.expr.io import IO
 from py_hcl.dsl.module import Module
 
@@ -8,9 +8,9 @@ def test_statement():
     class A(Module):
         io = IO()
 
-        a = Expression()
-        b = Expression()
-        c = Expression()
+        a = HclExpr()
+        b = HclExpr()
+        c = HclExpr()
 
         c <<= a + b
 

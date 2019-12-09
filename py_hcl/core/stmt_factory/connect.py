@@ -11,6 +11,6 @@ def do_connect(left, right):
     # TODO: need some check
     print('do_connect: need some check')
 
-    StatementTrapper.trace(Connect(left, right))
+    StatementTrapper.track(Connect(left, right))
 
     return left

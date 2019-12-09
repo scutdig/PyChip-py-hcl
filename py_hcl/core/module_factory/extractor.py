@@ -1,5 +1,5 @@
 from py_hcl.core.module_factory import ModuleError
-from py_hcl.dsl.expr.expression import Expression
+from py_hcl.dsl.expr.hclexpr import HclExpr
 
 
 def extract(dct, name):
@@ -7,7 +7,7 @@ def extract(dct, name):
 
     for k, v in dct.items():
         # TODO: check if is source not composed expression
-        if isinstance(v, Expression):
+        if isinstance(v, HclExpr):
             res[k] = v
 
     check_io_exist(res, name)
