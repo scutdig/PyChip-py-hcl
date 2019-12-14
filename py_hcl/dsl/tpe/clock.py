@@ -1,8 +1,3 @@
-from py_hcl.dsl.tpe.hcl_type import HclType
-
-
-class ClockT(HclType):
-    pass
-
+from py_hcl.core.type.clock import ClockT
 
 Clock = ClockT()

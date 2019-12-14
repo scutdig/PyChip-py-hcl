@@ -1,4 +1,4 @@
-from .. import CoreError
+from py_hcl.core.error import CoreError
 
 
 def set_up():

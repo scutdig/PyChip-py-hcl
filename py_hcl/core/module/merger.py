@@ -1,4 +1,4 @@
-from py_hcl.core.module_factory import ModuleError
+from py_hcl.core.module.error import ModuleError
 from py_hcl.dsl.expr.io import IO
 
 

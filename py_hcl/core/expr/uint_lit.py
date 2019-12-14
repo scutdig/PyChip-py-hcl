@@ -1,4 +1,4 @@
-from py_hcl.dsl.expr.hclexpr import HclExpr
+from py_hcl.core.expr import HclExpr
 
 
 class ULiteral(HclExpr):

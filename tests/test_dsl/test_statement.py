@@ -1,5 +1,5 @@
-from py_hcl.core.stmt_factory.connect import Connect
-from py_hcl.dsl.expr.hclexpr import HclExpr
+from py_hcl.core.stmt.connect import Connect
+from py_hcl.core.expr import HclExpr
 from py_hcl.dsl.expr.io import IO
 from py_hcl.dsl.module import Module
 
