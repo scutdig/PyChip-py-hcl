@@ -1,22 +1,20 @@
 import pytest
 
-from py_hcl.core.expr import HclExpr
-from py_hcl.core.stmt.connect import Connect
 from py_hcl.core.stmt.error import StatementError
+from py_hcl.core.stmt.connect import Connect
 from py_hcl.core.stmt.scope import ScopeType
 from py_hcl.dsl.branch import when, else_when, otherwise
+from py_hcl.core.expr import HclExpr
 from py_hcl.dsl.expr.io import IO
-from py_hcl.dsl.expr.wire import Wire
 from py_hcl.dsl.module import Module
-from py_hcl.dsl.tpe.uint import U
 
 
 def test_branch():
     class A(Module):
         io = IO()
-        a = Wire(U.w(8))
-        b = Wire(U.w(8))
-        c = Wire(U.w(8))
+        a = HclExpr()
+        b = HclExpr()
+        c = HclExpr()
 
         a <<= b
         with when(HclExpr()):
@@ -58,9 +56,9 @@ def test_branch_syntax_error1():
     with pytest.raises(StatementError):
         class A(Module):
             io = IO()
-            a = Wire(U.w(8))
-            b = Wire(U.w(8))
-            c = Wire(U.w(8))
+            a = HclExpr()
+            b = HclExpr()
+            c = HclExpr()
 
             a <<= b
             with else_when(HclExpr()):
@@ -73,9 +71,9 @@ def test_branch_syntax_error2():
     with pytest.raises(StatementError):
         class A(Module):
             io = IO()
-            a = Wire(U.w(8))
-            b = Wire(U.w(8))
-            c = Wire(U.w(8))
+            a = HclExpr()
+            b = HclExpr()
+            c = HclExpr()
 
             with otherwise():
                 c <<= a + b
@@ -85,9 +83,9 @@ def test_branch_syntax_error3():
     with pytest.raises(StatementError):
         class A(Module):
             io = IO()
-            a = Wire(U.w(8))
-            b = Wire(U.w(8))
-            c = Wire(U.w(8))
+            a = HclExpr()
+            b = HclExpr()
+            c = HclExpr()
 
             with when(HclExpr()):
                 b <<= a + c
@@ -99,9 +97,9 @@ def test_branch_syntax_error4():
     with pytest.raises(StatementError):
         class A(Module):
             io = IO()
-            a = Wire(U.w(8))
-            b = Wire(U.w(8))
-            c = Wire(U.w(8))
+            a = HclExpr()
+            b = HclExpr()
+            c = HclExpr()
 
             with when(HclExpr()):
                 b <<= a + c
@@ -115,9 +113,9 @@ def test_branch_syntax_error5():
     with pytest.raises(StatementError):
         class A(Module):
             io = IO()
-            a = Wire(U.w(8))
-            b = Wire(U.w(8))
-            c = Wire(U.w(8))
+            a = HclExpr()
+            b = HclExpr()
+            c = HclExpr()
 
             with when(HclExpr()):
                 b <<= a + c

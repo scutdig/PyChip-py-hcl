@@ -1,20 +1,16 @@
-from multipledispatch import Dispatcher
+def undefined(*_):
+    raise NotImplementedError()
+
 
 op_map = {
-    '+': Dispatcher('+'),
-    '<<=': Dispatcher('<<='),
-    '.': Dispatcher('.')
+    '+': undefined,
+    '<<=': undefined
 }
 
 
 def hcl_operation(operation):
-    return op_map[operation].register
+    def f(func):
+        op_map[operation] = func
+        return func
 
-
-def hcl_call(operation):
-    def _(*objects):
-        types = [type(o.hcl_type) for o in objects if hasattr(o, 'hcl_type')]
-        func = op_map[operation].dispatch(*types)
-        return func(*objects)
-
-    return _
+    return f

@@ -1,4 +1,4 @@
-from py_hcl.error import PyHclError
+from py_hcl import PyHclError
 
 
 class CoreError(PyHclError):
