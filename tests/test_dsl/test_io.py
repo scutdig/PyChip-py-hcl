@@ -1,9 +1,9 @@
 import pytest
 
-from py_hcl.dsl.expr import ExprError
+from py_hcl.core.expr.error import ExprError
 from py_hcl.dsl.expr.io import IO, Input, Output
 from py_hcl.dsl.module import Module
-from py_hcl.dsl.tpe.hcl_type import HclType
+from py_hcl.core.type import HclType
 
 
 def test_io():

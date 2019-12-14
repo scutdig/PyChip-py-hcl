@@ -1,10 +1,10 @@
 import pytest
 
-from py_hcl.core.stmt_factory import StatementError
-from py_hcl.core.stmt_factory.connect import Connect
-from py_hcl.core.stmt_factory.scope import ScopeType
+from py_hcl.core.stmt.error import StatementError
+from py_hcl.core.stmt.connect import Connect
+from py_hcl.core.stmt.scope import ScopeType
 from py_hcl.dsl.branch import when, else_when, otherwise
-from py_hcl.dsl.expr.hclexpr import HclExpr
+from py_hcl.core.expr import HclExpr
 from py_hcl.dsl.expr.io import IO
 from py_hcl.dsl.module import Module
 

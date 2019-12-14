@@ -1,5 +1,5 @@
-from py_hcl.core.module_factory import ModuleError
-from py_hcl.dsl.expr.hclexpr import HclExpr
+from py_hcl.core.module.error import ModuleError
+from py_hcl.core.expr import HclExpr
 
 
 def extract(dct, name):
