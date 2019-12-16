@@ -1,4 +1,7 @@
-class ScopeType:
+from enum import Enum
+
+
+class ScopeType(Enum):
     TOP = 0
     GROUND = 1
     WHEN = 2

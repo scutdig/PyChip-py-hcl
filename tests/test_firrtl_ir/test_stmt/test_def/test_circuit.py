@@ -6,7 +6,7 @@ from py_hcl.firrtl_ir.stmt.defn.circuit import DefCircuit
 from py_hcl.firrtl_ir.stmt.defn.module import DefModule, OutputPort, InputPort
 from py_hcl.firrtl_ir.stmt.defn.node import DefNode
 from py_hcl.firrtl_ir.stmt.empty import EmptyStmt
-from py_hcl.firrtl_ir.type_checker import DefinitionTypeChecker, check
+from py_hcl.firrtl_ir.type_checker import check
 from tests.test_firrtl_ir.utils import serialize_stmt_equal
 
 
@@ -22,7 +22,6 @@ def test_circuit_basis():
                                         Connect(n("a", uw(8)), n("b", uw(8))))]
                          ))
     ct = DefCircuit("m1", [m1, m2])
-    assert DefinitionTypeChecker.check(ct)
     assert check(ct)
     serialize_stmt_equal(ct, 'circuit m1 :\n'
                              '  module m1 :\n'
@@ -54,7 +53,6 @@ def test_circuit_module_not_exist():
                                         Connect(n("a", uw(8)), n("b", uw(8))))]
                          ))
     ct = DefCircuit("m3", [m1, m2])
-    assert not DefinitionTypeChecker.check(ct)
     assert not check(ct)
 
 
@@ -63,5 +61,4 @@ def test_circuit_module_wrong():
                    Connect(n("p", uw(8)), u(2, w(8))))
     m2 = DefModule("m2", [], Connect(n("p", uw(8)), u(2, w(8))))
     ct = DefCircuit("m1", [m1, m2])
-    assert not DefinitionTypeChecker.check(ct)
     assert not check(ct)

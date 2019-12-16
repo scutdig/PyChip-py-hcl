@@ -2,13 +2,14 @@ from py_hcl.core.type.uint import UIntT
 from py_hcl.core.expr.uint_lit import ULiteral
 
 
-def U(value):
-    return ULiteral(value)
+class U(object):
+    def __call__(self, value: int):
+        return ULiteral(value)
+
+    @staticmethod
+    def w(width: int):
+        return UIntT(width)
 
 
-def uw(width):
-    return UIntT(width)
-
-
-U.w = uw
+U = U()
 Bool = U.w(1)

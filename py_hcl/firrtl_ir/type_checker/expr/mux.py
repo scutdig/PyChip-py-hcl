@@ -1,25 +1,10 @@
+from multipledispatch import dispatch
+
+from ...expr.mux import Mux
 from ...shortcuts import uw
 from ...type_measurer import equal
-from ...expr.mux import Mux
 
-
-class MuxTypeChecker(object):
-    mux_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return MuxTypeChecker.mux_checker_map[type(op_obj)](op_obj)
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(mux):
-    def f(func):
-        MuxTypeChecker.mux_checker_map[mux] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -27,7 +12,7 @@ def checker(mux):
 ###############################################################
 
 @checker(Mux)
-def _(mux):
+def check(mux: Mux):
     from .. import check_all_expr
     if not check_all_expr(mux.cond, mux.tval, mux.fval):
         return False
