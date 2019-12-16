@@ -1,18 +1,15 @@
-from py_hcl.dsl.expr.u_literal import ULiteral
-from py_hcl.dsl.tpe.hcl_type import HclType
+from py_hcl.core.type.uint import UIntT
+from py_hcl.core.expr.uint_lit import ULiteral
 
 
-class UIntT(HclType):
-    def __init__(self, width):
-        self.width = width
+class U(object):
+    def __call__(self, value: int):
+        return ULiteral(value)
 
-    def __call__(self, value):
-        return ULiteral(value)  # TODO: check width
-
-
-def U(value):
-    return ULiteral(value)
+    @staticmethod
+    def w(width: int):
+        return UIntT(width)
 
 
-U.w = UIntT
+U = U()
 Bool = U.w(1)

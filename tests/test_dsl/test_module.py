@@ -1,10 +1,10 @@
 import pytest
 
-from py_hcl.core.module_factory import ModuleError
-from py_hcl.dsl.expr.hclexpr import HclExpr
+from py_hcl.core.module.error import ModuleError
+from py_hcl.core.expr import HclExpr
 from py_hcl.dsl.expr.io import IO, Input
 from py_hcl.dsl.module import Module
-from py_hcl.dsl.tpe.hcl_type import HclType
+from py_hcl.core.type import HclType
 
 
 def test_module():

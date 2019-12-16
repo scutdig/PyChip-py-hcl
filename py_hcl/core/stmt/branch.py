@@ -1,6 +1,6 @@
-from py_hcl.core.stmt_factory import StatementError
-from py_hcl.core.stmt_factory.scope import ScopeManager, ScopeType
-from py_hcl.core.stmt_factory.trapper import StatementTrapper
+from py_hcl.core.stmt.error import StatementError
+from py_hcl.core.stmt.scope import ScopeManager, ScopeType
+from py_hcl.core.stmt.trapper import StatementTrapper
 
 
 class When(object):

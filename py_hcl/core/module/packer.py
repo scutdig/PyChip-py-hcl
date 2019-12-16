@@ -1,4 +1,4 @@
-from ..stmt_factory.trapper import StatementTrapper
+from ..stmt.trapper import StatementTrapper
 from . import merger
 from . import extractor
 from .packed_module import PackedModule

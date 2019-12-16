@@ -1,16 +1,12 @@
-from .type import TypeMeasurer
-from .width import WidthMeasurer
-from .field import FieldMeasurer
+from multipledispatch import dispatch
 
-final_map = {
-    **TypeMeasurer.measurer_map,
-    **WidthMeasurer.measurer_map,
-    **FieldMeasurer.measurer_map,
-}
+from .type import equal
+from .width import equal
+from .field import equal
+
+measurer = dispatch
 
 
-def equal(x, y):
-    try:
-        return final_map[(x.__class__, y.__class__)](x, y)
-    except (KeyError, NotImplementedError):
-        return False
+@measurer(object, object)
+def equal(_0: object, _1: object):
+    return False

@@ -1,28 +1,14 @@
-from ...type_checker.utils import type_in, check_all_same_uint_sint
-from ...type import UIntType, SIntType, ClockType
+from typing import Union
+
+from multipledispatch import dispatch
+
 from ...expr.prim_ops import Add, Sub, Mul, Div, Rem, \
     Lt, Leq, Gt, Geq, Eq, Neq, Xor, Or, And, Not, Neg, \
     Cat, Bits, AsUInt, AsSInt, Shl, Shr, Dshl, Dshr
+from ...type import UIntType, SIntType, ClockType
+from ...type_checker.utils import type_in, check_all_same_uint_sint
 
-
-class OpTypeChecker(object):
-    op_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return OpTypeChecker.op_checker_map[type(op_obj)](op_obj)
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(*op):
-    def f(func):
-        for o in op:
-            OpTypeChecker.op_checker_map[o] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -30,7 +16,7 @@ def checker(*op):
 ###############################################################
 
 @checker(Add)
-def _(add):
+def check(add: Add):
     from .. import check_all_expr
     if not check_all_expr(*add.args):
         return False
@@ -49,7 +35,7 @@ def _(add):
 
 
 @checker(Sub)
-def _(sub):
+def check(sub: Sub):
     from .. import check_all_expr
     if not check_all_expr(*sub.args):
         return False
@@ -70,7 +56,7 @@ def _(sub):
 
 
 @checker(Mul)
-def _(mul):
+def check(mul: Mul):
     from .. import check_all_expr
     if not check_all_expr(*mul.args):
         return False
@@ -89,7 +75,7 @@ def _(mul):
 
 
 @checker(Div)
-def _(div):
+def check(div: Div):
     from .. import check_all_expr
     if not check_all_expr(*div.args):
         return False
@@ -109,7 +95,7 @@ def _(div):
 
 
 @checker(Rem)
-def _(rem):
+def check(rem: Rem):
     from .. import check_all_expr
     if not check_all_expr(*rem.args):
         return False
@@ -127,8 +113,8 @@ def _(rem):
     return True
 
 
-@checker(Lt, Leq, Gt, Geq, Eq, Neq)
-def _(comparison):
+@checker((Lt, Leq, Gt, Geq, Eq, Neq))
+def check(comparison: Union[Lt, Leq, Gt, Geq, Eq, Neq]):
     from .. import check_all_expr
     if not check_all_expr(*comparison.args):
         return False
@@ -146,8 +132,8 @@ def _(comparison):
     return True
 
 
-@checker(And, Or, Xor)
-def _(binary_bit):
+@checker((And, Or, Xor))
+def check(binary_bit: Union[And, Or, Xor]):
     from .. import check_all_expr
     if not check_all_expr(*binary_bit.args):
         return False
@@ -168,7 +154,7 @@ def _(binary_bit):
 
 
 @checker(Not)
-def _(n):
+def check(n: Not):
     from .. import check_all_expr
     if not check_all_expr(n.arg):
         return False
@@ -187,7 +173,7 @@ def _(n):
 
 
 @checker(Neg)
-def _(neg):
+def check(neg: Neg):
     from .. import check_all_expr
     if not check_all_expr(neg.arg):
         return False
@@ -206,7 +192,7 @@ def _(neg):
 
 
 @checker(Cat)
-def _(cat):
+def check(cat: Cat):
     from .. import check_all_expr
     if not check_all_expr(*cat.args):
         return False
@@ -227,7 +213,7 @@ def _(cat):
 
 
 @checker(Bits)
-def _(bits):
+def check(bits: Bits):
     from .. import check_all_expr
     if not check_all_expr(bits.ir_arg):
         return False
@@ -252,7 +238,7 @@ def _(bits):
 
 
 @checker(AsUInt)
-def _(as_uint):
+def check(as_uint: AsUInt):
     from .. import check_all_expr
     if not check_all_expr(as_uint.arg):
         return False
@@ -275,7 +261,7 @@ def _(as_uint):
 
 
 @checker(AsSInt)
-def _(as_sint):
+def check(as_sint: AsSInt):
     from .. import check_all_expr
     if not check_all_expr(as_sint.arg):
         return False
@@ -298,7 +284,7 @@ def _(as_sint):
 
 
 @checker(Shl)
-def _(shl):
+def check(shl: Shl):
     from .. import check_all_expr
     if not check_all_expr(shl.ir_arg):
         return False
@@ -314,7 +300,7 @@ def _(shl):
 
 
 @checker(Shr)
-def _(shr):
+def check(shr: Shr):
     from .. import check_all_expr
     if not check_all_expr(shr.ir_arg):
         return False
@@ -331,7 +317,7 @@ def _(shr):
 
 
 @checker(Dshl)
-def _(dshl):
+def check(dshl: Dshl):
     from .. import check_all_expr
     if not check_all_expr(*dshl.args):
         return False
@@ -352,7 +338,7 @@ def _(dshl):
 
 
 @checker(Dshr)
-def _(dshr):
+def check(dshr: Dshr):
     from .. import check_all_expr
     if not check_all_expr(*dshr.args):
         return False

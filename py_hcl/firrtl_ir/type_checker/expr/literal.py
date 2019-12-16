@@ -1,25 +1,10 @@
+from multipledispatch import dispatch
+
 from ..utils import type_in
 from ...expr.literal import SIntLiteral, SIntType, UIntLiteral, UIntType
-from ...utils import signed_num_bin_len, unsigned_num_bin_len
+from py_hcl.utils import signed_num_bin_len, unsigned_num_bin_len
 
-
-class LiteralTypeChecker(object):
-    literal_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return LiteralTypeChecker.literal_checker_map[type(op_obj)](op_obj)
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(literal):
-    def f(func):
-        LiteralTypeChecker.literal_checker_map[literal] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -27,7 +12,7 @@ def checker(literal):
 ###############################################################
 
 @checker(UIntLiteral)
-def _(uint):
+def check(uint: UIntLiteral):
     if not type_in(uint.tpe, UIntType):
         return False
 
@@ -41,7 +26,7 @@ def _(uint):
 
 
 @checker(SIntLiteral)
-def _(sint):
+def check(sint: SIntLiteral):
     if not type_in(sint.tpe, SIntType):
         return False
 

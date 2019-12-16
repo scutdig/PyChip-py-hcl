@@ -1,4 +1,4 @@
-import py_hcl.core.stmt_factory.branch as cb
+import py_hcl.core.stmt.branch as cb
 
 
 class when(object):
