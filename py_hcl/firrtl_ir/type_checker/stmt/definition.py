@@ -1,34 +1,18 @@
+from multipledispatch import dispatch
+
+from ..utils import type_in
 from ...shortcuts import uw
-from ...type_measurer import equal
 from ...stmt.defn.circuit import DefCircuit
 from ...stmt.defn.instance import DefInstance
 from ...stmt.defn.memory import DefMemory, DefMemReadPort, DefMemWritePort
 from ...stmt.defn.module import DefModule, InputPort, OutputPort, DefExtModule
 from ...stmt.defn.node import DefNode
-from ...type import VectorType, ClockType, UIntType
-from ..utils import type_in
 from ...stmt.defn.register import DefRegister, DefInitRegister
 from ...stmt.defn.wire import DefWire
+from ...type import VectorType, ClockType, UIntType
+from ...type_measurer import equal
 
-
-class DefinitionTypeChecker(object):
-    definition_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return DefinitionTypeChecker \
-                .definition_checker_map[type(op_obj)](op_obj)
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(definition):
-    def f(func):
-        DefinitionTypeChecker.definition_checker_map[definition] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -36,17 +20,17 @@ def checker(definition):
 ###############################################################
 
 @checker(DefWire)
-def _(_):
+def check(_: DefWire):
     return True
 
 
 @checker(DefInstance)
-def _(_):
+def check(_: DefInstance):
     return True
 
 
 @checker(DefRegister)
-def _(reg):
+def check(reg: DefRegister):
     from ...type_checker import check_all_expr
     if not check_all_expr(reg.clock_ref):
         return False
@@ -58,7 +42,7 @@ def _(reg):
 
 
 @checker(DefInitRegister)
-def _(reg):
+def check(reg: DefInitRegister):
     from ...type_checker import check_all_expr
     if not check_all_expr(reg.clock_ref, reg.reset_ref, reg.init_ref):
         return False
@@ -76,7 +60,7 @@ def _(reg):
 
 
 @checker(DefNode)
-def _(node):
+def check(node: DefNode):
     from ...type_checker import check_all_expr
     if not check_all_expr(node.expr_ref):
         return False
@@ -85,7 +69,7 @@ def _(node):
 
 
 @checker(DefMemory)
-def _(mem):
+def check(mem: DefMemory):
     if not type_in(mem.tpe, VectorType):
         return False
 
@@ -93,7 +77,7 @@ def _(mem):
 
 
 @checker(DefMemReadPort)
-def _(mem_read):
+def check(mem_read: DefMemReadPort):
     from ...type_checker import check_all_expr
     if not check_all_expr(mem_read.mem_ref, mem_read.index_ref,
                           mem_read.clock_ref):
@@ -112,7 +96,7 @@ def _(mem_read):
 
 
 @checker(DefMemWritePort)
-def _(mem_write):
+def check(mem_write: DefMemWritePort):
     from ...type_checker import check_all_expr
     if not check_all_expr(mem_write.mem_ref, mem_write.index_ref,
                           mem_write.clock_ref):
@@ -131,7 +115,7 @@ def _(mem_write):
 
 
 @checker(DefModule)
-def _(mod):
+def check(mod: DefModule):
     from ...type_checker import check_all_stmt
     if not check_all_stmt(mod.body):
         return False
@@ -147,7 +131,7 @@ def _(mod):
 
 
 @checker(DefExtModule)
-def _(mod):
+def check(mod: DefExtModule):
     if len(mod.ports) == 0:
         return False
 
@@ -159,7 +143,7 @@ def _(mod):
 
 
 @checker(DefCircuit)
-def _(circuit):
+def check(circuit: DefCircuit):
     from ...type_checker import check_all_stmt
     if not check_all_stmt(*circuit.def_modules):
         return False

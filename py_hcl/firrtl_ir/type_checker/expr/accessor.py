@@ -1,28 +1,11 @@
-from ...type_measurer import equal
+from multipledispatch import dispatch
+
+from ...expr.accessor import SubField, SubIndex, SubAccess
 from ...type import BundleType, VectorType, UIntType
 from ...type_checker.utils import type_in
-from ...expr.accessor import SubField, SubIndex, SubAccess
+from ...type_measurer import equal
 
-
-class AccessorTypeChecker(object):
-    accessor_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return AccessorTypeChecker.accessor_checker_map[type(op_obj)](
-                op_obj
-            )
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(accessor):
-    def f(func):
-        AccessorTypeChecker.accessor_checker_map[accessor] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -30,7 +13,7 @@ def checker(accessor):
 ###############################################################
 
 @checker(SubField)
-def _(sub_field):
+def check(sub_field):
     from .. import check_all_expr
     if not check_all_expr(sub_field.bundle_ref):
         return False
@@ -53,7 +36,7 @@ def _(sub_field):
 
 
 @checker(SubIndex)
-def _(sub_index):
+def check(sub_index):
     from .. import check_all_expr
     if not check_all_expr(sub_index.vector_ref):
         return False
@@ -71,7 +54,7 @@ def _(sub_index):
 
 
 @checker(SubAccess)
-def _(sub_access):
+def check(sub_access):
     from .. import check_all_expr
     if not check_all_expr(sub_access.vector_ref, sub_access.index_ref):
         return False

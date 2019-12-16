@@ -4,13 +4,12 @@ from py_hcl.firrtl_ir.stmt.conditionally import Conditionally
 from py_hcl.firrtl_ir.stmt.connect import Connect
 from py_hcl.firrtl_ir.stmt.defn.node import DefNode
 from py_hcl.firrtl_ir.stmt.empty import EmptyStmt
-from py_hcl.firrtl_ir.type_checker import check, BlockTypeChecker
+from py_hcl.firrtl_ir.type_checker import check
 from ..utils import serialize_stmt_equal
 
 
 def test_block_basis():
     blk = Block([EmptyStmt()])
-    assert BlockTypeChecker.check(blk)
     assert check(blk)
     serialize_stmt_equal(blk, "skip")
 
@@ -19,7 +18,6 @@ def test_block_basis():
                                EmptyStmt(),
                                Connect(n("a", uw(8)), n("b", uw(8))))
                  ])
-    assert BlockTypeChecker.check(blk)
     assert check(blk)
     serialize_stmt_equal(blk, 'node n = UInt<1>("1")\n'
                               'when n :\n'
@@ -30,5 +28,4 @@ def test_block_basis():
 
 def test_block_empty():
     blk = Block([])
-    assert not BlockTypeChecker.check(blk)
     assert not check(blk)

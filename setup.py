@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 __version__ = "0.0.1"
 install_requires = []
 tests_require = ['pytest', 'pytest-cov']
-setup_requires = ['pytest-runner']
+setup_requires = ['pytest-runner', 'multipledispatch']
 
 setup(
     name="py_hcl",

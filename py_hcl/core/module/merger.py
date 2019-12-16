@@ -29,20 +29,23 @@ def check_dup_mod(dest, src, mod_names):
 
 def merge_io(dest, src, mod_names):
     check_dup_io(dest, src, mod_names)
-    dest.ports.extend(src.ports)
+    dest.hcl_type.types = {
+        **dest.hcl_type.types,
+        **src.hcl_type.types
+    }
 
     return dest
 
 
 def check_dup_io(dest, src, mod_names):
-    names = set(p['name'] for p in dest.ports)
-    for p in src.ports:
-        if p['name'] in names:
+    names = dest.hcl_type.types.keys()
+    for p in src.hcl_type.types.keys():
+        if p in names:
             dest_name = mod_names[0]
             src_name = mod_names[1]
             raise ModuleError.duplicate_name(
                 'module {} has duplicates with {} in '
-                'module {} in io'.format(dest_name, p['name'], src_name)
+                'module {} in io'.format(dest_name, p, src_name)
             )
 
 

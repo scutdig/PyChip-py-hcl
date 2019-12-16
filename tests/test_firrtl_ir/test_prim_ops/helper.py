@@ -5,8 +5,8 @@ from py_hcl.firrtl_ir.shortcuts import w, uw, u, s, sw, n, vec
 from py_hcl.firrtl_ir.type import UIntType, SIntType, \
     UnknownType, BundleType, VectorType, ClockType
 from py_hcl.firrtl_ir.type.field import Field
-from py_hcl.firrtl_ir.type_checker import check, OpTypeChecker
-from py_hcl.firrtl_ir.utils import unsigned_num_bin_len, signed_num_bin_len
+from py_hcl.firrtl_ir.type_checker import check
+from py_hcl.utils import signed_num_bin_len, unsigned_num_bin_len
 
 
 class OpCase(object):
@@ -160,7 +160,6 @@ def basis_tester(cases):
     for case in cases:
         for i in range(5):
             obj = obj_gen(case)
-            assert OpTypeChecker.check(obj)
             assert check(obj)
 
 
@@ -168,7 +167,6 @@ def encounter_error_tester(cases):
     for case in cases:
         for i in range(5):
             obj = obj_gen(case)
-            assert not OpTypeChecker.check(obj)
             assert not check(obj)
 
 

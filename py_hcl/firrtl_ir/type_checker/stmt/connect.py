@@ -1,24 +1,9 @@
-from ...type_measurer import equal
+from multipledispatch import dispatch
+
 from ...stmt.connect import Connect
+from ...type_measurer import equal
 
-
-class ConnectTypeChecker(object):
-    connect_checker_map = {}
-
-    @staticmethod
-    def check(op_obj):
-        try:
-            return ConnectTypeChecker.connect_checker_map[type(op_obj)](op_obj)
-        except KeyError:
-            raise NotImplementedError(type(op_obj))
-
-
-def checker(connect):
-    def f(func):
-        ConnectTypeChecker.connect_checker_map[connect] = func
-        return func
-
-    return f
+checker = dispatch
 
 
 ###############################################################
@@ -26,7 +11,7 @@ def checker(connect):
 ###############################################################
 
 @checker(Connect)
-def _(connect):
+def check(connect: Connect):
     from .. import check_all_expr
     if not check_all_expr(connect.loc_ref, connect.expr_ref):
         return False
