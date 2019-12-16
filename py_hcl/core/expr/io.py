@@ -1,34 +1,38 @@
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr import HclExpr
+from py_hcl.core.expr import HclExpr, ConnDir
+from py_hcl.core.type import HclType
+from py_hcl.core.type.bundle import Dir, BundleT
 
 
 class IO(HclExpr):
     def __init__(self, **named_ports):
-        self.ports = IO.handle_args(named_ports)
+        super().__init__()
+        self.hcl_type = IO.handle_args(named_ports)
+        self.conn_dir = ConnDir.BOTH
 
     @staticmethod
     def handle_args(named_ports):
-        res = []
+        types = {}
         for k, v in named_ports.items():
             if isinstance(v, Input):
-                res.append({'name': k, 'direct': 'in', 'tpe': v.tpe})
+                types[k] = (Dir.IN, v.hcl_type)
                 continue
 
             if isinstance(v, Output):
-                res.append({'name': k, 'direct': 'out', 'tpe': v.tpe})
+                types[k] = (Dir.OUT, v.hcl_type)
                 continue
 
             raise ExprError.io_value(
                 "type of '{}' is {}, not Input or Output".format(k, type(v)))
 
-        return res
+        return BundleT(types)
 
 
-class Input:
-    def __init__(self, tpe):
-        self.tpe = tpe
+class Input(object):
+    def __init__(self, hcl_type: HclType):
+        self.hcl_type = hcl_type
 
 
-class Output:
-    def __init__(self, tpe):
-        self.tpe = tpe
+class Output(object):
+    def __init__(self, hcl_type: HclType):
+        self.hcl_type = hcl_type
