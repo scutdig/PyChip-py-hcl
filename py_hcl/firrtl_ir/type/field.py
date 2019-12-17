@@ -1,15 +1,3 @@
-"""
-The field module_factory provides information about the field
-in BundleType.
-
-Fields are allowed to be flipped, indicating that it's
-opposite direction to the BundleType.
-
-Each field includes
-  name:        individual name of the field;
-  type:        defined type;
-  orientation: flipped or not.
-"""
 from ..utils import serialize_str
 
 

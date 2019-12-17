@@ -1,20 +1,3 @@
-"""
-The tpe module_factory provides type nodes in FIRRTL IR.
-
-At the top level of types include UnknownType, GroundType, AggregateType.
-GroundType acts as a primitive type, and AggregateType is similar to a
-data structure composed of GroundType.
-
-GroundType includes
-  UIntType:  unsigned integer;
-  SIntType:  signed integer;
-  ClockType: represents the clock.
-
-AggregateType includes BundleType, similar to the structs in high-level
-languages, composed of various fields of different types. VectorType
-is similar to arrays in high-level languages, holds multiple elements of
-the same type.
-"""
 from ..utils import serialize_num
 
 
