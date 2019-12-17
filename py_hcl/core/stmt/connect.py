@@ -1,11 +1,19 @@
 import logging
-from py_hcl.core.expr import ConnDir
+from enum import Enum
+
 from py_hcl.core.hcl_ops import op_register, op_apply
 from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.utils import auto_repr
+
+
+class ConnLoc(Enum):
+    UNKNOWN = 0
+    LF = 1
+    RT = 2
+    BOTH = 3
 
 
 @auto_repr
@@ -21,6 +29,7 @@ connector = op_register('<<=')
 @connector(UIntT, UIntT)
 def _(left, right):
     check_connect_dir(left, right)
+
     if left.hcl_type.width < right.hcl_type.width:
         msg = 'connect(): connecting {} to {} will truncate the bits'.format(
             right.hcl_type, left.hcl_type)
@@ -35,9 +44,10 @@ def _(left, right):
 @connector(SIntT, SIntT)
 def _(left, right):
     check_connect_dir(left, right)
+
     if left.hcl_type.width < right.hcl_type.width:
         logging.warning(
-            'connector(): connecting {} to {} will truncate the bits'.format(
+            'connect(): connecting {} to {} will truncate the bits'.format(
                 right.hcl_type, left.hcl_type
             ))
         right = right[left.hcl_type.width - 1:0].to_sint()
@@ -55,7 +65,7 @@ def _(left, right):
 
 @connector(SIntT, UIntT)
 def _(left, right):
-    msg = 'connect(): connecting SInt to UInt, an auto-conversion will occur'
+    msg = 'connect(): connecting UInt to SInt, an auto-conversion will occur'
     logging.warning(msg)
     return op_apply('<<=')(left, right.to_sint())
 
@@ -66,5 +76,5 @@ def _(_0, _1):
 
 
 def check_connect_dir(left, right):
-    assert left.conn_dir in (ConnDir.LF, ConnDir.BOTH)
-    assert right.conn_dir in (ConnDir.RT, ConnDir.BOTH)
+    assert left.conn_loc in (ConnLoc.LF, ConnLoc.BOTH)
+    assert right.conn_loc in (ConnLoc.RT, ConnLoc.BOTH)

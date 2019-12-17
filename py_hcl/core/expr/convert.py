@@ -1,4 +1,5 @@
-from py_hcl.core.expr import ExprHolder, ConnDir
+from py_hcl.core.expr import ExprHolder
+from py_hcl.core.stmt.connect import ConnLoc
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
@@ -39,13 +40,13 @@ def _(uint):
 @to_uint(SIntT)
 def _(sint):
     t = UIntT(sint.hcl_type.width)
-    return ExprHolder(t, ConnDir.RT, ToUInt(sint))
+    return ExprHolder(t, ConnLoc.RT, ToUInt(sint))
 
 
 @to_sint(UIntT)
 def _(uint):
     t = SIntT(uint.hcl_type.width)
-    return ExprHolder(t, ConnDir.RT, ToSInt(uint))
+    return ExprHolder(t, ConnLoc.RT, ToSInt(uint))
 
 
 @to_sint(SIntT)

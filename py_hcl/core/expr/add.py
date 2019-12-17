@@ -1,5 +1,6 @@
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr import ConnDir, ExprHolder
+from py_hcl.core.expr import ExprHolder
+from py_hcl.core.stmt.connect import ConnLoc
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
@@ -21,7 +22,7 @@ def _(lf, rt):
     check_add_dir(lf, rt)
     w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
     t = UIntT(w)
-    return ExprHolder(t, ConnDir.RT, Add(lf, rt))
+    return ExprHolder(t, ConnLoc.RT, Add(lf, rt))
 
 
 @adder(SIntT, SIntT)
@@ -29,7 +30,7 @@ def _(lf, rt):
     check_add_dir(lf, rt)
     w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
     t = SIntT(w)
-    return ExprHolder(t, ConnDir.RT, Add(lf, rt))
+    return ExprHolder(t, ConnLoc.RT, Add(lf, rt))
 
 
 @adder(object, object)
@@ -38,5 +39,5 @@ def _(_0, _1):
 
 
 def check_add_dir(lf, rt):
-    assert lf.conn_dir in (ConnDir.RT, ConnDir.BOTH)
-    assert rt.conn_dir in (ConnDir.RT, ConnDir.BOTH)
+    assert lf.conn_loc in (ConnLoc.RT, ConnLoc.BOTH)
+    assert rt.conn_loc in (ConnLoc.RT, ConnLoc.BOTH)

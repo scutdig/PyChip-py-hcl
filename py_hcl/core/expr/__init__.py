@@ -1,24 +1,17 @@
-from enum import Enum
 import logging
 
 from multipledispatch.dispatcher import MethodDispatcher
 
 from py_hcl.core.hcl_ops import op_apply
+from py_hcl.core.stmt.connect import ConnLoc
 from py_hcl.core.type import UnknownType, HclType
 from py_hcl.utils import auto_repr
-
-
-class ConnDir(Enum):
-    UNKNOWN = 0
-    LF = 1
-    RT = 2
-    BOTH = 3
 
 
 @auto_repr
 class HclExpr(object):
     hcl_type = UnknownType()
-    conn_dir = ConnDir.UNKNOWN
+    conn_loc = ConnLoc.UNKNOWN
 
     def __ilshift__(self, other):
         return op_apply('<<=')(self, other)
@@ -65,8 +58,9 @@ class HclExpr(object):
         return op_apply('to_bool')(self)
 
 
+@auto_repr(repr_fields=['hcl_type', 'conn_loc', 'assoc_value'])
 class ExprHolder(HclExpr):
-    def __init__(self, hcl_type: HclType, conn_dir: ConnDir, assoc_value):
+    def __init__(self, hcl_type: HclType, conn_loc: ConnLoc, assoc_value):
         self.hcl_type = hcl_type
-        self.conn_dir = conn_dir
+        self.conn_loc = conn_loc
         self.assoc_value = assoc_value
