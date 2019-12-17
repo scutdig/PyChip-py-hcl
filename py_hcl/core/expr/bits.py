@@ -1,4 +1,5 @@
-from py_hcl.core.expr import ExprHolder, ConnDir
+from py_hcl.core.expr import ExprHolder
+from py_hcl.core.stmt.connect import ConnLoc
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.type.sint import SIntT
@@ -21,14 +22,14 @@ class Bits(object):
 def _(uint, high: int, low: int):
     check_bit_width(uint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnDir.RT, Bits(uint, high, low))
+    return ExprHolder(t, ConnLoc.RT, Bits(uint, high, low))
 
 
 @slice_(SIntT)
 def _(sint, high: int, low: int):
     check_bit_width(sint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnDir.RT, Bits(sint, high, low))
+    return ExprHolder(t, ConnLoc.RT, Bits(sint, high, low))
 
 
 @slice_(object)

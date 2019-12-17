@@ -1,3 +1,5 @@
+from functools import partial
+
 from multipledispatch import dispatch
 
 
@@ -9,14 +11,24 @@ def unsigned_num_bin_len(num):
     return len("{:b}".format(num))
 
 
-def auto_repr(cls):
-    def __repr__(self):
-        ls = ['{}={}'.format(k, _fm(v)) for k, v in vars(self).items()]
-        fs = _iter_repr(ls)
-        return '%s {%s}' % (type(self).__name__, ''.join(fs))
+def auto_repr(cls=None, repr_fields=()):
+    def _(_cls, _repr_fields):
+        def __repr__(self):
+            if len(_repr_fields) == 0:
+                kv = vars(self)
+            else:
+                kv = {f: vars(self)[f] for f in _repr_fields}
+            ls = ['{}={}'.format(k, _fm(v)) for k, v in kv.items()]
+            fs = _iter_repr(ls)
+            return '%s {%s}' % (type(self).__name__, ''.join(fs))
 
-    cls.__repr__ = __repr__
-    return cls
+        _cls.__repr__ = __repr__
+        return _cls
+
+    if cls:
+        return _(cls, repr_fields)
+
+    return partial(_, _repr_fields=repr_fields)
 
 
 @dispatch()
