@@ -1,6 +1,6 @@
-from py_hcl.core.expr.wire import Wire
 from py_hcl.core.stmt.connect import Connect
 from py_hcl.dsl.expr.io import IO
+from py_hcl.dsl.expr.wire import Wire
 from py_hcl.dsl.module import Module
 from py_hcl.dsl.tpe.uint import U
 
