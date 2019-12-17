@@ -9,12 +9,6 @@ class ScopeType(Enum):
     OTHERWISE = 4
 
 
-class Scope(object):
-    def __init__(self, scope, stmts):
-        self.scope = scope
-        self.statements = stmts
-
-
 class ScopeLevelManager(object):
     _next_scope_level = 0
 
@@ -49,6 +43,9 @@ class ScopeManager(object):
         'scope_type': ScopeType.TOP,
         'tag_object': None
     }]
+    scope_id_map = {
+        scope_list[0]['scope_id']: scope_list[0]
+    }
     scope_expanding_hooks = []
     scope_shrinking_hooks = []
 
@@ -57,12 +54,14 @@ class ScopeManager(object):
         ScopeLevelManager.expand_level()
 
         current_scope = cls.current_scope()
+        next_id = ScopeIdManager.next_id()
         next_scope = {
-            'scope_id': ScopeIdManager.next_id(),
+            'scope_id': next_id,
             'scope_level': ScopeLevelManager.current_level(),
             'scope_type': scope_type,
             'tag_object': tag_object
         }
+        cls.scope_id_map[next_id] = next_scope
         cls.scope_list.append(next_scope)
 
         for fn in cls.scope_expanding_hooks:
@@ -80,6 +79,10 @@ class ScopeManager(object):
     @classmethod
     def current_scope(cls):
         return cls.scope_list[-1]
+
+    @classmethod
+    def get_scope_info(cls, sid):
+        return cls.scope_id_map[sid]
 
     @classmethod
     def register_scope_expanding(cls, fn):

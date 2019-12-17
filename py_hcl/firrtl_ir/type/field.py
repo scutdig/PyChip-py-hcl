@@ -1,5 +1,5 @@
 """
-The field module provides information about the field
+The field module_factory provides information about the field
 in BundleType.
 
 Fields are allowed to be flipped, indicating that it's
