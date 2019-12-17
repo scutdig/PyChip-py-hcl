@@ -1,8 +1,9 @@
 import py_hcl.core.stmt.branch as cb
+from py_hcl.core.expr import HclExpr
 
 
 class when(object):
-    def __init__(self, cond_expr):
+    def __init__(self, cond_expr: HclExpr):
         self.cond_expr = cond_expr
 
     def __enter__(self):
@@ -13,7 +14,7 @@ class when(object):
 
 
 class else_when(object):
-    def __init__(self, cond_expr):
+    def __init__(self, cond_expr: HclExpr):
         self.cond_expr = cond_expr
 
     def __enter__(self):

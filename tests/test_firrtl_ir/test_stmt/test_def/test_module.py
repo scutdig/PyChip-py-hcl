@@ -14,7 +14,7 @@ def test_module_basis():
     mod = DefModule("m", [OutputPort("p", uw(8))],
                     Connect(n("p", uw(8)), u(2, w(8))))
     assert check(mod)
-    serialize_stmt_equal(mod, 'module m :\n'
+    serialize_stmt_equal(mod, 'module_factory m :\n'
                               '  output p : UInt<8>\n'
                               '\n'
                               '  p <= UInt<8>("2")')
@@ -27,7 +27,7 @@ def test_module_basis():
                                          Connect(n("a", uw(8)), n("b", uw(8))))
                            ]))
     assert check(mod)
-    serialize_stmt_equal(mod, 'module m :\n'
+    serialize_stmt_equal(mod, 'module_factory m :\n'
                               '  input b : UInt<8>\n'
                               '  output a : UInt<8>\n'
                               '\n'

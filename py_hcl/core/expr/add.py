@@ -1,8 +1,7 @@
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.place import ExprPlace
-from py_hcl.core.expr import ConnDir
-from py_hcl.core.hcl_ops import hcl_operation
-from py_hcl.core.type import HclType
+from py_hcl.core.expr import ConnDir, ExprHolder
+from py_hcl.core.hcl_ops import op_register
+from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.utils import auto_repr
 
@@ -14,22 +13,30 @@ class Add(object):
         self.right = right
 
 
-adder = hcl_operation('+')
+adder = op_register('+')
 
 
 @adder(UIntT, UIntT)
 def _(lf, rt):
+    check_add_dir(lf, rt)
     w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
     t = UIntT(w)
-    return ExprPlace(t, Add(lf, rt), ConnDir.RT)
+    return ExprHolder(t, ConnDir.RT, Add(lf, rt))
 
 
-@adder(HclType, HclType)
+@adder(SIntT, SIntT)
 def _(lf, rt):
-    # TODO: temporary
-    return ExprPlace(HclType(), Add(lf, rt), ConnDir.RT)
+    check_add_dir(lf, rt)
+    w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
+    t = SIntT(w)
+    return ExprHolder(t, ConnDir.RT, Add(lf, rt))
 
 
 @adder(object, object)
-def _(lf: object, rt: object):
-    raise ExprError.add(lf, rt)
+def _(_0, _1):
+    raise ExprError.op_type_err('add', _0, _1)
+
+
+def check_add_dir(lf, rt):
+    assert lf.conn_dir in (ConnDir.RT, ConnDir.BOTH)
+    assert rt.conn_dir in (ConnDir.RT, ConnDir.BOTH)

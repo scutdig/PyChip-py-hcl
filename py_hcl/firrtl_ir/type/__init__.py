@@ -1,5 +1,5 @@
 """
-The tpe module provides type nodes in FIRRTL IR.
+The tpe module_factory provides type nodes in FIRRTL IR.
 
 At the top level of types include UnknownType, GroundType, AggregateType.
 GroundType acts as a primitive type, and AggregateType is similar to a
