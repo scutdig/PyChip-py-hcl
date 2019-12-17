@@ -68,5 +68,5 @@ class HclExpr(object):
 class ExprHolder(HclExpr):
     def __init__(self, hcl_type: HclType, conn_dir: ConnDir, assoc_value):
         self.hcl_type = hcl_type
-        self.assoc_value = assoc_value
         self.conn_dir = conn_dir
+        self.assoc_value = assoc_value

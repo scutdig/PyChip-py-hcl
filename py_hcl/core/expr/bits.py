@@ -12,9 +12,9 @@ index = op_register('[i]')
 @auto_repr
 class Bits(object):
     def __init__(self, expr, high, low):
-        self.expr = expr
         self.high = high
         self.low = low
+        self.expr = expr
 
 
 @slice_(UIntT)

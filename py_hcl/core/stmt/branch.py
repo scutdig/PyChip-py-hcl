@@ -1,6 +1,7 @@
 from py_hcl.core.expr import HclExpr
 from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.scope import ScopeManager, ScopeType
+from py_hcl.core.stmt import BlockStatement
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.type.uint import UIntT
 from py_hcl.utils import auto_repr
@@ -80,24 +81,33 @@ def check_exists_pre_stmts():
 
 def check_exists_pre_when_block():
     last_stmt = StatementTrapper.trapped_stmts[-1][-1]
-    last_scope = last_stmt['scope']
-    last_scope_type = last_scope['scope_type']
 
-    not_when = last_scope_type != ScopeType.WHEN
-    not_else_when = last_scope_type != ScopeType.ELSE_WHEN
-    if not_when and not_else_when:
-        raise StatementError.wrong_branch_syntax(
-            'check_exists_pre_when_block(): '
-            'expected when block or else_when block')
+    if isinstance(last_stmt, BlockStatement):
+        last_scope = last_stmt.scope_info
+        last_scope_type = last_scope['scope_type']
+
+        when = last_scope_type == ScopeType.WHEN
+        else_when = last_scope_type == ScopeType.ELSE_WHEN
+
+        if when or else_when:
+            return
+
+    raise StatementError.wrong_branch_syntax(
+        'check_exists_pre_when_block(): '
+        'expected when block or else_when block')
 
 
 def check_correct_block_level():
     last_stmt = StatementTrapper.trapped_stmts[-1][-1]
-    last_scope = last_stmt['scope']
-    current_scope = ScopeManager.current_scope()
-    last_scope_level = last_scope['scope_level']
-    current_scope_level = current_scope['scope_level']
-    if last_scope_level != current_scope_level + 1:
-        raise StatementError.wrong_branch_syntax(
-            'check_correct_block_level(): '
-            'branch block not matched')
+
+    if isinstance(last_stmt, BlockStatement):
+        last_scope = last_stmt.scope_info
+        current_scope = ScopeManager.current_scope()
+        last_scope_level = last_scope['scope_level']
+        current_scope_level = current_scope['scope_level']
+        if last_scope_level == current_scope_level + 1:
+            return
+
+    raise StatementError.wrong_branch_syntax(
+        'check_correct_block_level(): '
+        'branch block not matched')

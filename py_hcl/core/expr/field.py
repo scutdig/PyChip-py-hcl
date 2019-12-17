@@ -9,9 +9,9 @@ field_accessor = op_register('.')
 
 @auto_repr
 class FieldAccess(object):
-    def __init__(self, obj, item):
-        self.obj = obj
+    def __init__(self, expr, item):
         self.item = item
+        self.expr = expr
 
 
 @field_accessor(BundleT)
