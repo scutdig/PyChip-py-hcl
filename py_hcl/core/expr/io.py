@@ -4,6 +4,7 @@ from py_hcl.core.expr.error import ExprError
 from py_hcl.core.expr import HclExpr, ConnDir
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import Dir, BundleT
+from py_hcl.utils import _fm, _indent
 
 
 class Input(object):
@@ -39,10 +40,7 @@ class IO(HclExpr):
         return BundleT(types)
 
     def __repr__(self):
-        return '%s(%s)' % (
-            type(self).__name__,
-            ', '.join('%s = %s' % item for item in {
-                'hcl_type': self.hcl_type,
-                'conn_dir': self.conn_dir
-            }.items())
-        )
+        return 'IO {\n' \
+               '  conn_dir=%s\n' \
+               '  hcl_type=%s\n' \
+               '}' % (self.conn_dir, _indent(_fm(self.hcl_type)))
