@@ -27,13 +27,13 @@ def test_io_no_wrap_io():
             io = IO(i=HclType())
 
     with pytest.raises(ExprError, match='^.*Input.*Output.*$'):
-        class A(Module):  # noqa: F811
+        class A(Module):
             io = IO(
                 i=HclType(),
                 o=Output(HclType()))
 
     with pytest.raises(ExprError, match='^.*Input.*Output.*$'):
-        class A(Module):  # noqa: F811
+        class A(Module):
             io = IO(
                 i=Input(HclType()),
                 o=HclType())

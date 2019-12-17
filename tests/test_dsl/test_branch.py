@@ -1,9 +1,8 @@
 import pytest
 
-from py_hcl.core.expr import HclExpr
 from py_hcl.core.stmt.connect import Connect
 from py_hcl.core.stmt.error import StatementError
-from py_hcl.core.stmt.scope import ScopeType
+from py_hcl.core.stmt_factory.scope import ScopeType
 from py_hcl.dsl.branch import when, else_when, otherwise
 from py_hcl.dsl.expr.io import IO
 from py_hcl.dsl.expr.wire import Wire
@@ -19,12 +18,12 @@ def test_branch():
         c = Wire(U.w(8))
 
         a <<= b
-        with when(HclExpr()):
+        with when(U(0)):
             a <<= b + c
             c <<= a
-        with else_when(HclExpr()):
+        with else_when(U(1)):
             b <<= a + c
-            with when(HclExpr()):
+            with when(U(0)):
                 b <<= a
             with otherwise():
                 c <<= a
@@ -63,7 +62,7 @@ def test_branch_syntax_error1():
             c = Wire(U.w(8))
 
             a <<= b
-            with else_when(HclExpr()):
+            with else_when(U(0)):
                 b <<= a + c
             with otherwise():
                 c <<= a + b
@@ -89,7 +88,7 @@ def test_branch_syntax_error3():
             b = Wire(U.w(8))
             c = Wire(U.w(8))
 
-            with when(HclExpr()):
+            with when(U(0)):
                 b <<= a + c
                 with otherwise():
                     c <<= a + b
@@ -103,9 +102,9 @@ def test_branch_syntax_error4():
             b = Wire(U.w(8))
             c = Wire(U.w(8))
 
-            with when(HclExpr()):
+            with when(U(0)):
                 b <<= a + c
-                with else_when(HclExpr()):
+                with else_when(U(1)):
                     c <<= a + b
             with otherwise():
                 c <<= a + b
@@ -119,7 +118,7 @@ def test_branch_syntax_error5():
             b = Wire(U.w(8))
             c = Wire(U.w(8))
 
-            with when(HclExpr()):
+            with when(U(0)):
                 b <<= a + c
             c <<= a + b
             with otherwise():

@@ -1,5 +1,7 @@
 from enum import Enum
 
+from py_hcl.utils import auto_repr
+
 
 class ScopeType(Enum):
     TOP = 0
@@ -9,6 +11,7 @@ class ScopeType(Enum):
     OTHERWISE = 4
 
 
+@auto_repr
 class Scope(object):
     def __init__(self, scope, stmts):
         self.scope = scope

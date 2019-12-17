@@ -5,7 +5,7 @@ def set_up():
     ModuleError.append({
         'NotContainsIO': {
             'code': 100,
-            'value': ModuleError('the module lack of io attribute')},
+            'value': ModuleError('the module_factory lack of io attribute')},
 
         'InheritDuplicateName': {
             'code': 101,

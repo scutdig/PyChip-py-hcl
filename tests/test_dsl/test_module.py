@@ -1,6 +1,6 @@
 import pytest
 
-from py_hcl.core.module.error import ModuleError
+from py_hcl.core.module_factory.error import ModuleError
 from py_hcl.core.expr import HclExpr
 from py_hcl.dsl.expr.io import IO, Input
 from py_hcl.dsl.module import Module

@@ -1,7 +1,7 @@
-from ..stmt.trapper import StatementTrapper
+from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from . import merger
 from . import extractor
-from .packed_module import PackedModule
+from py_hcl.core.module.packed_module import PackedModule
 
 
 def pack(bases, dct, name):

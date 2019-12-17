@@ -6,7 +6,7 @@ def set_up():
         'IOValueError': {
             'code': 200,
             'value': ExprError('io items should wrap with Input or Output')},
-        'AddError': {
+        'OpTypeError': {
             'code': 201,
             'value': ExprError('specified arguments contain unexpected types')
         }
@@ -19,10 +19,10 @@ class ExprError(CoreError):
         return ExprError.err('IOValueError', msg)
 
     @staticmethod
-    def add(lf, rt):
-        return ExprError.err('AddError',
-                             'unsupported operand types: {} and {}'.format(
-                                 type(lf), type(rt)))
+    def op_type_err(op, *args):
+        ts = ', '.join([type(a.hcl_type).__name__ for a in args])
+        msg = '{}(): unsupported operand types: {}'.format(op, ts)
+        return ExprError.err('OpTypeError', msg)
 
 
 set_up()
