@@ -24,12 +24,12 @@ def test_circuit_basis():
     ct = DefCircuit("m1", [m1, m2])
     assert check(ct)
     serialize_stmt_equal(ct, 'circuit m1 :\n'
-                             '  module m1 :\n'
+                             '  module_factory m1 :\n'
                              '    output p : UInt<8>\n'
                              '\n'
                              '    p <= UInt<8>("2")\n'
                              '\n'
-                             '  module m2 :\n'
+                             '  module_factory m2 :\n'
                              '    input b : UInt<8>\n'
                              '    output a : UInt<8>\n'
                              '\n'

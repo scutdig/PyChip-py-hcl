@@ -1,5 +1,5 @@
 """
-The width module provides bit width information for UIntType
+The width module_factory provides bit width information for UIntType
 and SIntType.
 """
 

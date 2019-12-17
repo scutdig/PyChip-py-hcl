@@ -7,9 +7,9 @@ class UIntT(HclType):
         self.width = width
 
     def __call__(self, value: int):
-        from py_hcl.core.expr.uint_lit import ULiteral
+        from py_hcl.core.expr.lit_uint import ULiteral
 
         assert unsigned_num_bin_len(value) <= self.width
         u = ULiteral(value)
-        u.hcl_type = self
+        u.hcl_type = UIntT(self.width)
         return u

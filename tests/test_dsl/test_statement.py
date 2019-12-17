@@ -15,6 +15,6 @@ def test_statement():
 
         c <<= a + b
 
-    s = A.packed_module.top_scope.statements
+    s = A.packed_module.top_statement.statements
     assert len(s) == 1
-    assert isinstance(s[0]['statement'], Connect)
+    assert isinstance(s[0].statement, Connect)

@@ -1,4 +1,4 @@
-from . import packer
+from py_hcl.core.module_factory import packer
 
 
 class MetaModule(type):
