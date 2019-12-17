@@ -1,8 +1,3 @@
-"""
-The width module_factory provides bit width information for UIntType
-and SIntType.
-"""
-
 from ..utils import serialize_num
 
 

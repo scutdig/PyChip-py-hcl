@@ -18,4 +18,4 @@ def extract(dct, name):
 def check_io_exist(res, name):
     if 'io' not in res:
         raise ModuleError.not_contains_io(
-            'module_factory {} lack of io attribute'.format(name))
+            'module {} lack of io attribute'.format(name))

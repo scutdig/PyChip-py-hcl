@@ -33,7 +33,7 @@ class DefModule(Statement):
         self.body = body
 
     def serialize_stmt(self, output, indent):
-        output.write(b"module_factory ")
+        output.write(b"module ")
         output.write(serialize_str(self.name))
         output.write(b" :\n")
         indent += 1

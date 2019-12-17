@@ -22,8 +22,8 @@ def check_dup_mod(dest, src, mod_names):
         dest_name = mod_names[0]
         src_name = mod_names[1]
         raise ModuleError.duplicate_name(
-            'module_factory {} has duplicates with {} in '
-            'module_factory {}'.format(dest_name, list(a), src_name)
+            'module {} has duplicates with {} in '
+            'module {}'.format(dest_name, list(a), src_name)
         )
 
 
@@ -44,8 +44,8 @@ def check_dup_io(dest, src, mod_names):
             dest_name = mod_names[0]
             src_name = mod_names[1]
             raise ModuleError.duplicate_name(
-                'module_factory {} has duplicates with {} in '
-                'module_factory {} in io'.format(dest_name, p, src_name)
+                'module {} has duplicates with {} in '
+                'module {} in io'.format(dest_name, p, src_name)
             )
 
 
