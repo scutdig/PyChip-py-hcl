@@ -12,6 +12,7 @@ class SIntT(HclType):
     def __call__(self, value: int):
         from py_hcl.core.expr.lit_sint import SLiteral
 
+        # TODO: Accurate Error Message
         assert signed_num_bin_len(value) <= self.width
         u = SLiteral(value)
         u.hcl_type = SIntT(self.width)

@@ -18,7 +18,7 @@ def test_io():
 
     t = A.packed_module.named_expressions['io'].hcl_type
     assert isinstance(t, BundleT)
-    assert len(t.types) == 4
+    assert len(t.types) == 2
 
 
 def test_io_no_wrap_io():

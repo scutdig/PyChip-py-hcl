@@ -26,6 +26,8 @@ def vec_exp(self: HclType, i: int):
 @dispatch()
 def vec_exp(self: HclType, t: tuple):
     from py_hcl.core.type.vector import VectorT
+
+    # TODO: Accurate Error Message
     assert all(isinstance(i, int) for i in t)
     v = self
     for s in t[::-1]:

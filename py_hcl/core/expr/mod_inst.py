@@ -11,5 +11,5 @@ class ModuleInst(object):
 
 
 def con_module(module_cls):
-    return ExprHolder(module_cls.io.hcl_type.rev(),
-                      ConnSide.BOTH, ModuleInst(module_cls))
+    return ExprHolder(module_cls.io.hcl_type,
+                      ConnSide.LF, ModuleInst(module_cls))
