@@ -25,8 +25,7 @@ def op_apply(operation):
             return func(*objects)
 
         msg = 'No matched functions for types {} while calling operation ' \
-              '"{}"'.format([t.__name__ for t in types], operation)
-
+              '"{}"'.format([type(o).__name__ for o in objects], operation)
         raise NotImplementedError(msg)
 
     return _

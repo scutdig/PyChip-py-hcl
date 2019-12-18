@@ -1,5 +1,5 @@
 from py_hcl.core.expr import ExprHolder
-from py_hcl.core.stmt.connect import ConnLoc
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.type.bundle import BundleT, Dir
@@ -19,7 +19,7 @@ class FieldAccess(object):
 def _(bd, item):
     assert item in bd.hcl_type.types
     dr, tpe = bd.hcl_type.types[item]
-    cd = ConnLoc.RT if dr == Dir.SRC else ConnLoc.LF
+    cd = ConnSide.RT if dr == Dir.SRC else ConnSide.LF
     return ExprHolder(tpe, cd, FieldAccess(bd, item))
 
 

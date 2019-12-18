@@ -1,5 +1,5 @@
-from py_hcl.core.type.uint import UIntT
 from py_hcl.core.expr.lit_uint import ULiteral
+from py_hcl.core.type.uint import UIntT
 
 
 class _(object):

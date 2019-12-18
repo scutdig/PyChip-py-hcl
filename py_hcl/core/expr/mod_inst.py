@@ -1,5 +1,5 @@
 from py_hcl.core.expr import ExprHolder
-from py_hcl.core.stmt.connect import ConnLoc
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.utils import auto_repr
 
 
@@ -12,4 +12,4 @@ class ModuleInst(object):
 
 def con_module(module_cls):
     return ExprHolder(module_cls.io.hcl_type.rev(),
-                      ConnLoc.BOTH, ModuleInst(module_cls))
+                      ConnSide.BOTH, ModuleInst(module_cls))
