@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Dict, Tuple
 
 from py_hcl.core.type import HclType
+from py_hcl.core.type.wrapper import vec_wrap, bd_fld_wrap
 
 
 class Dir(Enum):
@@ -9,6 +10,8 @@ class Dir(Enum):
     SINK = 2
 
 
+@bd_fld_wrap
+@vec_wrap
 class BundleT(HclType):
     def __init__(self, types: Dict[str, Tuple[Dir, HclType]]):
         self.types = types

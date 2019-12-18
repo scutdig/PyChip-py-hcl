@@ -1,7 +1,7 @@
 from typing import Dict, Union
 
 from py_hcl.core.expr import HclExpr
-from py_hcl.core.stmt.connect import ConnLoc
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import Dir, BundleT
@@ -18,11 +18,11 @@ class Output(object):
         self.hcl_type = hcl_type
 
 
-@auto_repr(repr_fields=['hcl_type', 'conn_loc'])
+@auto_repr(repr_fields=['hcl_type', 'conn_side'])
 class IO(HclExpr):
     def __init__(self, named_ports: Dict[str, Union[Input, Output]]):
         self.hcl_type = IO.handle_args(named_ports)
-        self.conn_loc = ConnLoc.BOTH
+        self.conn_side = ConnSide.BOTH
 
     @staticmethod
     def handle_args(named_ports):

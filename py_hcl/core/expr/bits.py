@@ -1,7 +1,8 @@
 from py_hcl.core.expr import ExprHolder
-from py_hcl.core.stmt.connect import ConnLoc
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.hcl_ops import op_register
+from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.utils import auto_repr
@@ -11,7 +12,7 @@ index = op_register('[i]')
 
 
 @auto_repr
-class Bits(object):
+class Bits(HclType):
     def __init__(self, expr, high, low):
         self.high = high
         self.low = low
@@ -22,17 +23,17 @@ class Bits(object):
 def _(uint, high: int, low: int):
     check_bit_width(uint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnLoc.RT, Bits(uint, high, low))
+    return ExprHolder(t, ConnSide.RT, Bits(uint, high, low))
 
 
 @slice_(SIntT)
 def _(sint, high: int, low: int):
     check_bit_width(sint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnLoc.RT, Bits(sint, high, low))
+    return ExprHolder(t, ConnSide.RT, Bits(sint, high, low))
 
 
-@slice_(object)
+@slice_(HclType)
 def _(_0, *_):
     ExprError.op_type_err('slice', _0)
 
@@ -47,9 +48,9 @@ def _(sint, i: int):
     return sint[i:i]
 
 
-@index(object)
+@index(HclType)
 def _(_0, *_):
-    ExprError.op_type_err('index', _0)
+    raise ExprError.op_type_err('index', _0)
 
 
 def check_bit_width(uint, high, low):

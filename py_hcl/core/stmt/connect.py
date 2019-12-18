@@ -9,7 +9,7 @@ from py_hcl.core.type.uint import UIntT
 from py_hcl.utils import auto_repr
 
 
-class ConnLoc(Enum):
+class ConnSide(Enum):
     UNKNOWN = 0
     LF = 1
     RT = 2
@@ -76,5 +76,5 @@ def _(_0, _1):
 
 
 def check_connect_dir(left, right):
-    assert left.conn_loc in (ConnLoc.LF, ConnLoc.BOTH)
-    assert right.conn_loc in (ConnLoc.RT, ConnLoc.BOTH)
+    assert left.conn_side in (ConnSide.LF, ConnSide.BOTH)
+    assert right.conn_side in (ConnSide.RT, ConnSide.BOTH)
