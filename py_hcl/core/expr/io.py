@@ -22,7 +22,7 @@ class Output(object):
 class IO(HclExpr):
     def __init__(self, named_ports: Dict[str, Union[Input, Output]]):
         self.hcl_type = IO.handle_args(named_ports)
-        self.conn_side = ConnSide.BOTH
+        self.conn_side = ConnSide.RT
 
     @staticmethod
     def handle_args(named_ports):

@@ -12,6 +12,7 @@ class UIntT(HclType):
     def __call__(self, value: int):
         from py_hcl.core.expr.lit_uint import ULiteral
 
+        # TODO: Accurate Error Message
         assert unsigned_num_bin_len(value) <= self.width
         u = ULiteral(value)
         u.hcl_type = UIntT(self.width)

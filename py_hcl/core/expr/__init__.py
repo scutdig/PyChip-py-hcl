@@ -1,5 +1,3 @@
-import logging
-
 from multipledispatch.dispatcher import MethodDispatcher
 
 from py_hcl.core.hcl_ops import op_apply
@@ -22,30 +20,32 @@ class HclExpr(object):
     def __getattr__(self, item):
         return op_apply('.')(self, item)
 
+    def __setitem__(self, key, value):
+        return self[key]
+
     __getitem__ = MethodDispatcher('__getitem__')
 
     @__getitem__.register(tuple)
     def _(self, item):
-        logging.warning('slice(): too many index blocks, '
-                        'only the first one takes effect')
-        item = item[0]
-        return self.__getitem__(item)
+        if len(item) == 1:
+            return self[item[0]]
+        return self.__getitem__(item[0])[item[1:]]
 
     @__getitem__.register(slice)
     def _(self, item):
-        """
-        o[5:2]
-        """
-        assert item.start is not None
-        assert item.stop is not None
-        assert item.step is None
-        return op_apply('[i:j]')(self, item.start, item.stop)
+        start = item.start if item.start is not None else 0
+        if item.step is None:
+            if item.stop is not None:
+                return op_apply('[i:j]')(self, start, item.stop)
+            if item.stop is None:
+                return op_apply('[i:]')(self, start)
+        if item.stop is not None:
+            return op_apply('[i:j:k]')(self, start, item.stop, item.step)
+        if item.stop is None:
+            return op_apply('[i::k]')(self, start, item.step)
 
     @__getitem__.register(int)
     def _(self, item):
-        """
-        o[5]
-        """
         return op_apply('[i]')(self, item)
 
     def to_uint(self):

@@ -5,6 +5,8 @@ from py_hcl.core.module_factory.error import ModuleError
 def merge_expr(dest, src, mod_names):
     io_dest = dest['io']
     io_src = src['io']
+
+    # TODO: Accurate Error Message
     assert isinstance(io_dest, IO)
     assert isinstance(io_src, IO)
     io_dest = merge_io(io_dest, io_src, mod_names)
