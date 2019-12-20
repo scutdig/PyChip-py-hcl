@@ -30,7 +30,8 @@ def test_branch():
         with otherwise():
             c <<= a + b
 
-    s = A.packed_module.top_statement.statements
+    s = A.packed_module.statement_list \
+        .stmt_list_head.stmt_holder.top_statement.statements
     assert len(s) == 4
 
     si = ScopeManager.get_scope_info(s[0].scope_id)

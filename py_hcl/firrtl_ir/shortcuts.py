@@ -3,6 +3,7 @@ from .expr.reference import Reference
 from .expr.literal import UIntLiteral, SIntLiteral
 from .type import SIntType, UIntType, VectorType, BundleType
 from .type.width import Width
+from collections import OrderedDict
 
 
 def sw(width):
