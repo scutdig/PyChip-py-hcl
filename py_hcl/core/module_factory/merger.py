@@ -1,57 +1,30 @@
-from py_hcl.core.expr.io import IO
-from py_hcl.core.module_factory.error import ModuleError
+from typing import List
+
+from py_hcl.core.module_factory.inherit_list.named_expr import NamedExprList, \
+    NamedExprNode, NamedExprHolder
+from py_hcl.core.module_factory.inherit_list.stmt_holder import StmtList, \
+    StmtHolder, StmtNode
 
 
-def merge_expr(dest, src, mod_names):
-    io_dest = dest['io']
-    io_src = src['io']
+def merge_expr(modules: List[type],
+               expr_holder: NamedExprHolder) -> NamedExprList:
+    expr_list = None
+    for m in modules[::-1]:
+        h = m.packed_module.named_expr_list \
+            .named_expr_list_head.named_expr_holder
+        expr_list = NamedExprNode(h, expr_list)
 
-    # TODO: Accurate Error Message
-    assert isinstance(io_dest, IO)
-    assert isinstance(io_src, IO)
-    io_dest = merge_io(io_dest, io_src, mod_names)
-
-    check_dup_mod(dest, src, mod_names)
-
-    res = {**dest, **src, 'io': io_dest}
-    return res
+    expr_list = NamedExprNode(expr_holder, expr_list)
+    return NamedExprList(expr_list)
 
 
-def check_dup_mod(dest, src, mod_names):
-    a = set(dest.keys()) & set(src.keys())
-    a.discard('io')
-    if len(a) > 0:
-        dest_name = mod_names[0]
-        src_name = mod_names[1]
-        raise ModuleError.duplicate_name(
-            'module {} has duplicates with {} in '
-            'module {}'.format(dest_name, list(a), src_name)
-        )
+def merge_statement(modules: List[type],
+                    stmt_holder: StmtHolder) -> StmtList:
+    stmt_list = None
+    for m in modules[::-1]:
+        h = m.packed_module.statement_list \
+            .stmt_list_head.stmt_holder
+        stmt_list = StmtNode(h, stmt_list)
 
-
-def merge_io(dest, src, mod_names):
-    check_dup_io(dest, src, mod_names)
-    dest.hcl_type.types = {
-        **dest.hcl_type.types,
-        **src.hcl_type.types
-    }
-
-    return dest
-
-
-def check_dup_io(dest, src, mod_names):
-    names = dest.hcl_type.types.keys()
-    for p in src.hcl_type.types.keys():
-        if p in names:
-            dest_name = mod_names[0]
-            src_name = mod_names[1]
-            raise ModuleError.duplicate_name(
-                'module {} has duplicates with {} in '
-                'module {} in io'.format(dest_name, p, src_name)
-            )
-
-
-def merge_scope(dest, src, mod_names):
-    dest.statements.extend(src.statements)
-
-    return dest
+    stmt_list = StmtNode(stmt_holder, stmt_list)
+    return StmtList(stmt_list)

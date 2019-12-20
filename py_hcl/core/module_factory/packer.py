@@ -1,31 +1,30 @@
+from py_hcl.core.module_factory.inherit_list.named_expr import NamedExprHolder
+from py_hcl.core.module_factory.inherit_list.stmt_holder import StmtHolder
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
+from py_hcl.core.utils import module_inherit_mro
 from . import merger
 from . import extractor
 from py_hcl.core.module.packed_module import PackedModule
 
 
-def pack(bases, dct, name):
-    raw_expr = extractor.extract(dct, name)
+def pack(bases, dct, name) -> PackedModule:
+    raw_expr = extractor.extract(dct)
     raw_scope = StatementTrapper.trap()
 
-    named_expression, top_statement = \
+    named_expr_list, statement_list = \
         handle_inherit(bases, raw_expr, raw_scope, name)
 
-    res = PackedModule(name, named_expression, top_statement)
+    res = PackedModule(name, named_expr_list, statement_list)
     return res
 
 
 def handle_inherit(bases, named_expression, top_statement, name):
-    for b in bases:
-        if not hasattr(b, 'packed_module'):
-            continue
+    modules = module_inherit_mro(bases)
 
-        pm = b.packed_module
-        expr = pm.named_expressions
-        ts = pm.top_statement
+    named_expr_list = \
+        merger.merge_expr(modules, NamedExprHolder(name, named_expression))
 
-        named_expression = merger.merge_expr(named_expression, expr,
-                                             (name, pm.name))
-        top_statement = merger.merge_scope(top_statement, ts, (name, pm.name))
+    statement_list = \
+        merger.merge_statement(modules, StmtHolder(name, top_statement))
 
-    return named_expression, top_statement
+    return named_expr_list, statement_list

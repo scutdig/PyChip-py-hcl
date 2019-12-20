@@ -16,7 +16,8 @@ def test_io():
 
         io.o <<= io.i
 
-    t = A.packed_module.named_expressions['io'].hcl_type
+    t = A.packed_module.named_expr_list.named_expr_list_head \
+        .named_expr_holder.named_expressions['io'].hcl_type
     assert isinstance(t, BundleT)
     assert len(t.types) == 2
 
