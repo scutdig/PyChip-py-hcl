@@ -12,7 +12,7 @@ def test_module():
         a = HclExpr()
 
     assert hasattr(A, "packed_module")
-    assert len(A.packed_module.named_expr_list.named_expr_list_head
+    assert len(A.packed_module.named_expr_chain.named_expr_chain_head
                .named_expr_holder.named_expressions) == 2
 
 

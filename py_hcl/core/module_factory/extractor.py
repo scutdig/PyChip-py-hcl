@@ -7,6 +7,6 @@ def extract(dct):
     for k, v in dct.items():
         # TODO: check if is source not composed expression
         if isinstance(v, HclExpr):
-            res[k] = v
+            res[k] = {"expr_id": v.id}
 
     return res

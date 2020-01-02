@@ -7,16 +7,17 @@ from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 index = op_register('[i]')
 
 
-@auto_repr
+@json_serialize
 class VecIndex(object):
     def __init__(self, expr, idx: int):
+        self.operation = "vec_index"
         self.index = idx
-        self.expr = expr
+        self.ref_expr_id = expr.id
 
 
 @index(UIntT)

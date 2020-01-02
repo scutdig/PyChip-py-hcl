@@ -1,32 +1,34 @@
 from py_hcl.core.expr import ExprHolder
+from py_hcl.core.expr.error import ExprError
 from py_hcl.core.expr.utils import assert_right_side
 from py_hcl.core.expr.vec_holder import VecHolder
-from py_hcl.core.stmt.connect import ConnSide
-from py_hcl.core.expr.error import ExprError
 from py_hcl.core.hcl_ops import op_register
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 slice_ = op_register('[i:j]')
 
 
-@auto_repr
+@json_serialize
 class Bits(object):
     def __init__(self, expr, high, low):
+        self.operation = 'bits'
         self.high = high
         self.low = low
-        self.expr = expr
+        self.ref_expr_id = expr.id
 
 
-@auto_repr
+@json_serialize
 class VecSlice(object):
     def __init__(self, expr, low, high):
+        self.operation = 'vec_slice'
         self.low = low
         self.high = high
-        self.expr = expr
+        self.ref_expr_id = expr.id
 
 
 @slice_(UIntT)

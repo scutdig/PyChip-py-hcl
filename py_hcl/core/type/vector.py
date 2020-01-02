@@ -7,5 +7,6 @@ class VectorT(HclType):
     def __init__(self, inner_type: HclType, size: int):
         # TODO: Accurate Error Message
         assert size > 0
+        self.type = "vector"
         self.size = size
         self.inner_type = inner_type

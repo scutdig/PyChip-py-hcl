@@ -1,5 +1,7 @@
 from enum import Enum
 
+from py_hcl.utils import json_serialize
+
 
 class ScopeType(Enum):
     TOP = 0
@@ -7,6 +9,16 @@ class ScopeType(Enum):
     WHEN = 2
     ELSE_WHEN = 3
     OTHERWISE = 4
+
+
+@json_serialize
+class ScopeInfo(object):
+    def __init__(self, scope_id, scope_level, scope_type, tag_object=None):
+        self.scope_id = scope_id
+        self.scope_level = scope_level
+        self.scope_type = scope_type
+        if tag_object:
+            self.tag_object = tag_object
 
 
 class ScopeLevelManager(object):
@@ -36,15 +48,16 @@ class ScopeIdManager(object):
 
 
 class ScopeManager(object):
-    scope_list = [{
-        # TOP SCOPE which contains all modules
-        'scope_id': ScopeIdManager.next_id(),
-        'scope_level': ScopeLevelManager.current_level(),
-        'scope_type': ScopeType.TOP,
-        'tag_object': None
-    }]
+    scope_list = [
+        ScopeInfo(
+            # TOP SCOPE which contains all modules
+            scope_id=ScopeIdManager.next_id(),
+            scope_level=ScopeLevelManager.current_level(),
+            scope_type=ScopeType.TOP,
+        )
+    ]
     scope_id_map = {
-        scope_list[0]['scope_id']: scope_list[0]
+        scope_list[0].scope_id: scope_list[0]
     }
     scope_expanding_hooks = []
     scope_shrinking_hooks = []
@@ -55,12 +68,12 @@ class ScopeManager(object):
 
         current_scope = cls.current_scope()
         next_id = ScopeIdManager.next_id()
-        next_scope = {
-            'scope_id': next_id,
-            'scope_level': ScopeLevelManager.current_level(),
-            'scope_type': scope_type,
-            'tag_object': tag_object
-        }
+        next_scope = ScopeInfo(
+            scope_id=next_id,
+            scope_level=ScopeLevelManager.current_level(),
+            scope_type=scope_type,
+            tag_object=tag_object,
+        )
         cls.scope_id_map[next_id] = next_scope
         cls.scope_list.append(next_scope)
 

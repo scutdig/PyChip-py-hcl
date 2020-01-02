@@ -3,13 +3,42 @@ from multipledispatch.dispatcher import MethodDispatcher
 from py_hcl.core.hcl_ops import op_apply
 from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.type import UnknownType, HclType
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
-@auto_repr
+class ExprIdGen:
+    id = -1
+
+    @classmethod
+    def next_id(cls):
+        cls.id += 1
+        return cls.id
+
+
+class ExprPool:
+    pool = {}
+
+    @classmethod
+    def add(cls, i, obj):
+        cls.pool[i] = obj
+
+    @classmethod
+    def fetch_all(cls):
+        p = cls.pool
+        cls.pool = {}
+        return p
+
+
+@json_serialize
 class HclExpr(object):
     hcl_type = UnknownType()
     conn_side = ConnSide.UNKNOWN
+
+    def __new__(cls, *args):
+        obj = super().__new__(cls)
+        obj.id = ExprIdGen.next_id()
+        ExprPool.add(obj.id, obj)
+        return obj
 
     def __ilshift__(self, other):
         return op_apply('<<=')(self, other)
@@ -58,9 +87,10 @@ class HclExpr(object):
         return op_apply('to_bool')(self)
 
 
-@auto_repr(repr_fields=['hcl_type', 'conn_side', 'assoc_value'])
+@json_serialize(json_fields=['id', 'type', 'hcl_type', 'conn_side', 'op_node'])
 class ExprHolder(HclExpr):
-    def __init__(self, hcl_type: HclType, conn_side: ConnSide, assoc_value):
+    def __init__(self, hcl_type: HclType, conn_side: ConnSide, op_node):
+        self.type = 'expr_holder'
         self.hcl_type = hcl_type
         self.conn_side = conn_side
-        self.assoc_value = assoc_value
+        self.op_node = op_node

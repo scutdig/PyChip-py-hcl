@@ -1,4 +1,4 @@
-from py_hcl.core.stmt import LineStatement, BlockStatement
+from py_hcl.core.stmt import LineStatement, ClusterStatement
 from .scope import ScopeManager, ScopeType
 
 
@@ -29,7 +29,7 @@ class StatementTrapper(object):
     @classmethod
     def track(cls, statement):
         statement = LineStatement(
-            ScopeManager.current_scope()['scope_id'],
+            ScopeManager.current_scope().scope_id,
             statement
         )
         cls.trapped_stmts[-1].append(statement)
@@ -41,7 +41,7 @@ class StatementTrapper(object):
     @classmethod
     def on_scope_shrinking(cls, current_scope, next_scope):
         stmts = cls.trapped_stmts.pop()
-        cls.trapped_stmts[-1].append(BlockStatement(current_scope, stmts))
+        cls.trapped_stmts[-1].append(ClusterStatement(current_scope, stmts))
 
 
 set_up()

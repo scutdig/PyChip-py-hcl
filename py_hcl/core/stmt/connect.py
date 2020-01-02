@@ -9,7 +9,7 @@ from py_hcl.core.type.bundle import BundleT, Dir
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
 class ConnSide(Enum):
@@ -19,11 +19,12 @@ class ConnSide(Enum):
     BOTH = 3
 
 
-@auto_repr
+@json_serialize
 class Connect(object):
     def __init__(self, left, right):
-        self.left = left
-        self.right = right
+        self.stmt_type = 'connect'
+        self.left_expr_id = left.id
+        self.right_expr_id = right.id
 
 
 connector = op_register('<<=')
@@ -78,14 +79,14 @@ def _(left, right):
     check_connect_dir(left, right)
 
     # TODO: Accurate Error Message
-    dir_and_types = right.hcl_type.types
+    dir_and_types = right.hcl_type.fields
     keys = dir_and_types.keys()
-    assert keys == left.hcl_type.types.keys()
+    assert keys == left.hcl_type.fields.keys()
 
     for k in keys:
         lf = op_apply('.')(left, k)
         rt = op_apply('.')(right, k)
-        if dir_and_types[k][0] == Dir.SRC:
+        if dir_and_types[k]['dir'] == Dir.SRC:
             op_apply('<<=')(lf, rt)
         else:
             op_apply('<<=')(rt, lf)
