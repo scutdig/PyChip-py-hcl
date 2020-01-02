@@ -1,27 +1,22 @@
 from py_hcl.core.expr import HclExpr
+from py_hcl.core.stmt import ClusterStatement
 from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.scope import ScopeManager, ScopeType
-from py_hcl.core.stmt import BlockStatement
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.type.uint import UIntT
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
-@auto_repr
+@json_serialize
 class When(object):
     def __init__(self, cond: HclExpr):
-        self.cond = cond
+        self.cond_expr_id = cond.id
 
 
-@auto_repr
+@json_serialize
 class ElseWhen(object):
     def __init__(self, cond: HclExpr):
-        self.cond = cond
-
-
-@auto_repr
-class Otherwise(object):
-    pass
+        self.cond_expr_id = cond.id
 
 
 def do_when_enter(cond_expr: HclExpr):
@@ -50,8 +45,7 @@ def do_else_when_exit():
 def do_otherwise_enter():
     check_branch_syntax()
 
-    o = Otherwise()
-    ScopeManager.expand_scope(ScopeType.OTHERWISE, o)
+    ScopeManager.expand_scope(ScopeType.OTHERWISE)
 
 
 def do_otherwise_exit():
@@ -82,9 +76,9 @@ def check_exists_pre_stmts():
 def check_exists_pre_when_block():
     last_stmt = StatementTrapper.trapped_stmts[-1][-1]
 
-    if isinstance(last_stmt, BlockStatement):
+    if isinstance(last_stmt, ClusterStatement):
         last_scope = last_stmt.scope_info
-        last_scope_type = last_scope['scope_type']
+        last_scope_type = last_scope.scope_type
 
         when = last_scope_type == ScopeType.WHEN
         else_when = last_scope_type == ScopeType.ELSE_WHEN
@@ -100,11 +94,11 @@ def check_exists_pre_when_block():
 def check_correct_block_level():
     last_stmt = StatementTrapper.trapped_stmts[-1][-1]
 
-    if isinstance(last_stmt, BlockStatement):
+    if isinstance(last_stmt, ClusterStatement):
         last_scope = last_stmt.scope_info
         current_scope = ScopeManager.current_scope()
-        last_scope_level = last_scope['scope_level']
-        current_scope_level = current_scope['scope_level']
+        last_scope_level = last_scope.scope_level
+        current_scope_level = current_scope.scope_level
         if last_scope_level == current_scope_level + 1:
             return
 

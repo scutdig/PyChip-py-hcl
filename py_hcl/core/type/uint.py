@@ -7,6 +7,7 @@ from py_hcl.utils import unsigned_num_bin_len
 @vec_wrap
 class UIntT(HclType):
     def __init__(self, width):
+        self.type = "uint"
         self.width = width
 
     def __call__(self, value: int):

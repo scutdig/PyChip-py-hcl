@@ -1,30 +1,30 @@
 from typing import List
 
-from py_hcl.core.module_factory.inherit_list.named_expr import NamedExprList, \
+from .inherit_list.named_expr import NamedExprChain, \
     NamedExprNode, NamedExprHolder
-from py_hcl.core.module_factory.inherit_list.stmt_holder import StmtList, \
+from .inherit_list.stmt_holder import StmtChain, \
     StmtHolder, StmtNode
 
 
 def merge_expr(modules: List[type],
-               expr_holder: NamedExprHolder) -> NamedExprList:
+               expr_holder: NamedExprHolder) -> NamedExprChain:
     expr_list = None
     for m in modules[::-1]:
-        h = m.packed_module.named_expr_list \
-            .named_expr_list_head.named_expr_holder
+        h = m.packed_module.named_expr_chain \
+            .named_expr_chain_head.named_expr_holder
         expr_list = NamedExprNode(h, expr_list)
 
     expr_list = NamedExprNode(expr_holder, expr_list)
-    return NamedExprList(expr_list)
+    return NamedExprChain(expr_list)
 
 
 def merge_statement(modules: List[type],
-                    stmt_holder: StmtHolder) -> StmtList:
+                    stmt_holder: StmtHolder) -> StmtChain:
     stmt_list = None
     for m in modules[::-1]:
-        h = m.packed_module.statement_list \
-            .stmt_list_head.stmt_holder
+        h = m.packed_module.statement_chain \
+            .stmt_chain_head.stmt_holder
         stmt_list = StmtNode(h, stmt_list)
 
     stmt_list = StmtNode(stmt_holder, stmt_list)
-    return StmtList(stmt_list)
+    return StmtChain(stmt_list)

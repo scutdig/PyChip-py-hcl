@@ -1,10 +1,10 @@
 from typing import Optional, Dict
 
 from py_hcl.core.expr import HclExpr
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
-@auto_repr
+@json_serialize
 class NamedExprHolder(object):
     def __init__(self, module_name: str,
                  named_expressions: Dict[str, HclExpr]):
@@ -12,16 +12,17 @@ class NamedExprHolder(object):
         self.named_expressions = named_expressions
 
 
-@auto_repr
+@json_serialize
 class NamedExprNode(object):
     def __init__(self,
                  named_expr_holder: NamedExprHolder,
                  next_node: Optional["NamedExprNode"]):
         self.named_expr_holder = named_expr_holder
-        self.next_node = next_node
+        if next_node:
+            self.next_node = next_node
 
 
-@auto_repr
-class NamedExprList(object):
-    def __init__(self, named_expr_list_head: NamedExprNode):
-        self.named_expr_list_head = named_expr_list_head
+@json_serialize
+class NamedExprChain(object):
+    def __init__(self, named_expr_chain_head: NamedExprNode):
+        self.named_expr_chain_head = named_expr_chain_head

@@ -30,35 +30,35 @@ def test_branch():
         with otherwise():
             c <<= a + b
 
-    s = A.packed_module.statement_list \
-        .stmt_list_head.stmt_holder.top_statement.statements
+    s = A.packed_module.statement_chain \
+        .stmt_chain_head.stmt_holder.top_statement.statements
     assert len(s) == 4
 
     si = ScopeManager.get_scope_info(s[0].scope_id)
-    assert si['scope_type'] == ScopeType.GROUND
+    assert si.scope_type == ScopeType.GROUND
     assert isinstance(s[0].statement, Connect)
 
     si = s[1].scope_info
-    assert si['scope_type'] == ScopeType.WHEN
-    assert si['scope_level'] == 2
+    assert si.scope_type == ScopeType.WHEN
+    assert si.scope_level == 2
     assert len(s[1].statements) == 2
 
     si = s[2].scope_info
-    assert si['scope_type'] == ScopeType.ELSE_WHEN
-    assert si['scope_level'] == 2
+    assert si.scope_type == ScopeType.ELSE_WHEN
+    assert si.scope_level == 2
     assert len(s[2].statements) == 3
 
     si = s[2].statements[1].scope_info
-    assert si['scope_type'] == ScopeType.WHEN
-    assert si['scope_level'] == 3
+    assert si.scope_type == ScopeType.WHEN
+    assert si.scope_level == 3
 
     si = s[2].statements[2].scope_info
-    assert si['scope_type'] == ScopeType.OTHERWISE
-    assert si['scope_level'] == 3
+    assert si.scope_type == ScopeType.OTHERWISE
+    assert si.scope_level == 3
 
     si = s[3].scope_info
-    assert si['scope_type'] == ScopeType.OTHERWISE
-    assert si['scope_level'] == 2
+    assert si.scope_type == ScopeType.OTHERWISE
+    assert si.scope_level == 2
     assert len(s[3].statements) == 1
 
 

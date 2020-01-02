@@ -1,7 +1,7 @@
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
-@auto_repr
+@json_serialize
 class HclType(object):
     pass
 

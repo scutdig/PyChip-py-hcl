@@ -1,28 +1,30 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.expr.utils import assert_right_side
-from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.hcl_ops import op_register
+from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 to_bool = op_register('to_bool')
 to_uint = op_register('to_uint')
 to_sint = op_register('to_sint')
 
 
-@auto_repr
+@json_serialize
 class ToSInt(object):
     def __init__(self, expr):
-        self.expr = expr
+        self.operation = "to_sint"
+        self.ref_expr_id = expr.id
 
 
-@auto_repr
+@json_serialize
 class ToUInt(object):
     def __init__(self, expr):
-        self.expr = expr
+        self.operation = "to_uint"
+        self.ref_expr_id = expr.id
 
 
 @to_bool(UIntT)

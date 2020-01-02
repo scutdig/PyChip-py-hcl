@@ -1,5 +1,6 @@
 import pytest
 
+from py_hcl.core.expr import ExprPool
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.type.bundle import BundleT
 from py_hcl.dsl.expr.io import IO, Input, Output
@@ -16,10 +17,11 @@ def test_io():
 
         io.o <<= io.i
 
-    t = A.packed_module.named_expr_list.named_expr_list_head \
-        .named_expr_holder.named_expressions['io'].hcl_type
+    t = A.packed_module.named_expr_chain.named_expr_chain_head \
+        .named_expr_holder.named_expressions['io']
+    t = ExprPool.pool[t['expr_id']].hcl_type
     assert isinstance(t, BundleT)
-    assert len(t.types) == 2
+    assert len(t.fields) == 2
 
 
 def test_io_no_wrap_io():

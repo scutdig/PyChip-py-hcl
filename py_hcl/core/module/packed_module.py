@@ -1,9 +1,9 @@
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 
-@auto_repr
+@json_serialize
 class PackedModule(object):
-    def __init__(self, name, named_expr_list, statement_list):
+    def __init__(self, name, named_expr_chain, statement_chain):
         self.name = name
-        self.named_expr_list = named_expr_list
-        self.statement_list = statement_list
+        self.named_expr_chain = named_expr_chain
+        self.statement_chain = statement_chain

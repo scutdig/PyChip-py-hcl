@@ -7,6 +7,7 @@ from py_hcl.utils import signed_num_bin_len
 @vec_wrap
 class SIntT(HclType):
     def __init__(self, width):
+        self.type = "sint"
         self.width = width
 
     def __call__(self, value: int):

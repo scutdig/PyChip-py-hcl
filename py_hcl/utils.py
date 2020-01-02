@@ -1,3 +1,5 @@
+import json
+from enum import Enum
 from functools import partial
 
 from multipledispatch import dispatch
@@ -11,24 +13,38 @@ def unsigned_num_bin_len(num):
     return len("{:b}".format(num))
 
 
-def auto_repr(cls=None, repr_fields=()):
-    def _(_cls, _repr_fields):
-        def __repr__(self):
-            if len(_repr_fields) == 0:
+def json_serialize(cls=None, json_fields=()):
+    def rec(v):
+        if hasattr(v, "json_obj"):
+            return v.json_obj()
+        elif isinstance(v, dict):
+            return {k: rec(v) for k, v in v.items()}
+        elif isinstance(v, (list, tuple)):
+            return [rec(v) for v in v]
+        elif isinstance(v, Enum):
+            return v.name
+        return v
+
+    def serialize(self):
+        return json.dumps(self.json_obj(), indent=2)
+
+    def _(_cls, _json_fields):
+        def js(self):
+            if len(_json_fields) == 0:
                 kv = vars(self)
             else:
-                kv = {f: vars(self)[f] for f in _repr_fields}
-            ls = ['{}={}'.format(k, _fm(v)) for k, v in kv.items()]
-            fs = _iter_repr(ls)
-            return '%s {%s}' % (type(self).__name__, ''.join(fs))
+                kv = {f: vars(self)[f] for f in _json_fields}
 
-        _cls.__repr__ = __repr__
+            return {k: rec(v) for k, v in kv.items()}
+
+        _cls.json_obj = js
+        _cls.__str__ = serialize
         return _cls
 
     if cls:
-        return _(cls, repr_fields)
+        return _(cls, json_fields)
 
-    return partial(_, _repr_fields=repr_fields)
+    return partial(_, _json_fields=json_fields)
 
 
 @dispatch()

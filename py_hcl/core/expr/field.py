@@ -1,35 +1,36 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.io import IO, IOHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import ConnSide
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import BundleT, Dir
-from py_hcl.utils import auto_repr
+from py_hcl.utils import json_serialize
 
 field_accessor = op_register('.')
 
 
-@auto_repr
+@json_serialize
 class FieldAccess(object):
     def __init__(self, expr, item):
+        self.operation = "field_access"
         self.item = item
-        self.expr = expr
+        self.ref_expr_id = expr.id
 
 
 @field_accessor(BundleT)
 def _(bd, item):
     # TODO: Accurate Error Message
-    assert item in bd.hcl_type.types
+    assert item in bd.hcl_type.fields
 
     # build connect side
     sd = bd.conn_side
-    dr, tpe = bd.hcl_type.types[item]
+    f = bd.hcl_type.fields[item]
+    dr, tpe = f["dir"], f["hcl_type"]
     new_sd = build_new_sd(sd, dr)
 
-    # for io
-    if isinstance(bd, IO):
-        bd = fetch_inner_io_holder(bd, item)
+    # # for io
+    # if isinstance(bd, IO):
+    #     bd = fetch_inner_io_holder(bd, item)
 
     return ExprHolder(tpe, new_sd, FieldAccess(bd, item))
 
@@ -49,9 +50,9 @@ def build_new_sd(sd: ConnSide, dr: Dir) -> ConnSide:
     return ConnSide.RT
 
 
-def fetch_inner_io_holder(io, name) -> IOHolder:
-    current_node = io.io_chain_head
-    while True:
-        if name in current_node.io_holder.named_ports:
-            return current_node.io_holder
-        current_node = current_node.next_node
+# def fetch_inner_io_holder(io, name) -> IOHolder:
+#     current_node = io.io_chain_head
+#     while True:
+#         if name in current_node.io_holder.named_ports:
+#             return current_node.io_holder
+#         current_node = current_node.next_node
