@@ -22,15 +22,6 @@ class Bits(object):
         self.ref_expr_id = expr.id
 
 
-@json_serialize
-class VecSlice(object):
-    def __init__(self, expr, low, high):
-        self.operation = 'vec_slice'
-        self.low = low
-        self.high = high
-        self.ref_expr_id = expr.id
-
-
 @slice_(UIntT)
 @assert_right_side
 def _(uint, high: int, low: int):

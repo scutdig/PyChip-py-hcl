@@ -15,18 +15,16 @@ class ExprIdGen:
         return cls.id
 
 
-class ExprPool:
-    pool = {}
+class ExprTable:
+    table = {}
 
     @classmethod
     def add(cls, i, obj):
-        cls.pool[i] = obj
+        cls.table[i] = obj
 
     @classmethod
-    def fetch_all(cls):
-        p = cls.pool
-        cls.pool = {}
-        return p
+    def get(cls, i):
+        return cls.table[i]
 
 
 @json_serialize
@@ -37,7 +35,7 @@ class HclExpr(object):
     def __new__(cls, *args):
         obj = super().__new__(cls)
         obj.id = ExprIdGen.next_id()
-        ExprPool.add(obj.id, obj)
+        ExprTable.add(obj.id, obj)
         return obj
 
     def __ilshift__(self, other):

@@ -36,7 +36,8 @@ class IONode(object):
     def __init__(self, io_holder: IOHolder,
                  next_node: Optional["IOHolder"]):
         self.io_holder = io_holder
-        self.next_node = next_node
+        if next_node is not None:
+            self.next_node = next_node
 
 
 @json_serialize(json_fields=["id", "type", "hcl_type",

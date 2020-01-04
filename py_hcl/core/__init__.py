@@ -5,3 +5,4 @@ def install_ops():
     import py_hcl.core.expr.slice  # noqa: F401
     import py_hcl.core.expr.index  # noqa: F401
     import py_hcl.core.expr.convert  # noqa: F401
+    import py_hcl.core.expr.extend  # noqa: F401
