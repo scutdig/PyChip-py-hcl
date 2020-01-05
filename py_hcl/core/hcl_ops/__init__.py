@@ -12,6 +12,7 @@ op_map = {
     'to_sint': Dispatcher('to_sint'),
     'to_uint': Dispatcher('to_uint'),
     'to_bool': Dispatcher('to_bool'),
+    'extend': Dispatcher('extend'),
 }
 
 

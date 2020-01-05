@@ -28,10 +28,6 @@ def _(bd, item):
     dr, tpe = f["dir"], f["hcl_type"]
     new_sd = build_new_sd(sd, dr)
 
-    # # for io
-    # if isinstance(bd, IO):
-    #     bd = fetch_inner_io_holder(bd, item)
-
     return ExprHolder(tpe, new_sd, FieldAccess(bd, item))
 
 
@@ -48,11 +44,3 @@ def build_new_sd(sd: ConnSide, dr: Dir) -> ConnSide:
     if sd == ConnSide.LF and dr == dr.SRC:
         return ConnSide.LF
     return ConnSide.RT
-
-
-# def fetch_inner_io_holder(io, name) -> IOHolder:
-#     current_node = io.io_chain_head
-#     while True:
-#         if name in current_node.io_holder.named_ports:
-#             return current_node.io_holder
-#         current_node = current_node.next_node

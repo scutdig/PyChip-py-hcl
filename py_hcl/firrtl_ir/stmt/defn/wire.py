@@ -8,7 +8,7 @@ class DefWire(Statement):
         self.tpe = tpe
 
     def serialize_stmt(self, output, indent):
-        output.write(b"wire.py ")
+        output.write(b"wire ")
         output.write(serialize_str(self.name))
         output.write(b" : ")
         self.tpe.serialize(output)

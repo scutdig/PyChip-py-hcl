@@ -40,7 +40,10 @@ def _(left, right):
         logging.warning(msg)
         right = right[left.hcl_type.width - 1:0]
 
-    assert left.hcl_type.width >= right.hcl_type.width
+    if left.hcl_type.width > right.hcl_type.width:
+        right = op_apply('extend')(right, left.hcl_type.width)
+
+    assert left.hcl_type.width == right.hcl_type.width
     StatementTrapper.track(Connect(left, right))
     return left
 
@@ -56,6 +59,10 @@ def _(left, right):
             ))
         right = right[left.hcl_type.width - 1:0].to_sint()
 
+    if left.hcl_type.width > right.hcl_type.width:
+        right = op_apply('extend')(right, left.hcl_type.width)
+
+    assert left.hcl_type.width == right.hcl_type.width
     StatementTrapper.track(Connect(left, right))
     return left
 
@@ -64,6 +71,14 @@ def _(left, right):
 def _(left, right):
     msg = 'connect(): connecting SInt to UInt, an auto-conversion will occur'
     logging.warning(msg)
+
+    if left.hcl_type.width < right.hcl_type.width:
+        logging.warning(
+            'connect(): connecting {} to {} will truncate the bits'.format(
+                right.hcl_type, left.hcl_type
+            ))
+        return op_apply('<<=')(left, right[left.hcl_type.width - 1:0])
+
     return op_apply('<<=')(left, right.to_uint())
 
 
@@ -71,6 +86,14 @@ def _(left, right):
 def _(left, right):
     msg = 'connect(): connecting UInt to SInt, an auto-conversion will occur'
     logging.warning(msg)
+
+    if left.hcl_type.width < right.hcl_type.width:
+        logging.warning(
+            'connect(): connecting {} to {} will truncate the bits'.format(
+                right.hcl_type, left.hcl_type
+            ))
+        right = right[left.hcl_type.width - 1:0]
+
     return op_apply('<<=')(left, right.to_sint())
 
 

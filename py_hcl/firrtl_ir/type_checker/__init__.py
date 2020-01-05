@@ -1,4 +1,5 @@
 from multipledispatch import dispatch
+import logging
 
 from .stmt.definition import check
 from .stmt.block import check
@@ -28,6 +29,7 @@ def check(_: Reference):
 
 @checker(object)
 def check(_: object):
+    logging.error("unsupported type: " + _.__class__.__name__)
     return False
 
 

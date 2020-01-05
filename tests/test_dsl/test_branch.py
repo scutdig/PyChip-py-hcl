@@ -1,5 +1,6 @@
 import pytest
 
+from py_hcl.core.stmt import ConditionStatement
 from py_hcl.core.stmt.connect import Connect
 from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.scope import ScopeType, ScopeManager
@@ -29,37 +30,29 @@ def test_branch():
                 c <<= a
         with otherwise():
             c <<= a + b
+            c <<= a + b
+            c <<= a + b
+            c <<= a + b
 
     s = A.packed_module.statement_chain \
         .stmt_chain_head.stmt_holder.top_statement.statements
-    assert len(s) == 4
+    assert len(s) == 2
 
     si = ScopeManager.get_scope_info(s[0].scope_id)
     assert si.scope_type == ScopeType.GROUND
     assert isinstance(s[0].statement, Connect)
 
-    si = s[1].scope_info
-    assert si.scope_type == ScopeType.WHEN
-    assert si.scope_level == 2
-    assert len(s[1].statements) == 2
+    assert isinstance(s[1], ConditionStatement)
+    assert len(s[1].seq_stmts) == 2
 
-    si = s[2].scope_info
-    assert si.scope_type == ScopeType.ELSE_WHEN
-    assert si.scope_level == 2
-    assert len(s[2].statements) == 3
+    assert len(s[1].alt_stmts) == 1
+    assert isinstance(s[1].alt_stmts[0], ConditionStatement)
+    assert len(s[1].alt_stmts[0].seq_stmts) == 2
+    assert len(s[1].alt_stmts[0].alt_stmts) == 4
 
-    si = s[2].statements[1].scope_info
-    assert si.scope_type == ScopeType.WHEN
-    assert si.scope_level == 3
-
-    si = s[2].statements[2].scope_info
-    assert si.scope_type == ScopeType.OTHERWISE
-    assert si.scope_level == 3
-
-    si = s[3].scope_info
-    assert si.scope_type == ScopeType.OTHERWISE
-    assert si.scope_level == 2
-    assert len(s[3].statements) == 1
+    assert isinstance(s[1].alt_stmts[0].seq_stmts[1], ConditionStatement)
+    assert len(s[1].alt_stmts[0].seq_stmts[1].seq_stmts) == 1
+    assert len(s[1].alt_stmts[0].seq_stmts[1].alt_stmts) == 1
 
 
 def test_branch_syntax_error1():

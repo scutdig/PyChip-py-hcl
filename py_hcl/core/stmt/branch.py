@@ -9,20 +9,20 @@ from py_hcl.utils import json_serialize
 
 @json_serialize
 class When(object):
-    def __init__(self, cond: HclExpr):
-        self.cond_expr_id = cond.id
+    def __init__(self, cond_expr_id: int):
+        self.cond_expr_id = cond_expr_id
 
 
 @json_serialize
 class ElseWhen(object):
-    def __init__(self, cond: HclExpr):
-        self.cond_expr_id = cond.id
+    def __init__(self, cond_expr_id: int):
+        self.cond_expr_id = cond_expr_id
 
 
 def do_when_enter(cond_expr: HclExpr):
     check_bool_expr(cond_expr)
 
-    w = When(cond_expr)
+    w = When(cond_expr.id)
     ScopeManager.expand_scope(ScopeType.WHEN, w)
 
 
@@ -34,7 +34,7 @@ def do_else_when_enter(cond_expr: HclExpr):
     check_bool_expr(cond_expr)
     check_branch_syntax()
 
-    e = ElseWhen(cond_expr)
+    e = ElseWhen(cond_expr.id)
     ScopeManager.expand_scope(ScopeType.ELSE_WHEN, e)
 
 

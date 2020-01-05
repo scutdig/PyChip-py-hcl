@@ -1,3 +1,5 @@
+import logging
+
 from multipledispatch import dispatch
 
 from ...expr.accessor import SubField, SubIndex, SubAccess
@@ -16,9 +18,15 @@ checker = dispatch
 def check(sub_field):
     from .. import check_all_expr
     if not check_all_expr(sub_field.bundle_ref):
+        logging.error("sub_field: reference check failed - {}".format(
+            sub_field.bundle_ref
+        ))
         return False
 
     if not type_in(sub_field.bundle_ref.tpe, BundleType):
+        logging.error("sub_field: reference type check failed - {}".format(
+            sub_field.bundle_ref
+        ))
         return False
 
     field = None
@@ -27,6 +35,9 @@ def check(sub_field):
             field = f
             break
     if field is None:
+        logging.error("sub_field: field not exist - {} not in {}".format(
+            sub_field.name, sub_field.bundle_ref.tpe.fields
+        ))
         return False
 
     if not equal(field.tpe, sub_field.tpe):
@@ -57,6 +68,7 @@ def check(sub_index):
 def check(sub_access):
     from .. import check_all_expr
     if not check_all_expr(sub_access.vector_ref, sub_access.index_ref):
+
         return False
 
     if not type_in(sub_access.vector_ref.tpe, VectorType):

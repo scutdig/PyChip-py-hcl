@@ -13,7 +13,7 @@ def test_module():
 
     assert hasattr(A, "packed_module")
     assert len(A.packed_module.named_expr_chain.named_expr_chain_head
-               .named_expr_holder.named_expressions) == 2
+               .named_expr_holder.named_expression_table) == 2
 
 
 def test_module_not_contains_io():
