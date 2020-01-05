@@ -46,8 +46,6 @@ class FullAdder(Module):
 
 Compiling module by calling `compile_to_firrtl`:
 ```python
-from py_hcl.compile import compile_to_firrtl
-
 compile_to_firrtl(FullAdder, 'full_adder.fir')
 ```
 
