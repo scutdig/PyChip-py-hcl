@@ -41,6 +41,6 @@ def convert_type(vec: VectorT):
 def convert_type(bundle: BundleT):
     fields = []
     for k, v in bundle.fields.items():
-        f = Field(k, convert_type(v['hcl_type']), v['dir'] == Dir.SRC)
+        f = Field(k, convert_type(v['hcl_type']), v['dir'] == Dir.SINK)
         fields.append(f)
     return BundleType(fields)
