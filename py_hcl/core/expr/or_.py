@@ -14,44 +14,44 @@ from py_hcl.utils import json_serialize
 
 
 @json_serialize
-class Add(object):
+class Or(object):
     def __init__(self, left, right):
-        self.operation = 'add'
+        self.operation = 'or'
         self.left_expr_id = left.id
         self.right_expr_id = right.id
 
 
-adder = op_register('+')
+orer = op_register('|')
 
 
-@adder(UIntT, UIntT)
+@orer(UIntT, UIntT)
 @assert_right_side
 def _(lf, rt):
-    w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
+    w = max(lf.hcl_type.width, rt.hcl_type.width)
     t = UIntT(w)
-    return ExprHolder(t, ConnSide.RT, Add(lf, rt))
+    return ExprHolder(t, ConnSide.RT, Or(lf, rt))
 
 
-@adder(SIntT, SIntT)
+@orer(SIntT, SIntT)
 @assert_right_side
 def _(lf, rt):
-    w = max(lf.hcl_type.width, rt.hcl_type.width) + 1
-    t = SIntT(w)
-    return ExprHolder(t, ConnSide.RT, Add(lf, rt))
+    w = max(lf.hcl_type.width, rt.hcl_type.width)
+    t = UIntT(w)
+    return ExprHolder(t, ConnSide.RT, Or(lf, rt))
 
 
-@adder(VectorT, VectorT)
+@orer(VectorT, VectorT)
 @assert_right_side
 def _(lf, rt):
     # TODO: Accurate Error Message
     assert lf.hcl_type.size == rt.hcl_type.size
 
-    values = [lf[i] + rt[i] for i in range(lf.hcl_type.size)]
+    values = [lf[i] | rt[i] for i in range(lf.hcl_type.size)]
     v_type = VectorT(values[0].hcl_type, len(values))
     return VecHolder(v_type, ConnSide.RT, values)
 
 
-@adder(BundleT, BundleT)
+@orer(BundleT, BundleT)
 @assert_right_side
 def _(lf, rt):
     # TODO: Accurate Error Message
@@ -60,13 +60,13 @@ def _(lf, rt):
     bd_type_fields = {}
     bd_values = {}
     for k in lf.hcl_type.fields.keys():
-        res = getattr(lf, k) + getattr(rt, k)
+        res = getattr(lf, k) | getattr(rt, k)
         bd_type_fields[k] = {"dir": Dir.SRC, "hcl_type": res.hcl_type}
         bd_values[k] = res
 
     return BundleHolder(BundleT(bd_type_fields), ConnSide.RT, bd_values)
 
 
-@adder(HclType, HclType)
+@orer(HclType, HclType)
 def _(_0, _1):
-    raise ExprError.op_type_err('add', _0, _1)
+    raise ExprError.op_type_err('or', _0, _1)

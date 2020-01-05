@@ -2,6 +2,9 @@ from multipledispatch import Dispatcher
 
 op_map = {
     '+': Dispatcher('+'),
+    '&': Dispatcher('&'),
+    '^': Dispatcher('&'),
+    '|': Dispatcher('|'),
     '<<=': Dispatcher('<<='),
     '.': Dispatcher('.'),
     '[i]': Dispatcher('[i]'),

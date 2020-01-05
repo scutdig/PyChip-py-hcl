@@ -44,6 +44,15 @@ class HclExpr(object):
     def __add__(self, other):
         return op_apply('+')(self, other)
 
+    def __and__(self, other):
+        return op_apply('&')(self, other)
+
+    def __or__(self, other):
+        return op_apply('|')(self, other)
+
+    def __xor__(self, other):
+        return op_apply('^')(self, other)
+
     def __getattr__(self, item):
         return op_apply('.')(self, item)
 

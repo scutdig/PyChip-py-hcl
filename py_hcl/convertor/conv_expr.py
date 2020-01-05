@@ -8,6 +8,9 @@ from py_hcl.convertor.conv_type import convert_type
 from py_hcl.convertor.utils import build_io_name, get_io_obj
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.add import Add as CAdd
+from py_hcl.core.expr.and_ import And as CAnd
+from py_hcl.core.expr.xor import Xor as CXor
+from py_hcl.core.expr.or_ import Or as COr
 from py_hcl.core.expr.convert import ToSInt, ToUInt
 from py_hcl.core.expr.extend import Extend
 from py_hcl.core.expr.field import FieldAccess
@@ -20,7 +23,8 @@ from py_hcl.core.expr.slice import Bits as CBits
 from py_hcl.core.expr.wire import Wire
 from py_hcl.firrtl_ir.expr.accessor import SubField, SubIndex
 from py_hcl.firrtl_ir.expr.literal import UIntLiteral, SIntLiteral
-from py_hcl.firrtl_ir.expr.prim_ops import Add, Bits, AsSInt, AsUInt
+from py_hcl.firrtl_ir.expr.prim_ops import Add, Bits, AsSInt, AsUInt, \
+    And, Xor, Or
 from py_hcl.firrtl_ir.expr.reference import Reference
 from py_hcl.firrtl_ir.stmt.connect import Connect
 from py_hcl.firrtl_ir.stmt.defn.instance import DefInstance
@@ -45,6 +49,39 @@ def convert_expr_op(expr_holder: ExprHolder, add: CAdd):
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
     stmt, ref = save_node_ref(Add([l_ref, r_ref], typ),
+                              name, typ, id(expr_holder))
+    return [*l_stmts, *r_stmts, stmt], ref
+
+
+@dispatch()
+def convert_expr_op(expr_holder: ExprHolder, and_: CAnd):
+    l_stmts, l_ref = convert_expr_by_id(and_.left_expr_id)
+    r_stmts, r_ref = convert_expr_by_id(and_.right_expr_id)
+    name = NameGetter.get(expr_holder.id)
+    typ = convert_type(expr_holder.hcl_type)
+    stmt, ref = save_node_ref(And([l_ref, r_ref], typ),
+                              name, typ, id(expr_holder))
+    return [*l_stmts, *r_stmts, stmt], ref
+
+
+@dispatch()
+def convert_expr_op(expr_holder: ExprHolder, xor: CXor):
+    l_stmts, l_ref = convert_expr_by_id(xor.left_expr_id)
+    r_stmts, r_ref = convert_expr_by_id(xor.right_expr_id)
+    name = NameGetter.get(expr_holder.id)
+    typ = convert_type(expr_holder.hcl_type)
+    stmt, ref = save_node_ref(Xor([l_ref, r_ref], typ),
+                              name, typ, id(expr_holder))
+    return [*l_stmts, *r_stmts, stmt], ref
+
+
+@dispatch()
+def convert_expr_op(expr_holder: ExprHolder, or_: COr):
+    l_stmts, l_ref = convert_expr_by_id(or_.left_expr_id)
+    r_stmts, r_ref = convert_expr_by_id(or_.right_expr_id)
+    name = NameGetter.get(expr_holder.id)
+    typ = convert_type(expr_holder.hcl_type)
+    stmt, ref = save_node_ref(Or([l_ref, r_ref], typ),
                               name, typ, id(expr_holder))
     return [*l_stmts, *r_stmts, stmt], ref
 
