@@ -38,6 +38,6 @@ def test_cat():
     encounter_error_tester(cat_type_wrong_cases)
     encounter_error_tester(cat_width_wrong_cases)
     serialize_equal(Cat([u(20, w(5)), u(15, w(4))], uw(9)),
-                    'cat(UInt<5>("14"), UInt<4>("f"))')
+                    'cat(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Cat([s(-20, w(6)), s(-15, w(5))], uw(11)),
-                    'cat(SInt<6>("-14"), SInt<5>("-f"))')
+                    'cat(SInt<6>("h-14"), SInt<5>("h-f"))')

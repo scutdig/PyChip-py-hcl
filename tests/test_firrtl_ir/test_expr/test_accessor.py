@@ -88,7 +88,7 @@ def test_sub_access_basis():
     vc = vec(uw(8), 10)
     sa = SubAccess(n("vc", vc), u(2, w(3)), uw(8))
     assert check(sa)
-    serialize_equal(sa, 'vc[UInt<3>("2")]')
+    serialize_equal(sa, 'vc[UInt<3>("h2")]')
 
     vc = vec(uw(8), 10)
     sa = SubAccess(n("vc", vc), n("a", uw(8)), uw(8))

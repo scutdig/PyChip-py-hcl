@@ -1,6 +1,6 @@
 from typing import Dict, Union, List
 
-from py_hcl.convertor.conv_type import convert_type
+from py_hcl.transformer.pyhcl_to_firrtl.conv_type import convert_type
 from py_hcl.core.expr.io import Input, Output
 from py_hcl.firrtl_ir.stmt.defn.module import InputPort, OutputPort
 from py_hcl.firrtl_ir.type import ClockType, UIntType, BundleType

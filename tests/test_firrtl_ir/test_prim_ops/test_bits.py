@@ -88,6 +88,6 @@ def test_bits():
     encounter_error_tester(bits_width_wrong_cases)
     encounter_error_tester(bits_invalid_cases)
     serialize_equal(Bits(u(20, w(5)), [4, 4], uw(1)),
-                    'bits(UInt<5>("14"), 4, 4)')
+                    'bits(UInt<5>("h14"), 4, 4)')
     serialize_equal(Bits(s(-20, w(6)), [4, 3], uw(2)),
-                    'bits(SInt<6>("-14"), 4, 3)')
+                    'bits(SInt<6>("h-14"), 4, 3)')

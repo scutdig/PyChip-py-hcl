@@ -14,7 +14,7 @@ def test_mux_basis():
               n("c", vec(sw(8), 10)),
               vec(sw(8), 10))
     assert check(mux)
-    serialize_equal(mux, 'mux(UInt<1>("1"), b, c)')
+    serialize_equal(mux, 'mux(UInt<1>("h1"), b, c)')
 
 
 def test_mux_cond_type_wrong():

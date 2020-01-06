@@ -11,7 +11,7 @@ class UIntLiteral(Expression):
     def serialize(self, output):
         self.tpe.serialize(output)
         output.write(b'("')
-        output.write(serialize_str(hex(self.value).replace("0x", "")))
+        output.write(serialize_str("h" + hex(self.value).replace("0x", "")))
         output.write(b'")')
 
 
@@ -23,5 +23,5 @@ class SIntLiteral(Expression):
     def serialize(self, output):
         self.tpe.serialize(output)
         output.write(b'("')
-        output.write(serialize_str(hex(self.value).replace("0x", "")))
+        output.write(serialize_str("h" + hex(self.value).replace("0x", "")))
         output.write(b'")')

@@ -1,4 +1,4 @@
-from py_hcl.convertor.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.context import Context
 
 
 def build_io_name(module_name: str, field_name: str):

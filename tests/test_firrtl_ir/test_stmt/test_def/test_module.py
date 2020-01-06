@@ -17,7 +17,7 @@ def test_module_basis():
     serialize_stmt_equal(mod, 'module m :\n'
                               '  output p : UInt<8>\n'
                               '\n'
-                              '  p <= UInt<8>("2")')
+                              '  p <= UInt<8>("h2")')
 
     mod = DefModule("m", [InputPort("b", uw(8)),
                           OutputPort("a", uw(8))],
@@ -31,7 +31,7 @@ def test_module_basis():
                               '  input b : UInt<8>\n'
                               '  output a : UInt<8>\n'
                               '\n'
-                              '  node n = UInt<1>("1")\n'
+                              '  node n = UInt<1>("h1")\n'
                               '  when n :\n'
                               '    skip\n'
                               '  else :\n'

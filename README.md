@@ -1,4 +1,4 @@
-# Py-HCL
+# PyHCL
 [![Build Status](https://travis-ci.com/scutdig/py-hcl.svg?branch=master)](https://travis-ci.com/scutdig/py-hcl)
 [![codecov](https://codecov.io/gh/scutdig/py-hcl/branch/master/graph/badge.svg)](https://codecov.io/gh/scutdig/py-hcl)
 [![PyPI](https://img.shields.io/pypi/v/py-hcl.svg)](https://pypi.python.org/pypi)

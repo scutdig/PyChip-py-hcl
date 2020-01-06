@@ -1,6 +1,6 @@
 from multipledispatch import dispatch
 
-from py_hcl.convertor.conv_expr import convert_expr_by_id
+from py_hcl.transformer.pyhcl_to_firrtl.conv_expr import convert_expr_by_id
 from py_hcl.core.stmt import LineStatement, \
     ClusterStatement, ConditionStatement
 from py_hcl.core.stmt.connect import Connect as HclConnect

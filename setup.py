@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 install_requires = ['multipledispatch']
 tests_require = ['pytest', 'pytest-cov']
 setup_requires = ['pytest-runner', 'multipledispatch']

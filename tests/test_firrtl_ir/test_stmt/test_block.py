@@ -19,7 +19,7 @@ def test_block_basis():
                                Connect(n("a", uw(8)), n("b", uw(8))))
                  ])
     assert check(blk)
-    serialize_stmt_equal(blk, 'node n = UInt<1>("1")\n'
+    serialize_stmt_equal(blk, 'node n = UInt<1>("h1")\n'
                               'when n :\n'
                               '  skip\n'
                               'else :\n'

@@ -38,6 +38,6 @@ def test_eq():
     encounter_error_tester(eq_type_wrong_cases)
     encounter_error_tester(eq_width_wrong_cases)
     serialize_equal(Eq([u(20, w(5)), u(15, w(4))], uw(1)),
-                    'eq(UInt<5>("14"), UInt<4>("f"))')
+                    'eq(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Eq([s(-20, w(6)), s(-15, w(5))], uw(1)),
-                    'eq(SInt<6>("-14"), SInt<5>("-f"))')
+                    'eq(SInt<6>("h-14"), SInt<5>("h-f"))')

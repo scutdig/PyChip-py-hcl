@@ -1,4 +1,4 @@
-from py_hcl.convertor.convertor import convert
+from py_hcl.transformer.pyhcl_to_firrtl.convertor import convert
 
 
 def compile_to_firrtl(module_class, path=None):

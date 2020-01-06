@@ -1,7 +1,7 @@
-from py_hcl.convertor.context import Context
-from py_hcl.convertor.conv_port import convert_ports
-from py_hcl.convertor.conv_stmt import convert_stmt
-from py_hcl.convertor.utils import build_reserve_name, \
+from py_hcl.transformer.pyhcl_to_firrtl.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.conv_port import convert_ports
+from py_hcl.transformer.pyhcl_to_firrtl.conv_stmt import convert_stmt
+from py_hcl.transformer.pyhcl_to_firrtl.utils import build_reserve_name, \
     build_io_name, get_io_obj
 from py_hcl.core.expr.io import IO
 from py_hcl.core.module.packed_module import PackedModule
