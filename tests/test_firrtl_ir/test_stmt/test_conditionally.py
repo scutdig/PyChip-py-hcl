@@ -25,7 +25,7 @@ def test_conditionally_basis():
     cn = Conditionally(u(1, w(1)), s1, s2)
     assert check(cn)
     serialize_stmt_equal(
-        cn, 'when UInt<1>("1") :\n'
+        cn, 'when UInt<1>("h1") :\n'
             '  a <= b\n'
             '  c <= d\n'
             'else :\n'

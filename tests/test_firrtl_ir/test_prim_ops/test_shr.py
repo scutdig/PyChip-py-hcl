@@ -47,6 +47,6 @@ def test_shr():
     encounter_error_tester(shr_type_wrong_cases)
     encounter_error_tester(shr_width_wrong_cases)
     serialize_equal(Shr(u(20, w(5)), 3, uw(2)),
-                    'shr(UInt<5>("14"), 3)')
+                    'shr(UInt<5>("h14"), 3)')
     serialize_equal(Shr(s(-20, w(6)), 3, uw(3)),
-                    'shr(SInt<6>("-14"), 3)')
+                    'shr(SInt<6>("h-14"), 3)')

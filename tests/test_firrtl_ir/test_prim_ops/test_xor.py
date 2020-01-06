@@ -35,6 +35,6 @@ def test_xor():
     encounter_error_tester(xor_type_wrong_cases)
     encounter_error_tester(xor_width_wrong_cases)
     serialize_equal(Xor([u(20, w(5)), u(15, w(4))], uw(5)),
-                    'xor(UInt<5>("14"), UInt<4>("f"))')
+                    'xor(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Xor([s(-20, w(6)), s(-15, w(5))], uw(6)),
-                    'xor(SInt<6>("-14"), SInt<5>("-f"))')
+                    'xor(SInt<6>("h-14"), SInt<5>("h-f"))')

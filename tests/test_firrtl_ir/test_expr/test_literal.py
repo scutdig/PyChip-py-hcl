@@ -8,14 +8,14 @@ from ..utils import serialize_equal
 def test_uint_literal():
     ui = UIntLiteral(10, Width(4))
     assert check(ui)
-    serialize_equal(ui, 'UInt<4>("a")')
+    serialize_equal(ui, 'UInt<4>("ha")')
 
     ui = UIntLiteral(-10, Width(5))
     assert not check(ui)
 
     ui = UIntLiteral(1023, Width(10))
     assert check(ui)
-    serialize_equal(ui, 'UInt<10>("3ff")')
+    serialize_equal(ui, 'UInt<10>("h3ff")')
 
     ui = UIntLiteral(-1023, Width(11))
     assert not check(ui)
@@ -34,19 +34,19 @@ def test_uint_literal():
 def test_sint_literal():
     si = SIntLiteral(10, Width(5))
     assert check(si)
-    serialize_equal(si, 'SInt<5>("a")')
+    serialize_equal(si, 'SInt<5>("ha")')
 
     si = SIntLiteral(-10, Width(5))
     assert check(si)
-    serialize_equal(si, 'SInt<5>("-a")')
+    serialize_equal(si, 'SInt<5>("h-a")')
 
     si = SIntLiteral(1023, Width(11))
     assert check(si)
-    serialize_equal(si, 'SInt<11>("3ff")')
+    serialize_equal(si, 'SInt<11>("h3ff")')
 
     si = SIntLiteral(-1023, Width(11))
     assert check(si)
-    serialize_equal(si, 'SInt<11>("-3ff")')
+    serialize_equal(si, 'SInt<11>("h-3ff")')
 
     si = SIntLiteral(10, Width(4))
     assert not check(si)

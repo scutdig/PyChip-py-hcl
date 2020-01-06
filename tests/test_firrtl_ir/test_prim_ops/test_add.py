@@ -39,6 +39,6 @@ def test_add():
     encounter_error_tester(add_type_wrong_cases)
     encounter_error_tester(add_width_wrong_cases)
     serialize_equal(Add([u(20, w(5)), u(15, w(4))], uw(6)),
-                    'add(UInt<5>("14"), UInt<4>("f"))')
+                    'add(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Add([s(-20, w(6)), s(-15, w(5))], sw(6)),
-                    'add(SInt<6>("-14"), SInt<5>("-f"))')
+                    'add(SInt<6>("h-14"), SInt<5>("h-f"))')

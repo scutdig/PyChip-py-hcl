@@ -38,6 +38,6 @@ def test_geq():
     encounter_error_tester(geq_type_wrong_cases)
     encounter_error_tester(geq_width_wrong_cases)
     serialize_equal(Geq([u(20, w(5)), u(15, w(4))], uw(1)),
-                    'geq(UInt<5>("14"), UInt<4>("f"))')
+                    'geq(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Geq([s(-20, w(6)), s(-15, w(5))], uw(1)),
-                    'geq(SInt<6>("-14"), SInt<5>("-f"))')
+                    'geq(SInt<6>("h-14"), SInt<5>("h-f"))')

@@ -28,7 +28,7 @@ def test_read_port_basis():
     mem_ref = n("m", vec(uw(8), 10))
     mr = DefMemReadPort("mr", mem_ref, u(2, w(8)), n("clock", ClockType()))
     assert check(mr)
-    serialize_stmt_equal(mr, 'read mport mr = m[UInt<8>("2")], clock')
+    serialize_stmt_equal(mr, 'read mport mr = m[UInt<8>("h2")], clock')
 
     mem_ref = n("m", vec(bdl(a=(uw(8), False)), 10))
     mr = DefMemReadPort("mr", mem_ref, n("a", uw(2)), n("clock", ClockType()))
@@ -71,7 +71,7 @@ def test_write_port_basis():
     mem_ref = n("m", vec(uw(8), 10))
     mw = DefMemWritePort("mw", mem_ref, u(2, w(8)), n("clock", ClockType()))
     assert check(mw)
-    serialize_stmt_equal(mw, 'write mport mw = m[UInt<8>("2")], clock')
+    serialize_stmt_equal(mw, 'write mport mw = m[UInt<8>("h2")], clock')
 
     mem_ref = n("m", vec(bdl(a=(uw(8), False)), 10))
     mw = DefMemWritePort("mw", mem_ref, n("a", uw(2)), n("clock", ClockType()))

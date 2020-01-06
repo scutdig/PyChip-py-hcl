@@ -38,6 +38,6 @@ def test_lt():
     encounter_error_tester(lt_type_wrong_cases)
     encounter_error_tester(lt_width_wrong_cases)
     serialize_equal(Lt([u(20, w(5)), u(15, w(4))], uw(1)),
-                    'lt(UInt<5>("14"), UInt<4>("f"))')
+                    'lt(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(Lt([s(-20, w(6)), s(-15, w(5))], uw(1)),
-                    'lt(SInt<6>("-14"), SInt<5>("-f"))')
+                    'lt(SInt<6>("h-14"), SInt<5>("h-f"))')

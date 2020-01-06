@@ -1,5 +1,5 @@
-from py_hcl.convertor.context import Context
-from py_hcl.convertor.conv_module import convert_module
+from py_hcl.transformer.pyhcl_to_firrtl.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.conv_module import convert_module
 from py_hcl.core.module.packed_module import PackedModule
 from py_hcl.firrtl_ir.stmt.defn.circuit import DefCircuit
 from py_hcl.firrtl_ir.type_checker import check

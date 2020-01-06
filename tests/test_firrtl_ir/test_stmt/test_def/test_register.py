@@ -28,13 +28,13 @@ def test_init_register_basis():
                          n("clock", ClockType()), n("r", uw(1)), u(5, w(8)))
     assert check(r1)
     serialize_stmt_equal(r1, 'reg r1 : UInt<8>, clock with :\n'
-                             '  reset => (r, UInt<8>("5"))')
+                             '  reset => (r, UInt<8>("h5"))')
 
     r2 = DefInitRegister("r2", sw(8),
                          n("clock", ClockType()), u(0, w(1)), s(5, w(8)))
     assert check(r2)
     serialize_stmt_equal(r2, 'reg r2 : SInt<8>, clock with :\n'
-                             '  reset => (UInt<1>("0"), SInt<8>("5"))')
+                             '  reset => (UInt<1>("h0"), SInt<8>("h5"))')
 
 
 def test_init_register_clock_wrong():

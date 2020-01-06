@@ -2,10 +2,10 @@ import copy
 
 from multipledispatch import dispatch
 
-from py_hcl.convertor.context import Context
-from py_hcl.convertor.conv_port import ports_to_bundle_type
-from py_hcl.convertor.conv_type import convert_type
-from py_hcl.convertor.utils import build_io_name, get_io_obj
+from py_hcl.transformer.pyhcl_to_firrtl.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.conv_port import ports_to_bundle_type
+from py_hcl.transformer.pyhcl_to_firrtl.conv_type import convert_type
+from py_hcl.transformer.pyhcl_to_firrtl.utils import build_io_name, get_io_obj
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.add import Add as CAdd
 from py_hcl.core.expr.and_ import And as CAnd
@@ -175,14 +175,14 @@ def convert_expr(expr_holder: ExprHolder):
 
 @dispatch()
 def convert_expr(slit: SLiteral):
-    ft = SIntLiteral(slit.value, convert_type(slit.hcl_type))
+    ft = SIntLiteral(slit.value, convert_type(slit.hcl_type).width)
     Context.expr_obj_id_to_ref[id(slit)] = ft
     return [], ft
 
 
 @dispatch()
 def convert_expr(ulit: ULiteral):
-    ft = UIntLiteral(ulit.value, convert_type(ulit.hcl_type))
+    ft = UIntLiteral(ulit.value, convert_type(ulit.hcl_type).width)
     Context.expr_obj_id_to_ref[id(ulit)] = ft
     return [], ft
 
@@ -201,7 +201,7 @@ def convert_expr(wire: Wire):
 @dispatch()
 def convert_expr(mi: ModuleInst):
     if mi.module_name not in Context.modules:
-        from py_hcl.convertor.conv_module import convert_module
+        from .conv_module import convert_module
         convert_module(mi.packed_module)
     module = Context.modules[mi.module_name]
     name = NameGetter.get(mi.id)

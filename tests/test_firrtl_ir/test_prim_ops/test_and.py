@@ -35,6 +35,6 @@ def test_and():
     encounter_error_tester(and_type_wrong_cases)
     encounter_error_tester(and_width_wrong_cases)
     serialize_equal(And([u(20, w(5)), u(15, w(4))], uw(5)),
-                    'and(UInt<5>("14"), UInt<4>("f"))')
+                    'and(UInt<5>("h14"), UInt<4>("hf"))')
     serialize_equal(And([s(-20, w(6)), s(-15, w(5))], uw(6)),
-                    'and(SInt<6>("-14"), SInt<5>("-f"))')
+                    'and(SInt<6>("h-14"), SInt<5>("h-f"))')

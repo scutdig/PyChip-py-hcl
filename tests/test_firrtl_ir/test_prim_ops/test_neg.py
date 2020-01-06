@@ -40,6 +40,6 @@ def test_neg():
     encounter_error_tester(neg_type_wrong_cases)
     encounter_error_tester(neg_width_wrong_cases)
     serialize_equal(Neg(u(20, w(5)), sw(6)),
-                    'neg(UInt<5>("14"))')
+                    'neg(UInt<5>("h14"))')
     serialize_equal(Neg(s(-20, w(6)), sw(7)),
-                    'neg(SInt<6>("-14"))')
+                    'neg(SInt<6>("h-14"))')
