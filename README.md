@@ -15,12 +15,6 @@ compiler framework, PyHCL-generated circuits can be compiled to the widely-used 
 
 ## Getting Started
 
-#### Installing PyHCL
-
-```shell script
-$ pip install py-hcl
-```
-
 #### Writing A Full Adder
 PyHCL defines modules using only simple Python syntax that looks like this:
 ```python
