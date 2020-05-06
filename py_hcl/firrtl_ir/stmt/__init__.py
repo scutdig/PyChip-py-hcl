@@ -1,2 +1,0 @@
-class Statement(object):
-    pass

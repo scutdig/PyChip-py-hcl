@@ -1,6 +1,0 @@
-flake8
-pytest
-pytest-cov
-codecov
-multipledispatch
-twine
