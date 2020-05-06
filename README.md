@@ -18,7 +18,7 @@ compiler framework, PyHCL-generated circuits can be compiled to the widely-used 
 #### Writing A Full Adder
 PyHCL defines modules using only simple Python syntax that looks like this:
 ```python
-from py_hcl import *
+from pyhcl import *
 
 class FullAdder(Module):
     io = IO(
