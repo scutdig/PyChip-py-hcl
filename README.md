@@ -40,7 +40,7 @@ class FullAdder(Module):
 
 Compiling module by calling `compile_to_firrtl`:
 ```python
-compile_to_firrtl(FullAdder, 'full_adder.fir')
+Emitter.dump(Emitter.emit(FullAdder(), "filter.fir")
 ```
 
 Will generate the following FIRRTL codes:
@@ -72,7 +72,7 @@ While FIRRTL is generated, PyHCL's job is complete. To further compile to Verilo
 https://github.com/freechipsproject/firrtl) is required:
 
 ```shell script
-$ firrtl -i full_adder.fir
+Emitter.dumpVerilog(Emitter.dump(Emitter.emit(FullAdder()), "FullAdder.fir"))
 ```
 
 Then `FullAdder.v` will be generated:
