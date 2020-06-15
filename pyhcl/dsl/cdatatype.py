@@ -63,7 +63,7 @@ class SInit(type):
         return S.w(v.bit_length() + 1)(v)
 
 
-class S(CType, metaclass=UInit):
+class S(CType, metaclass=SInit):
     def __init__(self, _: int):
         pass
 
