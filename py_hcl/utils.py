@@ -73,11 +73,12 @@ def _fm(v: object):
     return str(v)
 
 
-def _iter_repr(ls):
-    if len(ls) <= 1:
-        fs = ''.join(ls)
+def _iter_repr(values):
+    if len(values) <= 1:
+        fs = ''.join(values)
     else:
-        fs = ''.join(['\n  {},'.format(_indent(l)) for l in ls]) + '\n'
+        fs = ''.join(['\n  {},'.format(_indent(value))
+                      for value in values]) + '\n'
     return fs
 
 
