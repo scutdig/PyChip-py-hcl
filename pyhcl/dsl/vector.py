@@ -96,3 +96,7 @@ class VecInit(Node):
                     for nIdx, elem in node.subIdxs(low_ir.SubIndex(idx, i, node.typ.mapToIR(ctx)), n, ctx)]
         else:
             return [(idx, node.mapToIR(ctx))]
+
+    def map(self, f):
+        return VecInit(list(map(f, self.lst)))
+

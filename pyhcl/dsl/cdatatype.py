@@ -12,6 +12,10 @@ class INT(CType):
     def __init__(self, v: int):
         self.v = int(v)
 
+    @property
+    def orR(self):
+        return Bool(not not self.v)
+
 
 class UInit(type):
     def __call__(cls, v: int):
