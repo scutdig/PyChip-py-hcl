@@ -26,8 +26,18 @@ def Sum(vec):
 
 def OneDimensionalization(vec):
     a = vec
-    for _ in range(a.typ.lvl - 1):
+    lvl = a.lvl
+    for _ in range(lvl - 1):
         a = a.flatten()
     return a
 
+
+def Decoupled(typ):
+    from .bundle import Bundle
+    from .cdatatype import U
+    return Bundle(
+        valid = U.w(1),
+        ready = U.w(1).flip(),
+        bits = typ
+    )
 

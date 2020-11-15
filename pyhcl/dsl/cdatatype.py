@@ -12,10 +12,6 @@ class INT(CType):
     def __init__(self, v: int):
         self.v = int(v)
 
-    @property
-    def orR(self):
-        return Bool(not not self.v)
-
 
 class UInit(type):
     def __call__(cls, v: int):
@@ -37,6 +33,11 @@ class U(CType, metaclass=UInit):
         If width is not given, it would be inferred
         """
 
+        @classmethod
+        def _flip(cls):
+            cls.field = low_ir.Flip()
+            return cls
+
         def _mapToIR(_, __=None):
             # If caller is UInt Type, it would call `mapToIR(ctx)`
             # Or caller is UInt Literal, it would call `mapToIR(literal, ctx)`
@@ -52,7 +53,9 @@ class U(CType, metaclass=UInit):
         uk.typ = uk
 
         if width is not None:
-            t = type(f"U{width}", (INT,), {"width": width, "mapToIR": _mapToIR, "getIndexedType": _idxType})
+            t = type(f"U{width}", (INT,),
+                     {"width": width, "mapToIR": _mapToIR, "getIndexedType": _idxType,
+                      "field": low_ir.Default(), "flip": _flip})
             t.typ = uk
             return t
         else:

@@ -13,6 +13,10 @@ from pyhcl.ir import low_ir
 class Bundle(CType):
     _kv: Dict[str, CType]
 
+    @property
+    def field(self):
+        return low_ir.Default()
+
     def __init__(self, **kwargs):
         self._kv = kwargs
         self.typ = self
@@ -32,6 +36,6 @@ class Bundle(CType):
     def mapToIR(self, ctx: EmitterContext):
         fs = []
         for k, v in self._kv.items():
-            f = low_ir.Field(k, low_ir.Default(), v.mapToIR(ctx))
+            f = low_ir.Field(k, v.field, v.mapToIR(ctx))
             fs.append(f)
         return low_ir.BundleType(fs)
