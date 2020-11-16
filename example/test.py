@@ -3,29 +3,50 @@ from functools import reduce
 from pyhcl import *
 
 
-class Test(Module):
+from pyhcl.core._dynamic_ctx import DynamicContext
+from pyhcl.core._utils import get_attr
+from pyhcl.ir.low_ir import SubField, Connect
+from pyhcl.ir.utils import auto_mapping, SI
+
+
+class ModuleA(Module):
     io = IO(
-        DIO_stop=Output(U.w(1)),
-        Jotaro_stop=Output(U.w(1))
+        t_data=Input(U.w(32)),
+        in_data=Output(U.w(32)),
+        valid=Input(Bool),
+        ready=Output(Bool)
     )
 
-    counter = RegInit(U.w(32)(0))
-    DIO_stop_r = RegInit(U.w(1)(1))
-    Jotaro_stop_r = RegInit(U.w(1)(0))
+    io.in_data <<= io.t_data
+    io.ready <<= Bool(True)
 
-    counter <<= counter + U(1)
 
-    with when(counter == U(10)):
-        io.DIO_stop <<= U(0)
-        DIO_stop_r <<= U(0)
-    with otherwise():
-        io.DIO_stop <<= DIO_stop_r
+class ModuleB(Module):
+    io = IO(
+        in_data=Input(U.w(32)),
+        out_data=Output(U.w(32)),
+        valid=Output(Bool),
+        ready=Input(Bool)
+    )
 
-    with when(io.DIO_stop == U(0)):
-        io.Jotaro_stop <<= U(1)
-        Jotaro_stop_r <<= U(1)
-    with otherwise():
-        io.Jotaro_stop <<= Jotaro_stop_r
+    io.out_data <<= Mux(io.ready, io.in_data, U(0))
+    io.valid <<= Bool(True)
+
+
+class TopModule(Module):
+    io = IO(
+        indata=Input(U.w(32)),
+        outdata=Output(U.w(32))
+    )
+
+    ma = ModuleA()
+    mb = ModuleB()
+
+    auto_mapping(ma, mb, SI)
+
+    ma.io.t_data <<= io.indata
+
+    io.outdata <<= mb.io.out_data
 
 
 if __name__ == '__main__':
