@@ -45,5 +45,6 @@ class TopModule(Module):
     io <<= ma.io
     io <<= mb.io
 
+
 if __name__ == '__main__':
     print(Emitter.emit(TopModule()))
