@@ -3,6 +3,10 @@ def indent(string: str) -> str:
 
 
 def auto_connect(ma, mb):
+    from pyhcl import IO
+    assert hasattr(ma, "value") and hasattr(mb, "value")
+    assert type(ma.value) == IO and type(mb.value) == IO
+
     for (key_left, value_left) in ma.value._ios.items():
         for (key_right, value_right) in mb.value._ios.items():
             from pyhcl import Input, Output
