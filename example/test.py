@@ -2,11 +2,10 @@ from functools import reduce
 
 from pyhcl import *
 
-
 from pyhcl.core._dynamic_ctx import DynamicContext
 from pyhcl.core._utils import get_attr
 from pyhcl.ir.low_ir import SubField, Connect
-from pyhcl.ir.utils import auto_mapping, SI
+from pyhcl.ir.utils import auto_connect
 
 
 class ModuleA(Module):
@@ -42,7 +41,7 @@ class TopModule(Module):
     ma = ModuleA()
     mb = ModuleB()
 
-    auto_mapping(ma, mb, SI)
+    auto_connect(ma.io, mb.io)
 
     ma.io.t_data <<= io.indata
 
@@ -50,4 +49,4 @@ class TopModule(Module):
 
 
 if __name__ == '__main__':
-    Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Test()), "test.fir"))
+    print(Emitter.emit(TopModule()))
