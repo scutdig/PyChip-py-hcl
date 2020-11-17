@@ -685,6 +685,7 @@ class Connect(Declare):
 
     def mapToIR(self, ctx: EmitterContext):
         from pyhcl.dsl.vector import Vec
+        from pyhcl import IO
 
         if has_attr(self.lhs, "typ") and has_attr(self.rhs, "typ") \
                 and (isinstance(self.lhs.typ, Vec) or isinstance(self.rhs.typ, Vec)):
@@ -696,6 +697,24 @@ class Connect(Declare):
 
             for l, r in zip(lhs, rhs):
                 Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId)
+
+        # A trick to do inheriting connect
+        elif has_attr(self.lhs, "value") and has_attr(self.rhs, "value") \
+                and (isinstance(self.lhs.value, IO) or isinstance(self.rhs.value, IO)):
+            for (key_left, value_left) in self.lhs.value._ios.items():
+                for (key_right, value_right) in self.rhs.value._ios.items():
+                    from pyhcl import Input, Output
+                    assert type(value_left) == Input or type(value_left) == Output
+                    assert type(value_right) == Input or type(value_right) == Output
+
+                    if key_left == key_right and type(value_left) == type(value_right):
+                        lhs = getattr(self.lhs, key_left)
+                        rhs = getattr(self.rhs, key_right)
+                        if type(value_left) == Output:
+                            Connect(lhs, rhs).mapToIR(ctx)
+                        else:
+                            Connect(rhs, lhs).mapToIR(ctx)
+
         else:
             Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
 

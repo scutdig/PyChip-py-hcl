@@ -1,42 +1,22 @@
-INPUT = 0
-OUTPUT = 1
-
-# typ
-SI = 2
-PC = 3
-
-
 def indent(string: str) -> str:
     return string.replace('\n', '\n  ')
 
 
-def auto_mapping(ma, mb, typ):
-    print(ma.io)
-    print(mb.io)
+def auto_connect(ma, mb):
+    from pyhcl import IO
+    assert hasattr(ma, "value") and hasattr(mb, "value")
+    assert type(ma.value) == IO and type(mb.value) == IO
 
-    if typ == SI:
-        for key in ma.io.value._ios:
-            temp = key
-            direction = INPUT
+    for (key_left, value_left) in ma.value._ios.items():
+        for (key_right, value_right) in mb.value._ios.items():
+            from pyhcl import Input, Output
+            assert type(value_left) == Input or type(value_left) == Output
+            assert type(value_right) == Input or type(value_right) == Output
 
-            # directions
-            if isinstance(ma.io.value._ios[key], Input):
-                pass
-            else:
-                direction = OUTPUT
-            for _key in mb.io.value._ios:
-                if temp == _key:
-                    # match
-                    match_direction = INPUT
-                    if isinstance(mb.io.value._ios[_key], Input):
-                        pass
-                    else:
-                        match_direction = OUTPUT
-
-                    if direction != match_direction and ma.io.value._ios[key].typ.width == mb.io.value._ios[_key].typ.width:
-                        print("match + " + key)
-
-                        if direction == INPUT:
-                            mb.io.value._ios[_key] <<= ma.io.value._ios[key]
-                        else:
-                            ma.io.value._ios[key] <<= mb.io.value._ios[_key]
+            if key_left == key_right and type(value_left) != type(value_right):
+                io_left = getattr(ma, key_left)
+                io_right = getattr(mb, key_right)
+                if type(value_left) == Input:
+                    io_left <<= io_right
+                else:
+                    io_right <<= io_left
