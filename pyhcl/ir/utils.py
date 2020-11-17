@@ -14,9 +14,9 @@ def auto_connect(ma, mb):
             assert type(value_right) == Input or type(value_right) == Output
 
             if key_left == key_right and type(value_left) != type(value_right):
+                io_left = getattr(ma, key_left)
+                io_right = getattr(mb, key_right)
                 if type(value_left) == Input:
-                    io_left = getattr(ma, key_left)
-                    io_left <<= getattr(mb, key_right)
+                    io_left <<= io_right
                 else:
-                    io_right = getattr(mb, key_right)
-                    io_right <<= getattr(ma, key_left)
+                    io_right <<= io_left

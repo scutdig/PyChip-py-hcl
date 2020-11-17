@@ -34,19 +34,16 @@ class ModuleB(Module):
 
 class TopModule(Module):
     io = IO(
-        indata=Input(U.w(32)),
-        outdata=Output(U.w(32))
+        t_data=Input(U.w(32)),
+        out_data=Output(U.w(32))
     )
 
     ma = ModuleA()
     mb = ModuleB()
 
     auto_connect(ma.io, mb.io)
-
-    ma.io.t_data <<= io.indata
-
-    io.outdata <<= mb.io.out_data
-
+    io <<= ma.io
+    io <<= mb.io
 
 if __name__ == '__main__':
     print(Emitter.emit(TopModule()))
