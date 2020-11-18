@@ -40,7 +40,7 @@ class FullAdder(Module):
 
 Compiling module by calling `compile_to_firrtl`:
 ```python
-Emitter.dump(Emitter.emit(FullAdder(), "FullAdder.fir")
+Emitter.dump(Emitter.emit(FullAdder()), "FullAdder.fir")
 ```
 
 Will generate the following FIRRTL codes:
