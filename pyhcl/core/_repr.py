@@ -607,6 +607,13 @@ class Index(VecOps, Node):
     index: Union[int, slice, CType]
     typ: CType = field(default=None, init=False)
 
+    def __getattribute__(self, item):
+        res = get_attr(self, item)
+        if res is not None:
+            return res
+        else:
+            return SubField(getattr(self.typ, item).value, item, self)
+
     def __post_init__(self):
         from pyhcl.dsl.vector import Vec
         super().__post_init__()
