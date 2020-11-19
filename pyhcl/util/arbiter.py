@@ -1,10 +1,5 @@
 from typing import List
-from .funcs import Decoupled
-from .module import Module
-from .cio import Input, Output, IO
-from .cdatatype import U, Bool
-from .condition import when
-from .vector import Vec
+from pyhcl import *
 
 
 def Arbiter(gen, n):
