@@ -1,6 +1,6 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.utils import assert_right_side
+from py_hcl.core.expr.utils import ensure_all_args_are_values
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.type import HclType
@@ -21,13 +21,13 @@ class VecIndex(object):
 
 
 @index(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint, i: int):
     return uint[i:i]
 
 
 @index(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint, i: int):
     return sint[i:i]
 

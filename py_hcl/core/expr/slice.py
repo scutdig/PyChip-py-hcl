@@ -1,6 +1,6 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.utils import assert_right_side
+from py_hcl.core.expr.utils import ensure_all_args_are_values
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
@@ -23,7 +23,7 @@ class Bits(object):
 
 
 @slice_(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint, high: int, low: int):
     check_bit_width(uint, high, low)
     t = UIntT(high - low + 1)
@@ -31,7 +31,7 @@ def _(uint, high: int, low: int):
 
 
 @slice_(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint, high: int, low: int):
     check_bit_width(sint, high, low)
     t = UIntT(high - low + 1)

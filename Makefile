@@ -8,7 +8,7 @@ test:
 cov: test
 	codecov
 
-fmt:
+format:
 	yapf --recursive -i py_hcl tests
 
 clean:

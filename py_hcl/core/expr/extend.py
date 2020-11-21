@@ -1,5 +1,5 @@
 from py_hcl.core.expr import ExprHolder
-from py_hcl.core.expr.utils import assert_right_side
+from py_hcl.core.expr.utils import ensure_all_args_are_values
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type.sint import SIntT
@@ -17,12 +17,12 @@ class Extend(object):
 
 
 @extend(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint, size):
     return ExprHolder(UIntT(size), VariableType.VALUE, Extend(uint))
 
 
 @extend(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint, size):
     return ExprHolder(SIntT(size), VariableType.VALUE, Extend(sint))

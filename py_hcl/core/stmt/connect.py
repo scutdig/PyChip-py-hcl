@@ -68,7 +68,7 @@ def _(left, right):
 
 @connector(UIntT, SIntT)
 def _(left, right):
-    msg = 'connect(): connecting SInt to UInt, an auto-conversion will occur'
+    msg = 'connect(): connecting SInt to UInt causes auto-conversion'
     logging.warning(msg)
 
     if left.hcl_type.width < right.hcl_type.width:
@@ -82,7 +82,7 @@ def _(left, right):
 
 @connector(SIntT, UIntT)
 def _(left, right):
-    msg = 'connect(): connecting UInt to SInt, an auto-conversion will occur'
+    msg = 'connect(): connecting UInt to SInt causes auto-conversion'
     logging.warning(msg)
 
     if left.hcl_type.width < right.hcl_type.width:

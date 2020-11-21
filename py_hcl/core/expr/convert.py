@@ -1,6 +1,6 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.utils import assert_right_side
+from py_hcl.core.expr.utils import ensure_all_args_are_values
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
@@ -28,13 +28,13 @@ class ToUInt(object):
 
 
 @to_bool(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint):
     return uint[0]
 
 
 @to_bool(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint):
     return sint[0]
 
@@ -45,13 +45,13 @@ def _(_0, *_):
 
 
 @to_uint(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint):
     return uint
 
 
 @to_uint(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint):
     t = UIntT(sint.hcl_type.width)
     return ExprHolder(t, VariableType.VALUE, ToUInt(sint))
@@ -63,14 +63,14 @@ def _(_0, *_):
 
 
 @to_sint(UIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(uint):
     t = SIntT(uint.hcl_type.width)
     return ExprHolder(t, VariableType.VALUE, ToSInt(uint))
 
 
 @to_sint(SIntT)
-@assert_right_side
+@ensure_all_args_are_values
 def _(sint):
     return sint
 
