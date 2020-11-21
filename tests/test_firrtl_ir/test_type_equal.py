@@ -37,8 +37,7 @@ def test_type_neq():
     assert not equal(uw(10), sw(10))
     assert not equal(uw(10), vec(uw(10), 8))
     assert not equal(uw(10), vec(sw(10), 8))
-    assert not equal(uw(10),
-                     bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)))
+    assert not equal(uw(10), bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)))
 
     assert not equal(sw(10), UnknownType())
     assert not equal(sw(10), ClockType())
@@ -47,8 +46,7 @@ def test_type_neq():
     assert not equal(sw(10), uw(10))
     assert not equal(sw(10), vec(uw(10), 8))
     assert not equal(sw(10), vec(sw(10), 8))
-    assert not equal(sw(10),
-                     bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)))
+    assert not equal(sw(10), bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)))
 
     assert not equal(vec(uw(10), 8), UnknownType())
     assert not equal(vec(uw(10), 8), ClockType())
@@ -65,12 +63,9 @@ def test_type_neq():
                      UnknownType())
     assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),
                      ClockType())
-    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),
-                     sw(8))
-    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),
-                     uw(10))
-    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),
-                     uw(10))
+    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)), sw(8))
+    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)), uw(10))
+    assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)), uw(10))
     assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),
                      vec(sw(10), 8))
     assert not equal(bdl(a=(vec(uw(10), 8), False), b=(uw(10), False)),

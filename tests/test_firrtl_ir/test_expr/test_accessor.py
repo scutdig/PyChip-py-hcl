@@ -100,8 +100,8 @@ def test_sub_access_non_vector():
     sa = SubAccess(n("vc", uw(8)), u(2, w(3)), uw(8))
     assert not check(sa)
 
-    sa = SubAccess(n("vc", bdl(a=(vec(uw(8), 10), True))),
-                   u(2, w(3)), vec(uw(8), 10))
+    sa = SubAccess(n("vc", bdl(a=(vec(uw(8), 10), True))), u(2, w(3)),
+                   vec(uw(8), 10))
     assert not check(sa)
 
 

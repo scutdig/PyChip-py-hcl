@@ -2,7 +2,7 @@ from typing import Dict, Union, Optional, Tuple
 
 from py_hcl.core.expr import HclExpr
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.stmt.connect import ConnSide
+from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import Dir, BundleT
 from py_hcl.core.utils import module_inherit_mro
@@ -25,7 +25,8 @@ class Output(object):
 
 @json_serialize
 class IOHolder(object):
-    def __init__(self, named_ports: Dict[str, Union[Input, Output]],
+    def __init__(self,
+                 named_ports: Dict[str, Union[Input, Output]],
                  module_name: Optional[str] = None):
         self.named_ports = named_ports
         self.module_name = module_name
@@ -33,20 +34,19 @@ class IOHolder(object):
 
 @json_serialize
 class IONode(object):
-    def __init__(self, io_holder: IOHolder,
-                 next_node: Optional["IOHolder"]):
+    def __init__(self, io_holder: IOHolder, next_node: Optional["IOHolder"]):
         self.io_holder = io_holder
         if next_node is not None:
             self.next_node = next_node
 
 
-@json_serialize(json_fields=["id", "type", "hcl_type",
-                             "conn_side", "io_chain_head"])
+@json_serialize(
+    json_fields=["id", "type", "hcl_type", "variable_type", "io_chain_head"])
 class IO(HclExpr):
     def __init__(self, hcl_type: HclType, io_chain_head: IONode):
         self.type = 'io'
         self.hcl_type = hcl_type
-        self.conn_side = ConnSide.RT
+        self.variable_type = VariableType.VALUE
         self.io_chain_head = io_chain_head
 
 

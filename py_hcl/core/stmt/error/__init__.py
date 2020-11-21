@@ -4,13 +4,16 @@ from py_hcl.core.error import CoreError
 def set_up():
     StatementError.append({
         'WrongBranchSyntax': {
-            'code': 300,
-            'value': StatementError(
-                'expected a well-defined when-else_when-otherwise block')},
+            'code':
+            300,
+            'value':
+            StatementError(
+                'expected a well-defined when-else_when-otherwise block')
+        },
         'ConnectTypeError': {
             'code': 301,
-            'value': StatementError(
-                'connect statement contains unexpected types')
+            'value':
+            StatementError('connect statement contains unexpected types')
         }
     })
 

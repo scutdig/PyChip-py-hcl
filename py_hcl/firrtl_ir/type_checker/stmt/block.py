@@ -5,10 +5,10 @@ from ...stmt.block import Block
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(Block)
 def check(block: Block):

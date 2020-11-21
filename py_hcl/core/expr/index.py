@@ -38,7 +38,8 @@ def _(vec, i: int):
     assert i < vec.hcl_type.size
     if isinstance(vec, VecHolder):
         return vec.assoc_value[i]
-    return ExprHolder(vec.hcl_type.inner_type, vec.conn_side, VecIndex(vec, i))
+    return ExprHolder(vec.hcl_type.inner_type, vec.variable_type,
+                      VecIndex(vec, i))
 
 
 @index(HclType)

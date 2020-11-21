@@ -37,7 +37,5 @@ def test_not():
     basis_tester(not_basis_cases)
     encounter_error_tester(not_type_wrong_cases)
     encounter_error_tester(not_width_wrong_cases)
-    serialize_equal(Not(u(20, w(5)), uw(5)),
-                    'not(UInt<5>("h14"))')
-    serialize_equal(Not(s(-20, w(6)), uw(6)),
-                    'not(SInt<6>("h-14"))')
+    serialize_equal(Not(u(20, w(5)), uw(5)), 'not(UInt<5>("h14"))')
+    serialize_equal(Not(s(-20, w(6)), uw(6)), 'not(SInt<6>("h-14"))')

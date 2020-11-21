@@ -12,11 +12,11 @@ from py_hcl.core.type.vector import VectorT
 from py_hcl.utils import json_serialize
 
 
-class ConnSide(Enum):
+class VariableType(Enum):
     UNKNOWN = 0
-    LF = 1
-    RT = 2
-    BOTH = 3
+    LOCATION = 1
+    VALUE = 2
+    ASSIGNABLE_VALUE = 3
 
 
 @json_serialize
@@ -55,8 +55,7 @@ def _(left, right):
     if left.hcl_type.width < right.hcl_type.width:
         logging.warning(
             'connect(): connecting {} to {} will truncate the bits'.format(
-                right.hcl_type, left.hcl_type
-            ))
+                right.hcl_type, left.hcl_type))
         right = right[left.hcl_type.width - 1:0].to_sint()
 
     if left.hcl_type.width > right.hcl_type.width:
@@ -75,8 +74,7 @@ def _(left, right):
     if left.hcl_type.width < right.hcl_type.width:
         logging.warning(
             'connect(): connecting {} to {} will truncate the bits'.format(
-                right.hcl_type, left.hcl_type
-            ))
+                right.hcl_type, left.hcl_type))
         return op_apply('<<=')(left, right[left.hcl_type.width - 1:0])
 
     return op_apply('<<=')(left, right.to_uint())
@@ -90,8 +88,7 @@ def _(left, right):
     if left.hcl_type.width < right.hcl_type.width:
         logging.warning(
             'connect(): connecting {} to {} will truncate the bits'.format(
-                right.hcl_type, left.hcl_type
-            ))
+                right.hcl_type, left.hcl_type))
         right = right[left.hcl_type.width - 1:0]
 
     return op_apply('<<=')(left, right.to_sint())
@@ -137,5 +134,7 @@ def _(_0, _1):
 
 def check_connect_dir(left, right):
     # TODO: Accurate Error Message
-    assert left.conn_side in (ConnSide.LF, ConnSide.BOTH)
-    assert right.conn_side in (ConnSide.RT, ConnSide.BOTH)
+    assert left.variable_type in (VariableType.LOCATION,
+                                  VariableType.ASSIGNABLE_VALUE)
+    assert right.variable_type in (VariableType.VALUE,
+                                   VariableType.ASSIGNABLE_VALUE)

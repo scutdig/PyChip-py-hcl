@@ -12,7 +12,8 @@ from py_hcl.dsl.tpe.uint import U
 class A(Module):
     io = IO(
         i=Input(U.w(8)),
-        o=Output(U.w(8)))
+        o=Output(U.w(8)),
+    )
 
     io.o <<= io.i
 
@@ -28,9 +29,7 @@ def test_io():
 
 def test_io_inherit_basis():
     class B(A):
-        io = io_extend(A)(
-            i1=Input(U.w(9)),
-        )
+        io = io_extend(A)(i1=Input(U.w(9)), )
         io.o <<= io.i1
 
     table = B.packed_module.named_expr_chain.named_expr_chain_head \
@@ -43,9 +42,7 @@ def test_io_inherit_basis():
 
 def test_io_inherit_override():
     class B(A):
-        io = io_extend(A)(
-            i=Input(U.w(9)),
-        )
+        io = io_extend(A)(i=Input(U.w(9)), )
         io.o <<= io.i
 
     table = B.packed_module.named_expr_chain.named_expr_chain_head \
@@ -58,17 +55,16 @@ def test_io_inherit_override():
 
 def test_io_no_wrap_io():
     with pytest.raises(ExprError, match='^.*Input.*Output.*$'):
+
         class A(Module):
             io = IO(i=HclType())
 
     with pytest.raises(ExprError, match='^.*Input.*Output.*$'):
+
         class A(Module):
-            io = IO(
-                i=HclType(),
-                o=Output(HclType()))
+            io = IO(i=HclType(), o=Output(HclType()))
 
     with pytest.raises(ExprError, match='^.*Input.*Output.*$'):
+
         class A(Module):
-            io = IO(
-                i=Input(HclType()),
-                o=HclType())
+            io = IO(i=Input(HclType()), o=HclType())

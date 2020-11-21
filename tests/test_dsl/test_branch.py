@@ -57,6 +57,7 @@ def test_branch():
 
 def test_branch_syntax_error1():
     with pytest.raises(StatementError):
+
         class A(Module):
             io = IO()
             a = Wire(U.w(8))
@@ -72,6 +73,7 @@ def test_branch_syntax_error1():
 
 def test_branch_syntax_error2():
     with pytest.raises(StatementError):
+
         class A(Module):
             io = IO()
             a = Wire(U.w(8))
@@ -84,6 +86,7 @@ def test_branch_syntax_error2():
 
 def test_branch_syntax_error3():
     with pytest.raises(StatementError):
+
         class A(Module):
             io = IO()
             a = Wire(U.w(8))
@@ -98,6 +101,7 @@ def test_branch_syntax_error3():
 
 def test_branch_syntax_error4():
     with pytest.raises(StatementError):
+
         class A(Module):
             io = IO()
             a = Wire(U.w(8))
@@ -114,6 +118,7 @@ def test_branch_syntax_error4():
 
 def test_branch_syntax_error5():
     with pytest.raises(StatementError):
+
         class A(Module):
             io = IO()
             a = Wire(U.w(8))

@@ -13,17 +13,18 @@ def test_block_basis():
     assert check(blk)
     serialize_stmt_equal(blk, "skip")
 
-    blk = Block([DefNode("n", u(1, w(1))),
-                 Conditionally(n("n", uw(1)),
-                               EmptyStmt(),
-                               Connect(n("a", uw(8)), n("b", uw(8))))
-                 ])
+    blk = Block([
+        DefNode("n", u(1, w(1))),
+        Conditionally(n("n", uw(1)), EmptyStmt(),
+                      Connect(n("a", uw(8)), n("b", uw(8))))
+    ])
     assert check(blk)
-    serialize_stmt_equal(blk, 'node n = UInt<1>("h1")\n'
-                              'when n :\n'
-                              '  skip\n'
-                              'else :\n'
-                              '  a <= b')
+    serialize_stmt_equal(
+        blk, 'node n = UInt<1>("h1")\n'
+        'when n :\n'
+        '  skip\n'
+        'else :\n'
+        '  a <= b')
 
 
 def test_block_empty():

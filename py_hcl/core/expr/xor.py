@@ -4,7 +4,7 @@ from py_hcl.core.expr.error import ExprError
 from py_hcl.core.expr.utils import assert_right_side
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
-from py_hcl.core.stmt.connect import ConnSide
+from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import BundleT, Dir
 from py_hcl.core.type.sint import SIntT
@@ -29,7 +29,7 @@ xorer = op_register('^')
 def _(lf, rt):
     w = max(lf.hcl_type.width, rt.hcl_type.width)
     t = UIntT(w)
-    return ExprHolder(t, ConnSide.RT, Xor(lf, rt))
+    return ExprHolder(t, VariableType.VALUE, Xor(lf, rt))
 
 
 @xorer(SIntT, SIntT)
@@ -37,7 +37,7 @@ def _(lf, rt):
 def _(lf, rt):
     w = max(lf.hcl_type.width, rt.hcl_type.width)
     t = UIntT(w)
-    return ExprHolder(t, ConnSide.RT, Xor(lf, rt))
+    return ExprHolder(t, VariableType.VALUE, Xor(lf, rt))
 
 
 @xorer(VectorT, VectorT)
@@ -48,7 +48,7 @@ def _(lf, rt):
 
     values = [lf[i] ^ rt[i] for i in range(lf.hcl_type.size)]
     v_type = VectorT(values[0].hcl_type, len(values))
-    return VecHolder(v_type, ConnSide.RT, values)
+    return VecHolder(v_type, VariableType.VALUE, values)
 
 
 @xorer(BundleT, BundleT)
@@ -64,7 +64,7 @@ def _(lf, rt):
         bd_type_fields[k] = {"dir": Dir.SRC, "hcl_type": res.hcl_type}
         bd_values[k] = res
 
-    return BundleHolder(BundleT(bd_type_fields), ConnSide.RT, bd_values)
+    return BundleHolder(BundleT(bd_type_fields), VariableType.VALUE, bd_values)
 
 
 @xorer(HclType, HclType)

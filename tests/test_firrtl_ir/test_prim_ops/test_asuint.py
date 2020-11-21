@@ -40,9 +40,6 @@ def test_asuint():
     basis_tester(asuint_basis_cases)
     encounter_error_tester(asuint_type_wrong_cases)
     encounter_error_tester(asuint_width_wrong_cases)
-    serialize_equal(AsUInt(u(20, w(5)), uw(5)),
-                    'asUInt(UInt<5>("h14"))')
-    serialize_equal(AsUInt(s(-20, w(6)), uw(5)),
-                    'asUInt(SInt<6>("h-14"))')
-    serialize_equal(AsUInt(n("clock", ClockType()), uw(1)),
-                    'asUInt(clock)')
+    serialize_equal(AsUInt(u(20, w(5)), uw(5)), 'asUInt(UInt<5>("h14"))')
+    serialize_equal(AsUInt(s(-20, w(6)), uw(5)), 'asUInt(SInt<6>("h-14"))')
+    serialize_equal(AsUInt(n("clock", ClockType()), uw(1)), 'asUInt(clock)')

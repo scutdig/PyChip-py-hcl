@@ -14,10 +14,10 @@ from ...type_measurer import equal
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(DefWire)
 def check(_: DefWire):

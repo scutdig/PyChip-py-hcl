@@ -18,8 +18,7 @@ def merge_expr(modules: List[type],
     return NamedExprChain(expr_list)
 
 
-def merge_statement(modules: List[type],
-                    stmt_holder: StmtHolder) -> StmtChain:
+def merge_statement(modules: List[type], stmt_holder: StmtHolder) -> StmtChain:
     stmt_list = None
     for m in modules[::-1]:
         h = m.packed_module.statement_chain \

@@ -3,10 +3,8 @@ from .scope import ScopeManager, ScopeType
 
 
 def set_up():
-    ScopeManager.register_scope_expanding(
-        StatementTrapper.on_scope_expanding)
-    ScopeManager.register_scope_shrinking(
-        StatementTrapper.on_scope_shrinking)
+    ScopeManager.register_scope_expanding(StatementTrapper.on_scope_expanding)
+    ScopeManager.register_scope_shrinking(StatementTrapper.on_scope_shrinking)
     ScopeManager.expand_scope(ScopeType.GROUND)
 
 
@@ -28,10 +26,8 @@ class StatementTrapper(object):
 
     @classmethod
     def track(cls, statement):
-        statement = LineStatement(
-            ScopeManager.current_scope().scope_id,
-            statement
-        )
+        statement = LineStatement(ScopeManager.current_scope().scope_id,
+                                  statement)
         cls.trapped_stmts[-1].append(statement)
 
     @classmethod

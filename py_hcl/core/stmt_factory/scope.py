@@ -56,9 +56,7 @@ class ScopeManager(object):
             scope_type=ScopeType.TOP,
         )
     ]
-    scope_id_map = {
-        scope_list[0].scope_id: scope_list[0]
-    }
+    scope_id_map = {scope_list[0].scope_id: scope_list[0]}
     scope_expanding_hooks = []
     scope_shrinking_hooks = []
 

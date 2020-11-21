@@ -6,7 +6,7 @@ from py_hcl.core.type import HclType
 
 
 def IO(**named_ports: Union[cio.Input, cio.Output]) -> cio.IO:
-    return cio.io_extend((BaseModule,))(named_ports)
+    return cio.io_extend((BaseModule, ))(named_ports)
 
 
 def Input(hcl_type: HclType) -> cio.Input:

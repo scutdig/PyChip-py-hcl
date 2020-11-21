@@ -55,9 +55,8 @@ def do_otherwise_exit():
 def check_bool_expr(cond_expr: HclExpr):
     if isinstance(cond_expr.hcl_type, UIntT) and cond_expr.hcl_type.width == 1:
         return
-    raise StatementError.wrong_branch_syntax(
-        'check_bool_expr(): '
-        'expected bool-type expression')
+    raise StatementError.wrong_branch_syntax('check_bool_expr(): '
+                                             'expected bool-type expression')
 
 
 def check_branch_syntax():
@@ -68,9 +67,8 @@ def check_branch_syntax():
 
 def check_exists_pre_stmts():
     if len(StatementTrapper.trapped_stmts[-1]) == 0:
-        raise StatementError.wrong_branch_syntax(
-            'check_exists_pre_stmts(): '
-            'expected when block')
+        raise StatementError.wrong_branch_syntax('check_exists_pre_stmts(): '
+                                                 'expected when block')
 
 
 def check_exists_pre_when_block():
@@ -102,6 +100,5 @@ def check_correct_block_level():
         if last_scope_level == current_scope_level + 1:
             return
 
-    raise StatementError.wrong_branch_syntax(
-        'check_correct_block_level(): '
-        'branch block not matched')
+    raise StatementError.wrong_branch_syntax('check_correct_block_level(): '
+                                             'branch block not matched')

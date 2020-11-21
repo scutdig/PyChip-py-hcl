@@ -7,10 +7,10 @@ from ...type_measurer import equal
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(Connect)
 def check(connect: Connect):
@@ -21,8 +21,7 @@ def check(connect: Connect):
 
     if not equal(connect.loc_ref.tpe, connect.expr_ref.tpe):
         logging.error("connect: type unmatched - {} & {}".format(
-            connect.loc_ref.tpe, connect.expr_ref.tpe
-        ))
+            connect.loc_ref.tpe, connect.expr_ref.tpe))
         return False
 
     return True

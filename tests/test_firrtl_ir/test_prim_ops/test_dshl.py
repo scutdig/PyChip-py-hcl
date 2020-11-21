@@ -16,23 +16,21 @@ def args(*arg_types):
 
 
 dshl_basis_cases = [
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x) + pow(2, width(y)) - 1)),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x) + pow(2, width(y)) - 1)),
+    args(UIntType,
+         UIntType).tpe(lambda x, y: uw(width(x) + pow(2, width(y)) - 1)),
+    args(SIntType,
+         UIntType).tpe(lambda x, y: sw(width(x) + pow(2, width(y)) - 1)),
 ]
 
 dshl_type_wrong_cases = type_wrong_cases_2_args_gen(Dshl)
 
 dshl_width_wrong_cases = [
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x) + pow(2, width(y)))),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x) + pow(2, width(y)))),
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x) + pow(2, width(y)) - 2)),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x) + pow(2, width(y)) - 2)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x) + pow(2, width(y)))),
+    args(SIntType, UIntType).tpe(lambda x, y: sw(width(x) + pow(2, width(y)))),
+    args(UIntType,
+         UIntType).tpe(lambda x, y: uw(width(x) + pow(2, width(y)) - 2)),
+    args(SIntType,
+         UIntType).tpe(lambda x, y: sw(width(x) + pow(2, width(y)) - 2)),
 ]
 
 

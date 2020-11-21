@@ -52,16 +52,16 @@ def test_bundle_type():
         Field("c", VectorType(vt, 32)),
     ])
     serialize_equal(
-        bd, "{a : UInt<8>[16], flip b : UInt<8>, c : UInt<8>[16][32]}"
-    )
+        bd, "{a : UInt<8>[16], flip b : UInt<8>, c : UInt<8>[16][32]}")
 
     # TODO: Is it valid?
     bd = BundleType([
-        Field("l1", BundleType([
-            Field("l2", BundleType([
-                Field("l3", UIntType(Width(8)), True)
-            ])),
-            Field("vt", vt),
-        ]))
+        Field(
+            "l1",
+            BundleType([
+                Field("l2", BundleType([Field("l3", UIntType(Width(8)),
+                                              True)])),
+                Field("vt", vt),
+            ]))
     ])
     serialize_equal(bd, "{l1 : {l2 : {flip l3 : UInt<8>}, vt : UInt<8>[16]}}")

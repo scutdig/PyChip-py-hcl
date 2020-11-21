@@ -3,9 +3,9 @@ from py_hcl.core.type.bundle import BundleT
 
 
 class BundleHolder(HclExpr):
-    def __init__(self, hcl_type, conn_side, assoc_value):
+    def __init__(self, hcl_type, variable_type, assoc_value):
         self.hcl_type = hcl_type
-        self.conn_side = conn_side
+        self.variable_type = variable_type
 
         assert isinstance(hcl_type, BundleT)
         assert set(hcl_type.fields.keys()) == set(assoc_value.keys())

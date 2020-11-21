@@ -1,7 +1,7 @@
 from multipledispatch.dispatcher import MethodDispatcher
 
 from py_hcl.core.hcl_ops import op_apply
-from py_hcl.core.stmt.connect import ConnSide
+from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import UnknownType, HclType
 from py_hcl.utils import json_serialize
 
@@ -30,7 +30,7 @@ class ExprTable:
 @json_serialize
 class HclExpr(object):
     hcl_type = UnknownType()
-    conn_side = ConnSide.UNKNOWN
+    variable_type = VariableType.UNKNOWN
 
     def __new__(cls, *args):
         obj = super().__new__(cls)
@@ -94,10 +94,12 @@ class HclExpr(object):
         return op_apply('to_bool')(self)
 
 
-@json_serialize(json_fields=['id', 'type', 'hcl_type', 'conn_side', 'op_node'])
+@json_serialize(
+    json_fields=['id', 'type', 'hcl_type', 'variable_type', 'op_node'])
 class ExprHolder(HclExpr):
-    def __init__(self, hcl_type: HclType, conn_side: ConnSide, op_node):
+    def __init__(self, hcl_type: HclType, variable_type: VariableType,
+                 op_node):
         self.type = 'expr_holder'
         self.hcl_type = hcl_type
-        self.conn_side = conn_side
+        self.variable_type = variable_type
         self.op_node = op_node

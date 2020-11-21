@@ -10,10 +10,10 @@ from ...type_checker.utils import type_in, check_all_same_uint_sint
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(Add)
 def check(add: Add):
@@ -21,9 +21,7 @@ def check(add: Add):
     if not check_all_expr(*add.args):
         return False
 
-    if not check_all_same_uint_sint(add.args[0].tpe,
-                                    add.args[1].tpe,
-                                    add.tpe):
+    if not check_all_same_uint_sint(add.args[0].tpe, add.args[1].tpe, add.tpe):
         return False
 
     expected_type_width = max(add.args[0].tpe.width.width,
@@ -40,8 +38,7 @@ def check(sub: Sub):
     if not check_all_expr(*sub.args):
         return False
 
-    if not check_all_same_uint_sint(sub.args[0].tpe,
-                                    sub.args[1].tpe):
+    if not check_all_same_uint_sint(sub.args[0].tpe, sub.args[1].tpe):
         return False
 
     if not type_in(sub.tpe, SIntType):
@@ -61,9 +58,7 @@ def check(mul: Mul):
     if not check_all_expr(*mul.args):
         return False
 
-    if not check_all_same_uint_sint(mul.args[0].tpe,
-                                    mul.args[1].tpe,
-                                    mul.tpe):
+    if not check_all_same_uint_sint(mul.args[0].tpe, mul.args[1].tpe, mul.tpe):
         return False
 
     expected_type_width = \
@@ -80,9 +75,7 @@ def check(div: Div):
     if not check_all_expr(*div.args):
         return False
 
-    if not check_all_same_uint_sint(div.args[0].tpe,
-                                    div.args[1].tpe,
-                                    div.tpe):
+    if not check_all_same_uint_sint(div.args[0].tpe, div.args[1].tpe, div.tpe):
         return False
 
     expected_type_width = div.args[0].tpe.width.width
@@ -100,9 +93,7 @@ def check(rem: Rem):
     if not check_all_expr(*rem.args):
         return False
 
-    if not check_all_same_uint_sint(rem.args[0].tpe,
-                                    rem.args[1].tpe,
-                                    rem.tpe):
+    if not check_all_same_uint_sint(rem.args[0].tpe, rem.args[1].tpe, rem.tpe):
         return False
 
     expected_type_width = min(rem.args[0].tpe.width.width,
@@ -197,8 +188,7 @@ def check(cat: Cat):
     if not check_all_expr(*cat.args):
         return False
 
-    if not check_all_same_uint_sint(cat.args[0].tpe,
-                                    cat.args[1].tpe):
+    if not check_all_same_uint_sint(cat.args[0].tpe, cat.args[1].tpe):
         return False
 
     if not type_in(cat.tpe, UIntType):
@@ -322,8 +312,7 @@ def check(dshl: Dshl):
     if not check_all_expr(*dshl.args):
         return False
 
-    if not check_all_same_uint_sint(dshl.args[0].tpe,
-                                    dshl.tpe):
+    if not check_all_same_uint_sint(dshl.args[0].tpe, dshl.tpe):
         return False
 
     if not type_in(dshl.args[1].tpe, UIntType):
@@ -343,8 +332,7 @@ def check(dshr: Dshr):
     if not check_all_expr(*dshr.args):
         return False
 
-    if not check_all_same_uint_sint(dshr.args[0].tpe,
-                                    dshr.tpe):
+    if not check_all_same_uint_sint(dshr.args[0].tpe, dshr.tpe):
         return False
 
     if not type_in(dshr.args[1].tpe, UIntType):

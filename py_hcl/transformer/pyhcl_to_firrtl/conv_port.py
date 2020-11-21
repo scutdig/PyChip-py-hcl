@@ -9,8 +9,10 @@ from py_hcl.firrtl_ir.type.width import Width
 
 
 def convert_ports(raw_ports: Dict[str, Union[Input, Output]]):
-    ports = [InputPort('clock', ClockType()),
-             InputPort('reset', UIntType(Width(1)))]
+    ports = [
+        InputPort('clock', ClockType()),
+        InputPort('reset', UIntType(Width(1)))
+    ]
     for k, v in raw_ports.items():
         p = InputPort if v.port_dir == 'input' else OutputPort
         ports.append(p(k, convert_type(v.hcl_type)))

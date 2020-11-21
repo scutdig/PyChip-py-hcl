@@ -8,10 +8,10 @@ from py_hcl.utils import signed_num_bin_len, unsigned_num_bin_len
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(UIntLiteral)
 def check(uint: UIntLiteral):
@@ -25,8 +25,7 @@ def check(uint: UIntLiteral):
 
     if unsigned_num_bin_len(uint.value) > uint.tpe.width.width:
         logging.error("uint: width check failed - {} > {}".format(
-            unsigned_num_bin_len(uint.value), uint.tpe.width.width)
-        )
+            unsigned_num_bin_len(uint.value), uint.tpe.width.width))
         return False
 
     return True
@@ -40,8 +39,7 @@ def check(sint: SIntLiteral):
 
     if signed_num_bin_len(sint.value) > sint.tpe.width.width:
         logging.error("sint: width check failed - {} > {}".format(
-            signed_num_bin_len(sint.value), sint.tpe.width.width)
-        )
+            signed_num_bin_len(sint.value), sint.tpe.width.width))
         return False
 
     return True

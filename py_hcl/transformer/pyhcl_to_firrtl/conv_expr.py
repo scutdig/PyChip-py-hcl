@@ -48,8 +48,8 @@ def convert_expr_op(expr_holder: ExprHolder, add: CAdd):
     r_stmts, r_ref = convert_expr_by_id(add.right_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(Add([l_ref, r_ref], typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(Add([l_ref, r_ref], typ), name, typ,
+                              id(expr_holder))
     return [*l_stmts, *r_stmts, stmt], ref
 
 
@@ -59,8 +59,8 @@ def convert_expr_op(expr_holder: ExprHolder, and_: CAnd):
     r_stmts, r_ref = convert_expr_by_id(and_.right_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(And([l_ref, r_ref], typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(And([l_ref, r_ref], typ), name, typ,
+                              id(expr_holder))
     return [*l_stmts, *r_stmts, stmt], ref
 
 
@@ -70,8 +70,8 @@ def convert_expr_op(expr_holder: ExprHolder, xor: CXor):
     r_stmts, r_ref = convert_expr_by_id(xor.right_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(Xor([l_ref, r_ref], typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(Xor([l_ref, r_ref], typ), name, typ,
+                              id(expr_holder))
     return [*l_stmts, *r_stmts, stmt], ref
 
 
@@ -81,8 +81,8 @@ def convert_expr_op(expr_holder: ExprHolder, or_: COr):
     r_stmts, r_ref = convert_expr_by_id(or_.right_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(Or([l_ref, r_ref], typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(Or([l_ref, r_ref], typ), name, typ,
+                              id(expr_holder))
     return [*l_stmts, *r_stmts, stmt], ref
 
 
@@ -91,8 +91,8 @@ def convert_expr_op(expr_holder: ExprHolder, bs: CBits):
     stmts, v_ref = convert_expr_by_id(bs.ref_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(Bits(v_ref, [bs.high, bs.low], typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(Bits(v_ref, [bs.high, bs.low], typ), name, typ,
+                              id(expr_holder))
     return [*stmts, stmt], ref
 
 
@@ -101,8 +101,7 @@ def convert_expr_op(expr_holder: ExprHolder, ts: ToSInt):
     stmts, v_ref = convert_expr_by_id(ts.ref_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(AsSInt(v_ref, typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(AsSInt(v_ref, typ), name, typ, id(expr_holder))
     return [*stmts, stmt], ref
 
 
@@ -111,8 +110,7 @@ def convert_expr_op(expr_holder: ExprHolder, tu: ToUInt):
     stmts, v_ref = convert_expr_by_id(tu.ref_expr_id)
     name = NameGetter.get(expr_holder.id)
     typ = convert_type(expr_holder.hcl_type)
-    stmt, ref = save_node_ref(AsUInt(v_ref, typ),
-                              name, typ, id(expr_holder))
+    stmt, ref = save_node_ref(AsUInt(v_ref, typ), name, typ, id(expr_holder))
     return [*stmts, stmt], ref
 
 
@@ -206,11 +204,13 @@ def convert_expr(mi: ModuleInst):
     module = Context.modules[mi.module_name]
     name = NameGetter.get(mi.id)
     ref = Reference(name, ports_to_bundle_type(module.ports))
-    stmts = [DefInstance(name, mi.module_name),
-             Connect(SubField(ref, 'clock', ClockType()),
-                     Reference('clock', ClockType())),
-             Connect(SubField(ref, 'reset', UIntType(Width(1))),
-                     Reference('reset', UIntType(Width(1))))]
+    stmts = [
+        DefInstance(name, mi.module_name),
+        Connect(SubField(ref, 'clock', ClockType()),
+                Reference('clock', ClockType())),
+        Connect(SubField(ref, 'reset', UIntType(Width(1))),
+                Reference('reset', UIntType(Width(1))))
+    ]
     Context.expr_obj_id_to_ref[id(mi)] = ref
     return stmts, ref
 

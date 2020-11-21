@@ -24,8 +24,10 @@ def args(*arg_types):
 
 
 shr_basis_cases = [
-    args(UIntType).const(int).tpe(lambda x, y: uw(max(1, width(x) - y))),
-    args(SIntType).const(int).tpe(lambda x, y: sw(max(1, width(x) - y))),
+    args(UIntType).const(int).tpe(lambda x, y: uw(max(1,
+                                                      width(x) - y))),
+    args(SIntType).const(int).tpe(lambda x, y: sw(max(1,
+                                                      width(x) - y))),
 ]
 
 shr_type_wrong_cases = [
@@ -35,10 +37,14 @@ shr_type_wrong_cases = [
 ]
 
 shr_width_wrong_cases = [
-    args(UIntType).const(int).tpe(lambda x, y: uw(max(1, width(x) - y) + 1)),
-    args(SIntType).const(int).tpe(lambda x, y: sw(max(1, width(x) - y) + 1)),
-    args(UIntType).const(int).tpe(lambda x, y: uw(max(1, width(x) - y) - 1)),
-    args(SIntType).const(int).tpe(lambda x, y: sw(max(1, width(x) - y) - 1)),
+    args(UIntType).const(int).tpe(lambda x, y: uw(max(1,
+                                                      width(x) - y) + 1)),
+    args(SIntType).const(int).tpe(lambda x, y: sw(max(1,
+                                                      width(x) - y) + 1)),
+    args(UIntType).const(int).tpe(lambda x, y: uw(max(1,
+                                                      width(x) - y) - 1)),
+    args(SIntType).const(int).tpe(lambda x, y: sw(max(1,
+                                                      width(x) - y) - 1)),
 ]
 
 
@@ -46,7 +52,5 @@ def test_shr():
     basis_tester(shr_basis_cases)
     encounter_error_tester(shr_type_wrong_cases)
     encounter_error_tester(shr_width_wrong_cases)
-    serialize_equal(Shr(u(20, w(5)), 3, uw(2)),
-                    'shr(UInt<5>("h14"), 3)')
-    serialize_equal(Shr(s(-20, w(6)), 3, uw(3)),
-                    'shr(SInt<6>("h-14"), 3)')
+    serialize_equal(Shr(u(20, w(5)), 3, uw(2)), 'shr(UInt<5>("h14"), 3)')
+    serialize_equal(Shr(s(-20, w(6)), 3, uw(3)), 'shr(SInt<6>("h-14"), 3)')

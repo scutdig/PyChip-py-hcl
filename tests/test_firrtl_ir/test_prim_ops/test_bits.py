@@ -31,54 +31,49 @@ def args(*arg_types):
 
 
 bits_basis_cases = [
-    args(UIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 1)),
-    args(SIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 1)),
+    args(UIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 1)),
+    args(SIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 1)),
 ]
 
 bits_type_wrong_cases = [
-    args(UnknownType).const(int, int).filter(
-        lambda u, a, b: a >= b >= 0).tpe(
+    args(UnknownType).const(int, int).filter(lambda u, a, b: a >= b >= 0).tpe(
         lambda u, a, b: uw(a - b + 1)),
-    args(VectorType).const(int, int).filter(
-        lambda u, a, b: a >= b >= 0).tpe(
+    args(VectorType).const(int, int).filter(lambda u, a, b: a >= b >= 0).tpe(
         lambda u, a, b: uw(a - b + 1)),
-    args(BundleType).const(int, int).filter(
-        lambda u, a, b: a >= b >= 0).tpe(
+    args(BundleType).const(int, int).filter(lambda u, a, b: a >= b >= 0).tpe(
         lambda u, a, b: uw(a - b + 1)),
 ]
 
 bits_width_wrong_cases = [
+    args(UIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 2)),
+    args(SIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 2)),
     args(UIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 2)),
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(lambda u, a, b: uw(a - b)),
     args(SIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 2)),
-    args(UIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b)),
-    args(SIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b)),
+        lambda u, a, b: width(u) > a >= b >= 0).tpe(lambda u, a, b: uw(a - b)),
 ]
 
 bits_invalid_cases = [
-    args(UIntType).const(int, int).filter(
-        lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 1)),
-    args(SIntType).const(int, int).filter(
-        lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
-        lambda u, a, b: uw(a - b + 1)),
-    args(UIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a and b > a >= 0).tpe(
-        lambda u, a, b: uw(b - a + 1)),
-    args(SIntType).const(int, int).filter(
-        lambda u, a, b: width(u) > a and b > a >= 0).tpe(
-        lambda u, a, b: uw(b - a + 1)),
+    args(UIntType).const(
+        int, int).filter(lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 1)),
+    args(SIntType).const(
+        int, int).filter(lambda u, a, b: width(u) <= a and a >= b >= 0).tpe(
+            lambda u, a, b: uw(a - b + 1)),
+    args(UIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a and b > a >= 0).tpe(
+            lambda u, a, b: uw(b - a + 1)),
+    args(SIntType).const(
+        int, int).filter(lambda u, a, b: width(u) > a and b > a >= 0).tpe(
+            lambda u, a, b: uw(b - a + 1)),
 ]
 
 

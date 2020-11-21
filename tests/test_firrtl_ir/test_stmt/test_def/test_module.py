@@ -14,28 +14,31 @@ def test_module_basis():
     mod = DefModule("m", [OutputPort("p", uw(8))],
                     Connect(n("p", uw(8)), u(2, w(8))))
     assert check(mod)
-    serialize_stmt_equal(mod, 'module m :\n'
-                              '  output p : UInt<8>\n'
-                              '\n'
-                              '  p <= UInt<8>("h2")')
+    serialize_stmt_equal(
+        mod, 'module m :\n'
+        '  output p : UInt<8>\n'
+        '\n'
+        '  p <= UInt<8>("h2")')
 
-    mod = DefModule("m", [InputPort("b", uw(8)),
-                          OutputPort("a", uw(8))],
-                    Block([DefNode("n", u(1, w(1))),
-                           Conditionally(n("n", uw(1)),
-                                         EmptyStmt(),
-                                         Connect(n("a", uw(8)), n("b", uw(8))))
-                           ]))
+    mod = DefModule(
+        "m",
+        [InputPort("b", uw(8)), OutputPort("a", uw(8))],
+        Block([
+            DefNode("n", u(1, w(1))),
+            Conditionally(n("n", uw(1)), EmptyStmt(),
+                          Connect(n("a", uw(8)), n("b", uw(8))))
+        ]))
     assert check(mod)
-    serialize_stmt_equal(mod, 'module m :\n'
-                              '  input b : UInt<8>\n'
-                              '  output a : UInt<8>\n'
-                              '\n'
-                              '  node n = UInt<1>("h1")\n'
-                              '  when n :\n'
-                              '    skip\n'
-                              '  else :\n'
-                              '    a <= b')
+    serialize_stmt_equal(
+        mod, 'module m :\n'
+        '  input b : UInt<8>\n'
+        '  output a : UInt<8>\n'
+        '\n'
+        '  node n = UInt<1>("h1")\n'
+        '  when n :\n'
+        '    skip\n'
+        '  else :\n'
+        '    a <= b')
 
 
 def test_module_empty_ports():
@@ -50,14 +53,16 @@ def test_module_body_wrong():
 
 
 def test_ext_module_basis():
-    mod = DefExtModule("em", [InputPort("b", uw(8)),
-                              OutputPort("a", uw(8))], "em")
+    mod = DefExtModule(
+        "em",
+        [InputPort("b", uw(8)), OutputPort("a", uw(8))], "em")
     assert check(mod)
-    serialize_stmt_equal(mod, 'extmodule em :\n'
-                              '  input b : UInt<8>\n'
-                              '  output a : UInt<8>\n'
-                              '\n'
-                              '  defname = em')
+    serialize_stmt_equal(
+        mod, 'extmodule em :\n'
+        '  input b : UInt<8>\n'
+        '  output a : UInt<8>\n'
+        '\n'
+        '  defname = em')
 
 
 def test_ext_module_empty_ports():

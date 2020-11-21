@@ -16,23 +16,17 @@ def args(*arg_types):
 
 
 dshr_basis_cases = [
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x))),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x))),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x))),
+    args(SIntType, UIntType).tpe(lambda x, y: sw(width(x))),
 ]
 
 dshr_type_wrong_cases = type_wrong_cases_2_args_gen(Dshr)
 
 dshr_width_wrong_cases = [
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x) + 1)),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x) + 1)),
-    args(UIntType, UIntType).tpe(
-        lambda x, y: uw(width(x) - 1)),
-    args(SIntType, UIntType).tpe(
-        lambda x, y: sw(width(x) - 1)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x) + 1)),
+    args(SIntType, UIntType).tpe(lambda x, y: sw(width(x) + 1)),
+    args(UIntType, UIntType).tpe(lambda x, y: uw(width(x) - 1)),
+    args(SIntType, UIntType).tpe(lambda x, y: sw(width(x) - 1)),
 ]
 
 

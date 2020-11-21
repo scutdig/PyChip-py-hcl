@@ -8,10 +8,10 @@ from ...type_measurer import equal
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(Conditionally)
 def check(cond: Conditionally):

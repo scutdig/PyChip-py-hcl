@@ -9,24 +9,22 @@ from ...type_measurer import equal
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(SubField)
 def check(sub_field):
     from .. import check_all_expr
     if not check_all_expr(sub_field.bundle_ref):
         logging.error("sub_field: reference check failed - {}".format(
-            sub_field.bundle_ref
-        ))
+            sub_field.bundle_ref))
         return False
 
     if not type_in(sub_field.bundle_ref.tpe, BundleType):
         logging.error("sub_field: reference type check failed - {}".format(
-            sub_field.bundle_ref
-        ))
+            sub_field.bundle_ref))
         return False
 
     field = None
@@ -36,8 +34,7 @@ def check(sub_field):
             break
     if field is None:
         logging.error("sub_field: field not exist - {} not in {}".format(
-            sub_field.name, sub_field.bundle_ref.tpe.fields
-        ))
+            sub_field.name, sub_field.bundle_ref.tpe.fields))
         return False
 
     if not equal(field.tpe, sub_field.tpe):

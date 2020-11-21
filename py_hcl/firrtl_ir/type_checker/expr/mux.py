@@ -6,10 +6,10 @@ from ...type_measurer import equal
 
 checker = dispatch
 
-
 ###############################################################
 #                      TYPE CHECKERS                          #
 ###############################################################
+
 
 @checker(Mux)
 def check(mux: Mux):

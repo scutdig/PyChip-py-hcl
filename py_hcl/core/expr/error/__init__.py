@@ -5,7 +5,8 @@ def set_up():
     ExprError.append({
         'IOValueError': {
             'code': 200,
-            'value': ExprError('io items should wrap with Input or Output')},
+            'value': ExprError('io items should wrap with Input or Output')
+        },
         'OpTypeError': {
             'code': 201,
             'value': ExprError('specified arguments contain unexpected types')

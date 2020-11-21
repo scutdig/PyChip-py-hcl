@@ -9,9 +9,7 @@ def test_mux_basis():
     assert check(mux)
     serialize_equal(mux, "mux(c, a, b)")
 
-    mux = Mux(u(1, w(1)),
-              n("b", vec(sw(8), 10)),
-              n("c", vec(sw(8), 10)),
+    mux = Mux(u(1, w(1)), n("b", vec(sw(8), 10)), n("c", vec(sw(8), 10)),
               vec(sw(8), 10))
     assert check(mux)
     serialize_equal(mux, 'mux(UInt<1>("h1"), b, c)')
@@ -28,7 +26,7 @@ def test_mux_cond_type_wrong():
     assert not check(mux)
 
 
-def test_mux_tf_value_type_wrong():
+def test_mux_tf_variable_type_wrong():
     mux = Mux(n("c", uw(1)), n("a", uw(7)), n("b", uw(8)), uw(8))
     assert not check(mux)
 

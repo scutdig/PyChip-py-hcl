@@ -3,7 +3,7 @@ from py_hcl.core.expr.error import ExprError
 from py_hcl.core.expr.utils import assert_right_side
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
-from py_hcl.core.stmt.connect import ConnSide
+from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
@@ -27,7 +27,7 @@ class Bits(object):
 def _(uint, high: int, low: int):
     check_bit_width(uint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnSide.RT, Bits(uint, high, low))
+    return ExprHolder(t, VariableType.VALUE, Bits(uint, high, low))
 
 
 @slice_(SIntT)
@@ -35,7 +35,7 @@ def _(uint, high: int, low: int):
 def _(sint, high: int, low: int):
     check_bit_width(sint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, ConnSide.RT, Bits(sint, high, low))
+    return ExprHolder(t, VariableType.VALUE, Bits(sint, high, low))
 
 
 @slice_(VectorT)
@@ -43,12 +43,12 @@ def _(vec, low: int, high: int):
     check_vec_size(vec, low, high)
 
     if isinstance(vec, VecHolder):
-        values = vec.assoc_value[low: high]
+        values = vec.assoc_value[low:high]
     else:
         values = [vec[i] for i in range(low, high, 1)]
 
     v_type = VectorT(vec.hcl_type.inner_type, high - low)
-    return VecHolder(v_type, vec.conn_side, values)
+    return VecHolder(v_type, vec.variable_type, values)
 
 
 @slice_(HclType)

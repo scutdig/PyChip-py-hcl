@@ -12,10 +12,7 @@ def test_conditionally_basis():
     s2 = Connect(n("a", uw(8)), n("b", uw(8)))
     cn = Conditionally(n("a", uw(1)), s1, s2)
     assert check(cn)
-    serialize_stmt_equal(cn, "when a :\n"
-                             "  skip\n"
-                             "else :\n"
-                             "  a <= b")
+    serialize_stmt_equal(cn, "when a :\n" "  skip\n" "else :\n" "  a <= b")
 
     s1 = Block([
         Connect(n("a", uw(8)), n("b", uw(8))),
@@ -26,10 +23,10 @@ def test_conditionally_basis():
     assert check(cn)
     serialize_stmt_equal(
         cn, 'when UInt<1>("h1") :\n'
-            '  a <= b\n'
-            '  c <= d\n'
-            'else :\n'
-            '  skip')
+        '  a <= b\n'
+        '  c <= d\n'
+        'else :\n'
+        '  skip')
 
 
 def test_conditionally_type_wrong():
