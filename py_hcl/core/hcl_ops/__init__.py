@@ -31,7 +31,7 @@ def op_apply(operation):
         if func is not None:
             return func(*objects)
 
-        msg = 'No matched functions for types {} while calling operation ' \
+        msg = 'No matched functions for type {} while calling operation ' \
               '"{}"'.format([type(o).__name__ for o in objects], operation)
         raise NotImplementedError(msg)
 

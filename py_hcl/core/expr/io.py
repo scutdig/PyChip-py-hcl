@@ -79,7 +79,7 @@ def calc_type_from_ports(named_ports: Dict[str, Union[Input, Output]]):
             types[k] = {"dir": Dir.SINK, "hcl_type": v.hcl_type}
             continue
 
-        raise ExprError.io_value(
+        raise ExprError.io_value_err(
             "type of '{}' is {}, not Input or Output".format(k, type(v)))
 
     return BundleT(types)

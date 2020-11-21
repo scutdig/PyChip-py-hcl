@@ -1,4 +1,4 @@
-from py_hcl.error import PyHclError
+from py_hcl.utils.error import PyHclError
 
 
 class DslError(PyHclError):

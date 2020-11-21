@@ -4,3 +4,4 @@ pytest-cov
 codecov
 multipledispatch
 twine
+yapf

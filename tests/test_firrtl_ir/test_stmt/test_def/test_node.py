@@ -16,7 +16,7 @@ def test_node_basis():
 
 
 def test_node_expr_wrong():
-    node = DefNode("n1", s(20, w(5)))
+    node = DefNode("n1", s(20, w(4)))
     assert not check(node)
 
     node = DefNode("n2", SubIndex(n("v", vec(uw(8), 10)), 10, uw(8)))

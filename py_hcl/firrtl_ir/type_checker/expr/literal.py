@@ -4,7 +4,7 @@ from multipledispatch import dispatch
 
 from ..utils import type_in
 from ...expr.literal import SIntLiteral, SIntType, UIntLiteral, UIntType
-from py_hcl.utils import signed_num_bin_len, unsigned_num_bin_len
+from py_hcl.utils import signed_num_bin_width, unsigned_num_bin_width
 
 checker = dispatch
 
@@ -23,9 +23,9 @@ def check(uint: UIntLiteral):
         logging.error("uint: value check failed - {}".format(uint.value))
         return False
 
-    if unsigned_num_bin_len(uint.value) > uint.tpe.width.width:
+    if unsigned_num_bin_width(uint.value) > uint.tpe.width.width:
         logging.error("uint: width check failed - {} > {}".format(
-            unsigned_num_bin_len(uint.value), uint.tpe.width.width))
+            unsigned_num_bin_width(uint.value), uint.tpe.width.width))
         return False
 
     return True
@@ -37,9 +37,9 @@ def check(sint: SIntLiteral):
         logging.error("sint: type check failed - {}".format(sint.tpe))
         return False
 
-    if signed_num_bin_len(sint.value) > sint.tpe.width.width:
+    if signed_num_bin_width(sint.value) > sint.tpe.width.width:
         logging.error("sint: width check failed - {} > {}".format(
-            signed_num_bin_len(sint.value), sint.tpe.width.width))
+            signed_num_bin_width(sint.value), sint.tpe.width.width))
         return False
 
     return True

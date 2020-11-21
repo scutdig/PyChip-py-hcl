@@ -6,7 +6,7 @@ from py_hcl.core.type.bundle import BundleT
 from py_hcl.dsl.expr.io import IO, Input, Output, io_extend
 from py_hcl.dsl.module import Module
 from py_hcl.core.type import HclType
-from py_hcl.dsl.tpe.uint import U
+from py_hcl.dsl.type.uint import U
 
 
 class A(Module):

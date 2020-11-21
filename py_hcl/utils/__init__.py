@@ -2,14 +2,43 @@ import json
 from enum import Enum
 from functools import partial
 
-from multipledispatch import dispatch
 
+def signed_num_bin_width(num: int):
+    """
+    Returns least binary width to hold the specified signed `num`.
 
-def signed_num_bin_len(num):
+    >>> signed_num_bin_width(10)
+    5
+    >>> signed_num_bin_width(-1)
+    2
+    >>> signed_num_bin_width(-2)
+    3
+    >>> signed_num_bin_width(0)
+    2
+    """
+
     return len("{:+b}".format(num))
 
 
-def unsigned_num_bin_len(num):
+def unsigned_num_bin_width(num: int):
+    """
+    Returns least binary width to hold the specified unsigned `num`.
+
+    >>> unsigned_num_bin_width(10)
+    4
+    >>> unsigned_num_bin_width(1)
+    1
+    >>> unsigned_num_bin_width(0)
+    1
+    >>> unsigned_num_bin_width(-1)
+    Traceback (most recent call last):
+    ...
+    ValueError: Unexpected negative number: -1
+    """
+
+    if num < 0:
+        raise ValueError(f"Unexpected negative number: {num}")
+
     return len("{:b}".format(num))
 
 
@@ -45,43 +74,3 @@ def json_serialize(cls=None, json_fields=()):
         return _(cls, json_fields)
 
     return partial(_, _json_fields=json_fields)
-
-
-@dispatch()
-def _fm(vd: dict):
-    ls = ['{}: {}'.format(k, _fm(v)) for k, v in vd.items()]
-    fs = _iter_repr(ls)
-    return '{%s}' % (''.join(fs))
-
-
-@dispatch()
-def _fm(v: list):
-    ls = [_fm(a) for a in v]
-    fs = _iter_repr(ls)
-    return '[%s]' % (''.join(fs))
-
-
-@dispatch()
-def _fm(v: tuple):
-    ls = [_fm(a) for a in v]
-    fs = _iter_repr(ls)
-    return '(%s)' % (''.join(fs))
-
-
-@dispatch()
-def _fm(v: object):
-    return str(v)
-
-
-def _iter_repr(values):
-    if len(values) <= 1:
-        fs = ''.join(values)
-    else:
-        fs = ''.join(['\n  {},'.format(_indent(value))
-                      for value in values]) + '\n'
-    return fs
-
-
-def _indent(s: str) -> str:
-    s = s.split('\n')
-    return '\n  '.join(s)

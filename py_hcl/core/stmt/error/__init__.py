@@ -13,7 +13,7 @@ def set_up():
         'ConnectTypeError': {
             'code': 301,
             'value':
-            StatementError('connect statement contains unexpected types')
+            StatementError('connect statement contains unexpected type')
         }
     })
 
@@ -26,7 +26,7 @@ class StatementError(CoreError):
     @staticmethod
     def connect_type_error(*args):
         ts = ', '.join([type(a.hcl_type).__name__ for a in args])
-        msg = 'connect(): unsupported connect types: {}'.format(ts)
+        msg = 'connect(): unsupported connect type: {}'.format(ts)
         return StatementError.err('ConnectTypeError', msg)
 
 

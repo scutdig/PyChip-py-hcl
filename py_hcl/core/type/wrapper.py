@@ -18,13 +18,13 @@ def bd_fld_wrap(cls):
 
 
 @dispatch()
-def vec_exp(self: HclType, i: int):
+def vec_ext(self: HclType, i: int):
     from py_hcl.core.type.vector import VectorT
     return VectorT(self, i)
 
 
 @dispatch()
-def vec_exp(self: HclType, t: tuple):
+def vec_ext(self: HclType, t: tuple):
     from py_hcl.core.type.vector import VectorT
 
     # TODO: Accurate Error Message
@@ -39,5 +39,5 @@ def vec_wrap(cls):
     if hasattr(cls, '__getitem__'):
         return cls
 
-    cls.__getitem__ = vec_exp
+    cls.__getitem__ = vec_ext
     return cls

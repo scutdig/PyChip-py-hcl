@@ -6,7 +6,7 @@ from py_hcl.firrtl_ir.type import UIntType, SIntType, \
     UnknownType, BundleType, VectorType, ClockType
 from py_hcl.firrtl_ir.type.field import Field
 from py_hcl.firrtl_ir.type_checker import check
-from py_hcl.utils import signed_num_bin_len, unsigned_num_bin_len
+from py_hcl.utils import signed_num_bin_width, unsigned_num_bin_width
 
 
 class OpCase(object):
@@ -45,7 +45,7 @@ def name_gen():
 def u_gen():
     if random.randint(0, 1):
         rand_u_value = random.randint(0, 1024)
-        rand_u_value_width = unsigned_num_bin_len(rand_u_value)
+        rand_u_value_width = unsigned_num_bin_width(rand_u_value)
         rand_u_width = random.randint(rand_u_value_width,
                                       2 * rand_u_value_width)
         return u(rand_u_value, w(rand_u_width))
@@ -58,7 +58,7 @@ def u_gen():
 def s_gen():
     if random.randint(0, 1):
         rand_s_value = random.randint(-1024, 1024)
-        rand_s_value_width = signed_num_bin_len(rand_s_value)
+        rand_s_value_width = signed_num_bin_width(rand_s_value)
         rand_s_width = random.randint(rand_s_value_width,
                                       2 * rand_s_value_width)
         return s(rand_s_value, w(rand_s_width))
