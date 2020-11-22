@@ -1,5 +1,5 @@
 """
-Implement addition operation for pyhcl values
+Implement addition operation for pyhcl values.
 
 Examples
 --------

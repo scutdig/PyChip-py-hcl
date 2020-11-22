@@ -1,5 +1,8 @@
 """
-Implement or operation for pyhcl values
+Implement or operation for pyhcl values.
+
+*Note: `or` is a reserved keyword in Python. So change the mod name to `ors`
+to get around parse error*.
 
 Examples
 --------

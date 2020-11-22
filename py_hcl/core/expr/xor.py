@@ -1,5 +1,5 @@
 """
-Implement xor operation for pyhcl values
+Implement xor operation for pyhcl values.
 
 Examples
 --------

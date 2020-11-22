@@ -1,5 +1,8 @@
 """
-Implement and operation for pyhcl values
+Implement and operation for pyhcl values.
+
+*Note: `and` is a reserved keyword in Python. So change the mod name to `ands`
+to get around parse error*.
 
 Examples
 --------

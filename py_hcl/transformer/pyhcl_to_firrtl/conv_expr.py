@@ -8,9 +8,9 @@ from py_hcl.transformer.pyhcl_to_firrtl.conv_type import convert_type
 from py_hcl.transformer.pyhcl_to_firrtl.utils import build_io_name, get_io_obj
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.add import Add as CAdd
-from py_hcl.core.expr.and_ import And as CAnd
+from py_hcl.core.expr.ands import And as CAnd
 from py_hcl.core.expr.xor import Xor as CXor
-from py_hcl.core.expr.or_ import Or as COr
+from py_hcl.core.expr.ors import Or as COr
 from py_hcl.core.expr.convert import ToSInt, ToUInt
 from py_hcl.core.expr.extend import Extend
 from py_hcl.core.expr.field import FieldAccess
