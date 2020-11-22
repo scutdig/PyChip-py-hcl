@@ -9,7 +9,7 @@ cov: test
 	codecov
 
 format:
-	yapf --recursive -i py_hcl tests
+	yapf --recursive -i py_hcl tests examples
 
 clean:
 	rm -rf .eggs dist py_hcl.egg-info .coverage .pytest_cache */__pycache__

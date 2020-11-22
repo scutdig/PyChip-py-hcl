@@ -1,23 +1,36 @@
 """
 Implement addition operation for pyhcl values
 
+Examples
+--------
+
 >>> from py_hcl import U, S, Wire, Bundle
 
+
 Add two literals of Uint type:
+
 >>> res = U(1) + U(2)
 
+
 Add two literals of Sint type:
+
 >>> res = S(1) + S(2)
 
+
 Add two wires of Uint type:
+
 >>> w1 = Wire(U.w(8)); w2 = Wire(U.w(9))
 >>> res = w1 + w2
 
+
 Add two wires of Vector type:
+
 >>> w1 = Wire(U.w(8)[8]); w2 = Wire(U.w(9)[8])
 >>> res = w1 + w2
 
+
 Add two wires of Bundle type:
+
 >>> w1 = Wire(Bundle(a=U.w(2), b=~S.w(3)))
 >>> w2 = Wire(Bundle(a=U.w(3), b=~S.w(4)))
 >>> res = w1 + w2
