@@ -3,25 +3,25 @@
 [![codecov](https://codecov.io/gh/scutdig/py-hcl/branch/master/graph/badge.svg)](https://codecov.io/gh/scutdig/py-hcl)
 [![PyPI](https://img.shields.io/pypi/v/py-hcl.svg)](https://pypi.python.org/pypi)
 
-PyHCL is a hardware construct language like [Chisel](https://github.com/freechipsproject/chisel3) but more lightweight and more relaxed to use.
-As a novel hardware construction framework embedded in Python, PyHCL supports several useful features include object-oriented, functional programming,
+PyHCL is a hardware construct language similar to [Chisel](https://github.com/freechipsproject/chisel3) but more lightweight and more relaxed to use.
+As a novel hardware construction framework embedded in Python, PyHCL supports several useful features including object-oriented, functional programming,
 and dynamically typed objects.
 
-The goal of PyHCL is providing a complete design and verification tool flow for heterogeneous computing systems flexibly using the same design methodology.
+The goal of PyHCL is providing a complete design and verification toolchain for heterogeneous computing systems.
 
-PyHCL is powered by [FIRRTL](https://github.com/freechipsproject/firrtl), an intermediate representation for digital circuit design. With the FIRRTL 
+PyHCL is powered by [FIRRTL](https://github.com/freechipsproject/firrtl), an intermediate representation for digital circuit design. Leveraging the FIRRTL 
 compiler framework, PyHCL-generated circuits can be compiled to the widely-used HDL Verilog.  
 
 
 ## Getting Started
 
-#### Installing PyHCL
+#### Install PyHCL
 
 ```shell script
 $ pip install py-hcl
 ```
 
-#### Writing A Full Adder
+#### Write a Full Adder
 PyHCL defines modules using only simple Python syntax that looks like this:
 ```python
 from py_hcl import *
@@ -42,14 +42,16 @@ class FullAdder(Module):
     io.cout <<= io.a & io.b | io.b & io.cin | io.a & io.cin
 ```
 
-#### Compiling To FIRRTL
+#### Compile To FIRRTL
 
-Compiling module by calling `compile_to_firrtl`:
+Compile module via `compile_to_firrtl`:
 ```python
+from py_hcl import compile_to_firrtl
+
 compile_to_firrtl(FullAdder, 'full_adder.fir')
 ```
 
-Will generate the following FIRRTL codes:
+Will generate the following FIRRTL code:
 ```
 circuit FullAdder :
   module FullAdder :
@@ -72,7 +74,7 @@ circuit FullAdder :
     FullAdder_io_cout <= _T_6
 ```
 
-#### Compiling To Verilog
+#### Compile To Verilog
 
 While FIRRTL is generated, PyHCL's job is complete. To further compile to Verilog, the [FIRRTL compiler framework](
 https://github.com/freechipsproject/firrtl) is required:
