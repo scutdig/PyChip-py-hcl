@@ -1,4 +1,4 @@
-from py_hcl.transformer.pyhcl_to_firrtl.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.global_context import GlobalContext
 
 
 def build_io_name(module_name: str, field_name: str):
@@ -13,4 +13,4 @@ def get_io_obj(packed_module):
     table = packed_module.named_expr_chain.named_expr_chain_head \
         .named_expr_holder.named_expression_table
     io_id = list(table.keys())[list(table.values()).index('io')]
-    return Context.expr_table[io_id]
+    return GlobalContext.expr_table[io_id]

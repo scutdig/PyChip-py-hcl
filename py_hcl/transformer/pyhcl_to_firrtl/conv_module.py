@@ -1,4 +1,4 @@
-from py_hcl.transformer.pyhcl_to_firrtl.context import Context
+from py_hcl.transformer.pyhcl_to_firrtl.global_context import GlobalContext
 from py_hcl.transformer.pyhcl_to_firrtl.conv_port import convert_ports
 from py_hcl.transformer.pyhcl_to_firrtl.conv_stmt import convert_stmt
 from py_hcl.transformer.pyhcl_to_firrtl.utils import build_reserve_name, \
@@ -12,7 +12,7 @@ from py_hcl.firrtl_ir.stmt.defn.module import DefModule
 
 
 def convert_module(packed_module: PackedModule):
-    Context.expr_id_to_name.update(
+    GlobalContext.expr_id_to_name.update(
         flatten_named_expr_chain(packed_module.named_expr_chain))
 
     name = packed_module.name
@@ -23,7 +23,7 @@ def convert_module(packed_module: PackedModule):
     final_stmts = [ss for s in stmts for ss in convert_stmt(s)]
 
     module = DefModule(name, ports, Block(final_stmts))
-    Context.modules[name] = module
+    GlobalContext.modules[name] = module
     return module
 
 

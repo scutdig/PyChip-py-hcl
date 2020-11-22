@@ -7,6 +7,9 @@ def signed_num_bin_width(num: int):
     """
     Returns least binary width to hold the specified signed `num`.
 
+    Examples
+    --------
+
     >>> signed_num_bin_width(10)
     5
     >>> signed_num_bin_width(-1)
@@ -23,6 +26,9 @@ def signed_num_bin_width(num: int):
 def unsigned_num_bin_width(num: int):
     """
     Returns least binary width to hold the specified unsigned `num`.
+
+    Examples
+    --------
 
     >>> unsigned_num_bin_width(10)
     4
