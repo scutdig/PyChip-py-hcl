@@ -6,7 +6,7 @@ from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import Dir, BundleT
 from py_hcl.core.utils import module_inherit_mro
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 
 @json_serialize

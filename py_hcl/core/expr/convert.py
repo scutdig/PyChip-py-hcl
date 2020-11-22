@@ -6,7 +6,7 @@ from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 to_bool = op_register('to_bool')
 to_uint = op_register('to_uint')

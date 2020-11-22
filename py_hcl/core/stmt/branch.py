@@ -4,7 +4,7 @@ from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.scope import ScopeManager, ScopeType
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.type.uint import UIntT
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 
 @json_serialize

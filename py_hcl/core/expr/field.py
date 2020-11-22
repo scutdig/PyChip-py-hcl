@@ -5,7 +5,7 @@ from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
 from py_hcl.core.type.bundle import BundleT, Dir
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 field_accessor = op_register('.')
 

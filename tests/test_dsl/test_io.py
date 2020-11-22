@@ -7,6 +7,7 @@ from py_hcl.dsl.expr.io import IO, Input, Output, io_extend
 from py_hcl.dsl.module import Module
 from py_hcl.core.type import HclType
 from py_hcl.dsl.type.uint import U
+from py_hcl.utils import get_key_by_value
 
 
 class A(Module):
@@ -21,7 +22,7 @@ class A(Module):
 def test_io():
     table = A.packed_module.named_expr_chain.named_expr_chain_head \
         .named_expr_holder.named_expression_table
-    id = list(table.keys())[list(table.values()).index('io')]
+    id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)
     assert len(t.fields) == 2
@@ -34,7 +35,7 @@ def test_io_inherit_basis():
 
     table = B.packed_module.named_expr_chain.named_expr_chain_head \
         .named_expr_holder.named_expression_table
-    id = list(table.keys())[list(table.values()).index('io')]
+    id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)
     assert len(t.fields) == 3
@@ -47,7 +48,7 @@ def test_io_inherit_override():
 
     table = B.packed_module.named_expr_chain.named_expr_chain_head \
         .named_expr_holder.named_expression_table
-    id = list(table.keys())[list(table.values()).index('io')]
+    id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)
     assert len(t.fields) == 2

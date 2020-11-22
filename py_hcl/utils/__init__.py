@@ -1,8 +1,3 @@
-import json
-from enum import Enum
-from functools import partial
-
-
 def signed_num_bin_width(num: int):
     """
     Returns least binary width to hold the specified signed `num`.
@@ -12,10 +7,13 @@ def signed_num_bin_width(num: int):
 
     >>> signed_num_bin_width(10)
     5
+
     >>> signed_num_bin_width(-1)
     2
+
     >>> signed_num_bin_width(-2)
     3
+
     >>> signed_num_bin_width(0)
     2
     """
@@ -32,10 +30,13 @@ def unsigned_num_bin_width(num: int):
 
     >>> unsigned_num_bin_width(10)
     4
+
     >>> unsigned_num_bin_width(1)
     1
+
     >>> unsigned_num_bin_width(0)
     1
+
     >>> unsigned_num_bin_width(-1)
     Traceback (most recent call last):
     ...
@@ -48,35 +49,30 @@ def unsigned_num_bin_width(num: int):
     return len("{:b}".format(num))
 
 
-def json_serialize(cls=None, json_fields=()):
-    def rec(v):
-        if hasattr(v, "json_obj"):
-            return v.json_obj()
-        elif isinstance(v, dict):
-            return {k: rec(v) for k, v in v.items()}
-        elif isinstance(v, (list, tuple)):
-            return [rec(v) for v in v]
-        elif isinstance(v, Enum):
-            return v.name
-        return v
+def get_key_by_value(kvs: dict, value):
+    """
+    Returns key associated to specified value from dictionary.
 
-    def serialize(self):
-        return json.dumps(self.json_obj(), indent=2)
+    Examples
+    --------
 
-    def _(_cls, _json_fields):
-        def js(self):
-            if len(_json_fields) == 0:
-                kv = vars(self)
-            else:
-                kv = {f: vars(self)[f] for f in _json_fields}
+    >>> get_key_by_value({1: 'a', 2: 'b'}, 'b')
+    2
 
-            return {k: rec(v) for k, v in kv.items()}
+    >>> get_key_by_value({'a': 1, 'b': 2}, 2)
+    'b'
 
-        _cls.json_obj = js
-        _cls.__str__ = serialize
-        return _cls
+    >>> get_key_by_value({'a': 1, 'b': 1}, 1)
+    'a'
 
-    if cls:
-        return _(cls, json_fields)
+    >>> get_key_by_value({1: 'a'}, 'b')
+    Traceback (most recent call last):
+    ...
+    ValueError: b is not in dict values
+    """
 
-    return partial(_, _json_fields=json_fields)
+    vs = list(kvs.values())
+    if value not in vs:
+        raise ValueError(f"{value} is not in dict values")
+
+    return list(kvs.keys())[vs.index(value)]

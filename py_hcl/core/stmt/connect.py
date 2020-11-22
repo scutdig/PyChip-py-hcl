@@ -52,7 +52,7 @@ from py_hcl.core.type.bundle import BundleT, Dir
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 
 class VariableType(Enum):

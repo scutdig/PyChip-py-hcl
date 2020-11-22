@@ -3,7 +3,7 @@ from multipledispatch.dispatcher import MethodDispatcher
 from py_hcl.core.hcl_ops import op_apply
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import UnknownType, HclType
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 
 class ExprIdGen:

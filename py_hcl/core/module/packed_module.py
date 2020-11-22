@@ -1,4 +1,4 @@
-from py_hcl.utils import json_serialize
+from py_hcl.utils.serialization import json_serialize
 
 
 @json_serialize
