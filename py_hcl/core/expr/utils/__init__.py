@@ -19,13 +19,16 @@ def ensure_all_args_are_values(f):
     ... def f(*args):
     ...     pass
 
+
     Literals are `VALUE`s so they will pass the check:
 
     >>> f(U(10), S(30))
 
+
     Also for wires as they're `ASSIGNABLE_VALUE`s:
 
     >>> f(Wire(U.w(10)), Wire(S.w(10)))
+
 
     But not for output as they're `LOCATION`s:
 
@@ -34,8 +37,8 @@ def ensure_all_args_are_values(f):
     ...     f(io.o)
     Traceback (most recent call last):
     ...
-    py_hcl.core.expr.error.ExprError: Specified expresion has an invalid \
-variable type
+    py_hcl.core.expr.error.ExprError: Specified expresion has an invalid
+    variable type
     """
 
     def _(*args):

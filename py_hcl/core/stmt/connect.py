@@ -37,7 +37,7 @@ Connection with wrong direction
 ...     lit <<= io.i
 Traceback (most recent call last):
 ...
-py_hcl.core.stmt.error.StatementError: Connection statement with unexpected \
+py_hcl.core.stmt.error.StatementError: Connection statement with unexpected
 direction.
 """
 
