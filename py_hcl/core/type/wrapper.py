@@ -5,8 +5,8 @@ from py_hcl.core.type import HclType
 
 @dispatch()
 def invert_exp(self: HclType):
-    from py_hcl.core.type.bundle import Dir
-    return {'dir': Dir.SINK, 'hcl_type': self}
+    from py_hcl.core.type.bundle import BundleDirection
+    return {'dir': BundleDirection.SINK, 'hcl_type': self}
 
 
 def bd_fld_wrap(cls):

@@ -48,7 +48,7 @@ from py_hcl.core.hcl_ops import op_register, op_apply
 from py_hcl.core.stmt.error import StatementError
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.type import HclType
-from py_hcl.core.type.bundle import BundleT, Dir
+from py_hcl.core.type.bundle import BundleT, BundleDirection
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
@@ -166,7 +166,7 @@ def _(left, right):
     for k in keys:
         lf = op_apply('.')(left, k)
         rt = op_apply('.')(right, k)
-        if dir_and_types[k]['dir'] == Dir.SRC:
+        if dir_and_types[k]['dir'] == BundleDirection.SOURCE:
             op_apply('<<=')(lf, rt)
         else:
             op_apply('<<=')(rt, lf)

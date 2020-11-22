@@ -138,11 +138,9 @@ def convert_expr_op(expr_holder: ExprHolder, fa: FieldAccess):
     obj = GlobalContext.expr_table[fa.ref_expr_id]
 
     def fetch_current_io_holder(obj):
-        current_node = obj.io_chain_head
-        while True:
-            if fa.item in current_node.io_holder.named_ports:
-                return current_node.io_holder
-            current_node = current_node.next_node
+        for io_holder in obj.io_chain:
+            if fa.item in io_holder.named_ports:
+                return io_holder
 
     if isinstance(obj, IO):
         io_holder = fetch_current_io_holder(obj)

@@ -14,7 +14,7 @@ class MetaModule(type):
         name = fetch_module_name(name)
 
         check_io_exist(dct, name)
-        dct["io"].io_chain_head.io_holder.module_name = name
+        dct["io"].io_chain[0].module_name = name
 
         packed = packer.pack(bases, dct, name)
         cls.packed_module = packed

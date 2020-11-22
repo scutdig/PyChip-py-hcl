@@ -47,7 +47,7 @@ from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
-from py_hcl.core.type.bundle import BundleT, Dir
+from py_hcl.core.type.bundle import BundleT, BundleDirection
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
 from py_hcl.core.type.vector import VectorT
@@ -102,7 +102,10 @@ def _(lf, rt):
     bd_values = {}
     for k in lf.hcl_type.fields.keys():
         res = getattr(lf, k) & getattr(rt, k)
-        bd_type_fields[k] = {"dir": Dir.SRC, "hcl_type": res.hcl_type}
+        bd_type_fields[k] = {
+            "dir": BundleDirection.SOURCE,
+            "hcl_type": res.hcl_type
+        }
         bd_values[k] = res
 
     return BundleHolder(BundleT(bd_type_fields), VariableType.VALUE, bd_values)

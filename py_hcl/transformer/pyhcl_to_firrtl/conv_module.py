@@ -61,17 +61,9 @@ def flatten_statement_chain(statement_chain: StmtChain):
 
 def flatten_io_chain(io: IO):
     ports = {}
-    node = io.io_chain_head
 
-    while True:
-        holder = node.io_holder
-        # reverse the dict order
-        for k in list(holder.named_ports.keys())[::-1]:
-            v = holder.named_ports[k]
-            ports[build_io_name(holder.module_name, k)] = v
+    for io_holder in io.io_chain:
+        for k, v in io_holder.named_ports.items():
+            ports[build_io_name(io_holder.module_name, k)] = v
 
-        if not hasattr(node, "next_node"):
-            break
-        node = node.next_node
-
-    return {k: ports[k] for k in list(ports.keys())[::-1]}
+    return ports

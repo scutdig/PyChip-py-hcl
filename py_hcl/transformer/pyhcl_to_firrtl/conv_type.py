@@ -1,7 +1,7 @@
 from multipledispatch import dispatch
 
 from py_hcl.core.type import UnknownType as HclUnknownType
-from py_hcl.core.type.bundle import BundleT, Dir
+from py_hcl.core.type.bundle import BundleT, BundleDirection
 from py_hcl.core.type.clock import ClockT
 from py_hcl.core.type.sint import SIntT
 from py_hcl.core.type.uint import UIntT
@@ -41,6 +41,7 @@ def convert_type(vec: VectorT):
 def convert_type(bundle: BundleT):
     fields = []
     for k, v in bundle.fields.items():
-        f = Field(k, convert_type(v['hcl_type']), v['dir'] == Dir.SINK)
+        f = Field(k, convert_type(v['hcl_type']),
+                  v['dir'] == BundleDirection.SINK)
         fields.append(f)
     return BundleType(fields)

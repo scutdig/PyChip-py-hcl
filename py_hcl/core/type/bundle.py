@@ -5,8 +5,8 @@ from py_hcl.core.type import HclType
 from py_hcl.core.type.wrapper import vec_wrap, bd_fld_wrap
 
 
-class Dir(Enum):
-    SRC = 1
+class BundleDirection(Enum):
+    SOURCE = 1
     SINK = 2
 
 

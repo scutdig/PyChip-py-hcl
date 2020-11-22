@@ -4,7 +4,7 @@ from py_hcl.core.expr.error import ExprError
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
 from py_hcl.core.type import HclType
-from py_hcl.core.type.bundle import BundleT, Dir
+from py_hcl.core.type.bundle import BundleT, BundleDirection
 from py_hcl.utils.serialization import json_serialize
 
 field_accessor = op_register('.')
@@ -39,11 +39,12 @@ def _(o, *_):
     raise ExprError.op_type_err('field_accessor', o)
 
 
-def build_new_var_type(var_type: VariableType, dr: Dir) -> VariableType:
+def build_new_var_type(var_type: VariableType,
+                       dr: BundleDirection) -> VariableType:
     if var_type == VariableType.ASSIGNABLE_VALUE:
         return VariableType.ASSIGNABLE_VALUE
     if var_type == VariableType.VALUE and dr == dr.SINK:
         return VariableType.LOCATION
-    if var_type == VariableType.LOCATION and dr == dr.SRC:
+    if var_type == VariableType.LOCATION and dr == dr.SOURCE:
         return VariableType.LOCATION
     return VariableType.VALUE
