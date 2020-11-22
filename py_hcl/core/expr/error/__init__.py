@@ -16,13 +16,18 @@ def set_up():
             'code': 202,
             'value':
             ExprError('Specified value out of range for the given type')
+        },
+        'VarTypeError': {
+            'code': 203,
+            'value':
+            ExprError('Specified expresion has an invalid variable type')
         }
     })
 
 
 class ExprError(CoreError):
     @staticmethod
-    def io_value_err(msg):
+    def io_value_err(msg: str):
         return ExprError.err('IOValueError', msg)
 
     @staticmethod
@@ -32,8 +37,12 @@ class ExprError(CoreError):
         return ExprError.err('OpTypeError', msg)
 
     @staticmethod
-    def out_of_range(msg):
+    def out_of_range_err(msg: str):
         return ExprError.err('OutOfRangeError', msg)
+
+    @staticmethod
+    def var_type_err(msg: str):
+        return ExprError.err('VarTypeError', msg)
 
 
 set_up()

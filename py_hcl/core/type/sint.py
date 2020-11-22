@@ -21,7 +21,7 @@ class SIntT(HclType):
 
         least_len = signed_num_bin_width(value)
         if least_len > self.width:
-            raise ExprError.out_of_range(
+            raise ExprError.out_of_range_err(
                 f'Literal {value} out of range for sint[{self.width}]')
 
         u = SLiteral(value)
