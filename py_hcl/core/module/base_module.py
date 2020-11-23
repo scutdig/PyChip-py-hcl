@@ -1,6 +1,6 @@
 from py_hcl.compile import compile_to_firrtl
 from py_hcl.core import install_ops
-from py_hcl.core.expr.io import io_extend
+from py_hcl.core.module_factory.inherit_chain.io import io_extend
 from py_hcl.core.module.meta_module import MetaModule
 
 install_ops()

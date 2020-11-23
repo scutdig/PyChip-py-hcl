@@ -11,7 +11,6 @@ def build_reserve_name(module_name: str, expr_name: str):
 
 
 def get_io_obj(packed_module):
-    table = packed_module.named_expr_chain.named_expr_chain_head \
-        .named_expr_holder.named_expression_table
+    table = packed_module.named_expr_chain[0].named_expression_table
     io_id = get_key_by_value(table, 'io')
     return GlobalContext.expr_table[io_id]

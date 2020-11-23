@@ -15,7 +15,6 @@ def test_statement():
 
         c <<= a + b
 
-    s = A.packed_module.statement_chain \
-        .stmt_chain_head.stmt_holder.top_statement.statements
+    s = A.packed_module.statement_chain[0].top_statement.statements
     assert len(s) == 1
     assert isinstance(s[0].statement, Connect)

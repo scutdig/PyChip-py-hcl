@@ -1,12 +1,14 @@
+from typing import List
+
+from py_hcl.core.module_factory.inherit_chain.named_expr import NamedExprHolder
+from py_hcl.core.module_factory.inherit_chain.stmt_holder import StmtHolder
 from py_hcl.transformer.pyhcl_to_firrtl.global_context import GlobalContext
 from py_hcl.transformer.pyhcl_to_firrtl.conv_port import convert_ports
 from py_hcl.transformer.pyhcl_to_firrtl.conv_stmt import convert_stmt
 from py_hcl.transformer.pyhcl_to_firrtl.utils import build_reserve_name, \
     build_io_name, get_io_obj
-from py_hcl.core.expr.io import IO
+from py_hcl.core.module_factory.inherit_chain.io import IO
 from py_hcl.core.module.packed_module import PackedModule
-from py_hcl.core.module_factory.inherit_list.named_expr import NamedExprChain
-from py_hcl.core.module_factory.inherit_list.stmt_holder import StmtChain
 from py_hcl.firrtl_ir.stmt.block import Block
 from py_hcl.firrtl_ir.stmt.defn.module import DefModule
 
@@ -27,36 +29,24 @@ def convert_module(packed_module: PackedModule):
     return module
 
 
-def flatten_named_expr_chain(named_expr_chain: NamedExprChain):
+def flatten_named_expr_chain(named_expr_chain: List[NamedExprHolder]):
     named_exprs = {}
-    node = named_expr_chain.named_expr_chain_head
 
-    while True:
-        holder = node.named_expr_holder
+    for holder in named_expr_chain:
         for k, v in holder.named_expression_table.items():
             named_exprs[k] = build_reserve_name(holder.module_name, v)
-
-        if not hasattr(node, "next_node"):
-            break
-        node = node.next_node
 
     return named_exprs
 
 
-def flatten_statement_chain(statement_chain: StmtChain):
+def flatten_statement_chain(statement_chain: List[StmtHolder]):
     stmts = []
-    node = statement_chain.stmt_chain_head
 
-    while True:
-        holder = node.stmt_holder
+    for holder in statement_chain:
         for stmt in reversed(holder.top_statement.statements):
             stmts.append(stmt)
 
-        if not hasattr(node, "next_node"):
-            break
-        node = node.next_node
-
-    return list(reversed(stmts))
+    return stmts[::-1]
 
 
 def flatten_io_chain(io: IO):

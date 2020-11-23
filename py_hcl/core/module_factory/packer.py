@@ -1,10 +1,9 @@
 from py_hcl.core.module.packed_module import PackedModule
-from py_hcl.core.module_factory.inherit_list.named_expr import NamedExprHolder
-from py_hcl.core.module_factory.inherit_list.stmt_holder import StmtHolder
+from py_hcl.core.module_factory.inherit_chain.named_expr import NamedExprHolder
+from py_hcl.core.module_factory.inherit_chain.stmt_holder import StmtHolder
 from py_hcl.core.stmt_factory.trapper import StatementTrapper
 from py_hcl.core.utils import module_inherit_mro
 from . import extractor
-from . import merger
 from ..stmt import ClusterStatement, ConditionStatement
 from ..stmt_factory.scope import ScopeType
 
@@ -23,11 +22,11 @@ def pack(bases, dct, name) -> PackedModule:
 def handle_inherit(bases, named_expression, top_statement, name):
     modules = module_inherit_mro(bases)
 
-    named_expr_chain = \
-        merger.merge_expr(modules, NamedExprHolder(name, named_expression))
+    named_expr_chain = [NamedExprHolder(name, named_expression)] + \
+                       [m.packed_module.named_expr_chain[0] for m in modules]
 
-    statement_chain = \
-        merger.merge_statement(modules, StmtHolder(name, top_statement))
+    statement_chain = [StmtHolder(name, top_statement)] + \
+                      [m.packed_module.statement_chain[0] for m in modules]
 
     return named_expr_chain, statement_chain
 

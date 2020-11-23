@@ -20,8 +20,7 @@ class A(Module):
 
 
 def test_io():
-    table = A.packed_module.named_expr_chain.named_expr_chain_head \
-        .named_expr_holder.named_expression_table
+    table = A.packed_module.named_expr_chain[0].named_expression_table
     id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)
@@ -33,8 +32,7 @@ def test_io_inherit_basis():
         io = io_extend(A)(i1=Input(U.w(9)), )
         io.o <<= io.i1
 
-    table = B.packed_module.named_expr_chain.named_expr_chain_head \
-        .named_expr_holder.named_expression_table
+    table = B.packed_module.named_expr_chain[0].named_expression_table
     id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)
@@ -46,8 +44,7 @@ def test_io_inherit_override():
         io = io_extend(A)(i=Input(U.w(9)), )
         io.o <<= io.i
 
-    table = B.packed_module.named_expr_chain.named_expr_chain_head \
-        .named_expr_holder.named_expression_table
+    table = B.packed_module.named_expr_chain[0].named_expression_table
     id = get_key_by_value(table, 'io')
     t = ExprTable.table[id].hcl_type
     assert isinstance(t, BundleT)

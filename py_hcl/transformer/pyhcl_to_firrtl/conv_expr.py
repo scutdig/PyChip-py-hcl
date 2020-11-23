@@ -15,7 +15,7 @@ from py_hcl.core.expr.convert import ToSInt, ToUInt
 from py_hcl.core.expr.extend import Extend
 from py_hcl.core.expr.field import FieldAccess
 from py_hcl.core.expr.index import VecIndex
-from py_hcl.core.expr.io import IO
+from py_hcl.core.module_factory.inherit_chain.io import IO
 from py_hcl.core.expr.lit_sint import SLiteral
 from py_hcl.core.expr.lit_uint import ULiteral
 from py_hcl.core.expr.mod_inst import ModuleInst
