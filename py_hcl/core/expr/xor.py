@@ -81,8 +81,8 @@ def _(lf, rt):
 @xorer(VectorT, VectorT)
 @ensure_all_args_are_readable
 def _(lf, rt):
-    # TODO: Accurate Error Message
-    assert lf.hcl_type.size == rt.hcl_type.size
+    if lf.hcl_type.size != rt.hcl_type.size:
+        raise ExprError.unmatched_vec_size(lf.hcl_type.size, rt.hcl_type.size)
 
     values = [lf[i] ^ rt[i] for i in range(lf.hcl_type.size)]
     v_type = VectorT(values[0].hcl_type, len(values))

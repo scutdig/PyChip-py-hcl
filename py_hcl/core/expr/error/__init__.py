@@ -21,6 +21,10 @@ def set_up():
             'code': 203,
             'value':
             ExprError('Specified expresion has an invalid variable type')
+        },
+        'UnmatchedVecSizeError': {
+            'code': 204,
+            'value': ExprError('Sizes of vectors are unmatched')
         }
     })
 
@@ -43,6 +47,10 @@ class ExprError(CoreError):
     @staticmethod
     def var_type_err(msg: str):
         return ExprError.err('VarTypeError', msg)
+
+    @staticmethod
+    def unmatched_vec_size(size0: int, size1: int):
+        return ExprError.err('UnmatchedVecSizeError', f'{size0} != {size1}')
 
 
 set_up()
