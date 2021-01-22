@@ -57,9 +57,9 @@ from py_hcl.utils.serialization import json_serialize
 
 class VariableType(Enum):
     UNKNOWN = 0
-    LOCATION = 1
-    VALUE = 2
-    ASSIGNABLE_VALUE = 3
+    WriteOnly = 1
+    ReadOnly = 2
+    ReadWrite = 3
 
 
 @json_serialize
@@ -75,13 +75,13 @@ connector = op_register('<<=')
 
 def check_connect_direction(f):
     def _(left: HclType, right: HclType):
-        if left.variable_type not in (VariableType.LOCATION,
-                                      VariableType.ASSIGNABLE_VALUE):
+        if left.variable_type not in (VariableType.WriteOnly,
+                                      VariableType.ReadWrite):
             direction = left.variable_type
             raise StatementError.connect_direction_error(
                 f'The lhs of connection statement can not be a {direction}')
-        if right.variable_type not in (VariableType.VALUE,
-                                       VariableType.ASSIGNABLE_VALUE):
+        if right.variable_type not in (VariableType.ReadOnly,
+                                       VariableType.ReadWrite):
             direction = right.variable_type
             raise StatementError.connect_direction_error(
                 f'The rhs of connection statement can not be a {direction}')

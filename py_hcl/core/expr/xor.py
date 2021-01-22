@@ -39,7 +39,7 @@ Xor two wires of Bundle type:
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.bundle_holder import BundleHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.utils import ensure_all_args_are_values
+from py_hcl.core.expr.utils import ensure_all_args_are_readable
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
@@ -63,34 +63,34 @@ xorer = op_register('^')
 
 
 @xorer(UIntT, UIntT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(lf, rt):
     w = max(lf.hcl_type.width, rt.hcl_type.width)
     t = UIntT(w)
-    return ExprHolder(t, VariableType.VALUE, Xor(lf, rt))
+    return ExprHolder(t, VariableType.ReadOnly, Xor(lf, rt))
 
 
 @xorer(SIntT, SIntT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(lf, rt):
     w = max(lf.hcl_type.width, rt.hcl_type.width)
     t = UIntT(w)
-    return ExprHolder(t, VariableType.VALUE, Xor(lf, rt))
+    return ExprHolder(t, VariableType.ReadOnly, Xor(lf, rt))
 
 
 @xorer(VectorT, VectorT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(lf, rt):
     # TODO: Accurate Error Message
     assert lf.hcl_type.size == rt.hcl_type.size
 
     values = [lf[i] ^ rt[i] for i in range(lf.hcl_type.size)]
     v_type = VectorT(values[0].hcl_type, len(values))
-    return VecHolder(v_type, VariableType.VALUE, values)
+    return VecHolder(v_type, VariableType.ReadOnly, values)
 
 
 @xorer(BundleT, BundleT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(lf, rt):
     # TODO: Accurate Error Message
     assert set(lf.hcl_type.fields.keys()) == set(rt.hcl_type.fields.keys())
@@ -105,7 +105,8 @@ def _(lf, rt):
         }
         bd_values[k] = res
 
-    return BundleHolder(BundleT(bd_type_fields), VariableType.VALUE, bd_values)
+    return BundleHolder(BundleT(bd_type_fields), VariableType.ReadOnly,
+                        bd_values)
 
 
 @xorer(HclType, HclType)

@@ -7,7 +7,7 @@ from py_hcl.transformer.pyhcl_to_firrtl.conv_port import convert_ports
 from py_hcl.transformer.pyhcl_to_firrtl.conv_stmt import convert_stmt
 from py_hcl.transformer.pyhcl_to_firrtl.utils import build_reserve_name, \
     build_io_name, get_io_obj
-from py_hcl.core.module_factory.inherit_chain.io import IO
+from py_hcl.core.expr.io import IO
 from py_hcl.core.module.packed_module import PackedModule
 from py_hcl.firrtl_ir.stmt.block import Block
 from py_hcl.firrtl_ir.stmt.defn.module import DefModule

@@ -1,6 +1,6 @@
 from py_hcl.core.expr import ExprHolder
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.utils import ensure_all_args_are_values
+from py_hcl.core.expr.utils import ensure_all_args_are_readable
 from py_hcl.core.expr.vec_holder import VecHolder
 from py_hcl.core.hcl_ops import op_register
 from py_hcl.core.stmt.connect import VariableType
@@ -23,19 +23,19 @@ class Bits(object):
 
 
 @slice_(UIntT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(uint, high: int, low: int):
     check_bit_width(uint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, VariableType.VALUE, Bits(uint, high, low))
+    return ExprHolder(t, VariableType.ReadOnly, Bits(uint, high, low))
 
 
 @slice_(SIntT)
-@ensure_all_args_are_values
+@ensure_all_args_are_readable
 def _(sint, high: int, low: int):
     check_bit_width(sint, high, low)
     t = UIntT(high - low + 1)
-    return ExprHolder(t, VariableType.VALUE, Bits(sint, high, low))
+    return ExprHolder(t, VariableType.ReadOnly, Bits(sint, high, low))
 
 
 @slice_(VectorT)

@@ -9,7 +9,7 @@ class ModuleInst(HclExpr):
     def __init__(self, module_cls):
         self.type = 'module_inst'
         self.hcl_type = module_cls.io.hcl_type
-        self.variable_type = VariableType.LOCATION
+        self.variable_type = VariableType.WriteOnly
         self.packed_module = module_cls.packed_module
         self.module_name = module_cls.packed_module.name
 

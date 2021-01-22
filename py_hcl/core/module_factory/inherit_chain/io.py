@@ -1,10 +1,7 @@
-from typing import Dict, Union, Optional, List, Tuple
+from typing import Dict, Union, Optional, Tuple
 
-from py_hcl.core.expr import HclExpr
 from py_hcl.core.expr.error import ExprError
-from py_hcl.core.expr.io import Input, Output
-from py_hcl.core.stmt.connect import VariableType
-from py_hcl.core.type import HclType
+from py_hcl.core.expr.io import Input, Output, IO
 from py_hcl.core.type.bundle import BundleT, BundleDirection
 from py_hcl.core.utils import module_inherit_mro
 from py_hcl.utils.serialization import json_serialize
@@ -19,22 +16,7 @@ class IOHolder(object):
         self.module_name = module_name
 
 
-@json_serialize(
-    json_fields=["id", "type", "hcl_type", "variable_type", "io_chain"])
-class IO(HclExpr):
-    def __init__(self, hcl_type: HclType, io_chain: List[IOHolder]):
-        self.type = 'io'
-        self.hcl_type = hcl_type
-        self.variable_type = VariableType.VALUE
-        self.io_chain = io_chain
-
-
 def io_extend(modules: Tuple[type]):
-    """
-
-
-    """
-
     modules = module_inherit_mro(modules)
 
     current_ports = {}

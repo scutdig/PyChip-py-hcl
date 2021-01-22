@@ -10,4 +10,4 @@ class ULiteral(HclExpr):
 
         w = unsigned_num_bin_width(value)
         self.hcl_type = UIntT(w)
-        self.variable_type = VariableType.VALUE
+        self.variable_type = VariableType.ReadOnly

@@ -8,4 +8,4 @@ from py_hcl.utils.serialization import json_serialize
 class Wire(HclExpr):
     def __init__(self, hcl_type: HclType):
         self.hcl_type = hcl_type
-        self.variable_type = VariableType.ASSIGNABLE_VALUE
+        self.variable_type = VariableType.ReadWrite

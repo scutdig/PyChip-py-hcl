@@ -41,10 +41,10 @@ def _(o, *_):
 
 def build_new_var_type(var_type: VariableType,
                        dr: BundleDirection) -> VariableType:
-    if var_type == VariableType.ASSIGNABLE_VALUE:
-        return VariableType.ASSIGNABLE_VALUE
-    if var_type == VariableType.VALUE and dr == dr.SINK:
-        return VariableType.LOCATION
-    if var_type == VariableType.LOCATION and dr == dr.SOURCE:
-        return VariableType.LOCATION
-    return VariableType.VALUE
+    if var_type == VariableType.ReadWrite:
+        return VariableType.ReadWrite
+    if var_type == VariableType.ReadOnly and dr == dr.SINK:
+        return VariableType.WriteOnly
+    if var_type == VariableType.WriteOnly and dr == dr.SOURCE:
+        return VariableType.WriteOnly
+    return VariableType.ReadOnly
