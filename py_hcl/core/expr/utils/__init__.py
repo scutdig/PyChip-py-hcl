@@ -1,3 +1,5 @@
+import functools
+
 from py_hcl.core.expr.error import ExprError
 from py_hcl.core.stmt.connect import VariableType
 
@@ -16,30 +18,31 @@ def ensure_all_args_are_readable(f):
 
     >>> from py_hcl import *
     >>> @ensure_all_args_are_readable
-    ... def f(*args):
+    ... def func(*args):
     ...     pass
 
 
     Literals are `ReadOnly` so they will pass the check:
 
-    >>> f(U(10), S(30))
+    >>> func(U(10), S(30))
 
 
     Also for wires as they're `ReadWrite`:
 
-    >>> f(Wire(U.w(10)), Wire(S.w(10)))
+    >>> func(Wire(U.w(10)), Wire(S.w(10)))
 
 
     But not for output as they're `WriteOnly`:
 
-    >>> class _(Module):
+    >>> class TempModule(Module):
     ...     io = IO(o=Output(U.w(10)))
-    ...     f(io.o)
+    ...     func(io.o)
     Traceback (most recent call last):
     ...
     py_hcl.core.expr.error.ExprError: Specified expresion has an invalid
     variable type
     """
+    @functools.wraps(f)
     def _(*args):
         check_lists = [a for a in args if hasattr(a, 'variable_type')]
         sides = [VariableType.ReadOnly, VariableType.ReadWrite]
