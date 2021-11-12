@@ -16,7 +16,7 @@ class EmitterContext:
         modName = modClass.__name__
         c = moduleNameCounter[modName]
         moduleNameCounter[modName] += 1
-        self.name = modName + (("_" + str(c)) if c > 0 else "")
+        self.name = modName + (("_" + str(c)) if c > 0 else "")  # dup
 
         # bunch of records
         self._module = module
@@ -79,12 +79,23 @@ class EmitterContext:
 
         return self._emittedModules
 
+    '''
+    This Function is to deal with clock and reset, composed of default and user-defined clk and rst.
+    user-defined clk and rst are not allowed to use the name of "clock" or "reset". 
+    It's stupid and ugly but ... I will fix it if there is a better idea.
+    '''
     def _dealWithClockAndReset(self):
-        c = self._modClass.clock.public()
-        r = self._modClass.reset.public()
-        c.mapToIR(self)
-        r.mapToIR(self)
-        self._finalStatements[c.scopeId] = []
+        if not self._modClass.raw:
+            c = self._modClass.clock.public()
+            r = self._modClass.reset.public()
+            c.mapToIR(self)
+            r.mapToIR(self)
+            self._finalStatements[c.scopeId] = []
+
+        from pyhcl.core._meta_pub import Pub
+        for k, v in self._modClass.__dict__.items():
+            if type(v) == Pub and k != "io" and k != "clock" and k != "reset":
+                v.mapToIR(self)
 
     def getName(self, obj):
         res = self._rawNameTable.get(id(obj))
@@ -107,8 +118,10 @@ class EmitterContext:
 
         return low_ir.BundleType(fs)
 
-    def getClock(self):
-        return low_ir.Reference("clock", low_ir.ClockType())
+    def getClock(self, m):
+        from pyhcl.core._clock_manager import Clock_manager
+        return low_ir.Reference(Clock_manager.getClockByID(id(m)), low_ir.ClockType())
 
-    def getReset(self):
-        return low_ir.Reference("reset", low_ir.UIntType(low_ir.IntWidth(1)))
+    def getReset(self,m):
+        from pyhcl.core._clock_manager import Clock_manager
+        return low_ir.Reference(Clock_manager.getResetByID(id(m)), low_ir.UIntType(low_ir.IntWidth(1)))
