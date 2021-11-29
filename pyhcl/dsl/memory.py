@@ -15,6 +15,8 @@ class Mem(Node):
     def __post_init__(self, elemType):
         super().__post_init__()
         self.typ = MemType(self.size, elemType)
+        from pyhcl.core._clock_manager import Clock_manager
+        Clock_manager.register(id(self))
 
     def mapToIR(self, ctx: EmitterContext):
         name = ctx.getName(self)

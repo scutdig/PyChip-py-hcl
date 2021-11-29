@@ -29,11 +29,11 @@ class MetaModule(type):
         cls._statements = DynamicContext.get()
 
 
+
 class Module(metaclass=MetaModule):
     def __init__(self):
         object.__setattr__(self, "scopeId", DynamicContext.currentScope())
-        if not self.raw:
-            Clock_manager.register(id(self))
+        Clock_manager.register(id(self))
 
     def __getattribute__(self, item: str):
         res = get_attr(self, item)

@@ -667,7 +667,9 @@ class Index(VecOps, Node):
         elif "inPort" in v:
             # memory type
             name = ctx.getName(self)
-            memPort = ir(name, rf, ctx.getClock(), self._mem_rw if has_attr(self, "_mem_rw") else True)
+            # Bug there : ctx.getClock
+            # Fix : add register action on Mem's __post_init__
+            memPort = ir(name, rf, ctx.getClock(self.ref), self._mem_rw if has_attr(self, "_mem_rw") else True)
             ctx.appendFinalStatement(memPort, self.scopeId)
             ref = low_ir.Reference(name, rf.typ.typ)
             ctx.updateRef(self, ref)

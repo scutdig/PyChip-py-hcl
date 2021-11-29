@@ -8,4 +8,4 @@ from .cdatatype import U, S, Bool, Clock
 from .vector import Vec, VecInit
 from .funcs import CatVecL2H, CatVecH2L, CatBits, OneDimensionalization, Sum, Decoupled
 from .memory import Mem
-from .clockdomain import clockdomin
+from .clockdomin import clockdomin
