@@ -35,6 +35,20 @@ class IO(BundleAccessor, metaclass=MetaPub):
         ctx.appendFinalPort(port)
         return ref
 
+    # deal with io nest
+    def mapToIOFieldIR(self, name, ctx):
+        fs = []
+        for k, v in self._ios.items():
+            f = v.mapToIOFieldIR(k, ctx)
+            fs.append(f)
+
+        typ = low_ir.BundleType(fs)
+        port = low_ir.Port(name, low_ir.Output(), low_ir.BundleType(fs))
+        ref = low_ir.Reference(name, typ)
+        ctx.updateRef(self, ref)
+        ctx.appendFinalPort(port)
+        return ref
+
 
 @dataclass(eq=False)
 class Input(BundleAccessor, VecOps, CType, metaclass=MetaPub):

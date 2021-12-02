@@ -27,70 +27,83 @@ from pyhcl import *
 	resp_t bresp;
 	logic bvalid;
 	logic bready;
-
 """
 
 
-class IOFactory:
-    @classmethod
-    def make(cls, **ios):
-        return IO(ios)
+
 
 
 class AxiIOFactory:
     @classmethod
     def make(cls, aw, dw, master=1):
-        axilite_ios = {}
-
         if master:
-            axilite_ios = {
+            axi = IO(
                 # read addr channel
-                "araddr": Output(U.w(aw)),
-                "arvaild": Output(Bool),
-                "arready": Input(Bool),
+                ar=IO(
+                    addr=Output(U.w(aw)),
+                    vaild=Output(Bool),
+                    ready=Input(Bool),
+                ),
                 # read data channel
-                "rdata": Input(U.w(dw)),
-                "rresp": Input(Bool),
-                "rvaild": Input(Bool),
-                "rready": Output(Bool),
+                rd=IO(
+                    data=Input(U.w(dw)),
+                    resp=Input(Bool),
+                    vaild=Input(Bool),
+                    ready=Output(Bool),
+                ),
                 # addr write channel
-                "awaddr": Output(U.w(aw)),
-                "awvaild": Output(Bool),
-                "awready": Input(Bool),
+                aw=IO(
+                    addr=Output(U.w(aw)),
+                    vaild=Output(Bool),
+                    ready=Input(Bool),
+                ),
                 # write data channel
-                "wdata": Output(U.w(dw)),
-                "wstrb": Output(Bool),
-                "wvaild": Output(Bool),
-                "wready": Input(Bool),
+                wd=IO(
+                    data=Output(U.w(dw)),
+                    strb=Output(Bool),
+                    vaild=Output(Bool),
+                    ready=Input(Bool),
+                ),
                 # write resp channel
-                "bresp": Input(Bool),
-                "bvalid": Input(Bool),
-                "bready": Output(Bool),
-            }
+                wr=IO(
+                    resp=Input(Bool),
+                    valid=Input(Bool),
+                    ready=Output(Bool),
+                )
+            )
         else:
-            axilite_ios = {
-                # addr read channel
-                "araddr": Input(U.w(aw)),
-                "arvaild": Input(Bool),
-                "arready": Output(Bool),
+            axi = IO(
+                ar=IO(
+                    addr=Input(U.w(aw)),
+                    vaild=Input(Bool),
+                    ready=Output(Bool),
+                ),
                 # read data channel
-                "rdata": Output(U.w(dw)),
-                "rresp": Output(Bool),
-                "rvaild": Output(Bool),
-                "rready": Input(Bool),
-                # write addr channel
-                "awaddr": Input(U.w(aw)),
-                "awvaild": Input(Bool),
-                "awready": Output(Bool),
+                rd=IO(
+                    data=Output(U.w(dw)),
+                    resp=Output(Bool),
+                    vaild=Output(Bool),
+                    ready=Input(Bool),
+                ),
+                # addr write channel
+                aw=IO(
+                    addr=Input(U.w(aw)),
+                    vaild=Input(Bool),
+                    ready=Output(Bool),
+                ),
                 # write data channel
-                "wdata": Input(U.w(dw)),
-                "wstrb": Input(Bool),
-                "wvaild": Input(Bool),
-                "wready": Output(Bool),
+                wd=IO(
+                    data=Input(U.w(dw)),
+                    strb=Input(Bool),
+                    vaild=Input(Bool),
+                    ready=Output(Bool),
+                ),
                 # write resp channel
-                "bresp": Output(Bool),
-                "bvalid": Output(Bool),
-                "bready": Input(Bool),
-            }
+                wr=IO(
+                    resp=Output(Bool),
+                    valid=Output(Bool),
+                    ready=Input(Bool),
+                )
+            )
 
-        return IOFactory.make(axilite_ios)
+        return axi

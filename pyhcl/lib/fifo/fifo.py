@@ -8,34 +8,33 @@ Nil = U.w(2)(2)
 
 
 def BubbleFifoFactory(depth, size):
-    def FifoRegisterFactory(size):
-        class FifoRegister(Module):
-            io = IO(
-                write=Input(Bool),
-                full=Output(Bool),
-                din=Input(U.w(size)),
+    class FifoRegister(Module):
+        io = IO(
+            write=Input(Bool),
+            full=Output(Bool),
+            din=Input(U.w(size)),
 
-                read=Input(Bool),
-                empty=Output(Bool),
-                dout=Output(U.w(size))
-            )
+            read=Input(Bool),
+            empty=Output(Bool),
+            dout=Output(U.w(size))
+        )
 
-            stateReg = RegInit(U.w(2)(0))  # empty
-            dataReg = RegInit(U.w(size)(0))
+        stateReg = RegInit(U.w(2)(0))  # empty
+        dataReg = RegInit(U.w(size)(0))
 
-            with when(stateReg == Empty):
-                with when(io.write):
-                    stateReg <<= Full
-                    dataReg <<= io.din
-            with elsewhen(stateReg == Full):
-                with when(io.read):
-                    stateReg <<= Empty
-                    dataReg <<= U.w(size)(0)
+        with when(stateReg == Empty):
+            with when(io.write):
+                stateReg <<= Full
+                dataReg <<= io.din
+        with elsewhen(stateReg == Full):
+            with when(io.read):
+                stateReg <<= Empty
+                dataReg <<= U.w(size)(0)
 
-            io.full <<= (stateReg == Full)
-            io.empty <<= (stateReg == Empty)
-            io.dout <<= dataReg
-        return FifoRegister()
+        io.full <<= (stateReg == Full)
+        io.empty <<= (stateReg == Empty)
+        io.dout <<= dataReg
+
 
     class BubbleFifo(Module):
         io = IO(
@@ -48,7 +47,7 @@ def BubbleFifoFactory(depth, size):
             dout=Output(U.w(size))
         )
 
-        FRs = [FifoRegisterFactory(size).io for i in range(depth)]
+        FRs = [FifoRegister().io for i in range(depth)]
         for i in range(depth-1):
             FRs[i + 1].din <<= FRs[i].dout
             FRs[i + 1].write <<= ~FRs[i].empty
