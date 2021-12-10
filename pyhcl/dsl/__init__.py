@@ -9,3 +9,4 @@ from .vector import Vec, VecInit
 from .funcs import CatVecL2H, CatVecH2L, CatBits, OneDimensionalization, Sum, Decoupled
 from .memory import Mem
 from .clockdomin import clockdomin
+from .verifaction import doAssert, doAssume, doCover

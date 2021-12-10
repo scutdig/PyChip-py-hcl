@@ -10,7 +10,7 @@ class AxiliteFactory:
             TODO
             """
         class Slave(Module):
-            io = AxiIOFactory.make(aw,dw,master=0)
+            io = AxiIOFactory.make(aw, dw, master=0)
             """
             TODO
             """

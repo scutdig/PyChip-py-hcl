@@ -456,6 +456,44 @@ class Connect(Statement):
         return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}'
 
 
+# Verification
+class Verification(FirrtlNode, ABC):
+    pass
+
+
+@dataclass(frozen=True)
+class Assert(Verification):
+    clk: Expression
+    pred: Expression
+    en: Expression
+    msg: str
+
+    def serialize(self) -> str:
+        return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()}, \"{self.msg}\")\n'
+
+
+@dataclass(frozen=True)
+class Assume(Verification):
+    clk: Expression
+    pred: Expression
+    en: Expression
+    msg: str
+
+    def serialize(self) -> str:
+        return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()},{self.msg})\n'
+
+
+@dataclass(frozen=True)
+class Cover(Verification):
+    clk: Expression
+    pred: Expression
+    en: Expression
+    msg: str
+
+    def serialize(self) -> str:
+        return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()},{self.msg})\n'
+
+
 # Base class for modules
 class DefModule(FirrtlNode, ABC):
     def serializeHeader(self, typ: str) -> str:

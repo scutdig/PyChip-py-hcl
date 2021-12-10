@@ -26,7 +26,7 @@ def Sum(vec):
 
 def OneDimensionalization(vec):
     a = vec
-    lvl = a.lvl
+    lvl = a.typ.lvl
     for _ in range(lvl - 1):
         a = a.flatten()
     return a

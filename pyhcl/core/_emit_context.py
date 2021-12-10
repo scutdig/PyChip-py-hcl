@@ -68,7 +68,7 @@ class EmitterContext:
         while len(self._rawStatements) > 0:
             lf = self._rawStatements.popleft()
             lf.mapToIR(self)
-
+        self._dealWithVerifaction()
         modBundle = self._mapToBundle(self._finalPorts)
         finalMod = low_ir.Module(self.name,
                                  self._finalPorts,
@@ -96,6 +96,13 @@ class EmitterContext:
         for k, v in self._modClass.__dict__.items():
             if type(v) == Pub and k != "io" and k != "clock" and k != "reset":
                 v.mapToIR(self)
+
+    def _dealWithVerifaction(self):
+        from pyhcl.dsl.verifaction import _Verfication
+        for k, v in self._modClass.__dict__.items():
+            if(isinstance(v,_Verfication)):
+                v.mapToIR(self)
+
 
     def getName(self, obj):
         res = self._rawNameTable.get(id(obj))
