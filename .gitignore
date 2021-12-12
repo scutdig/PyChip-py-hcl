@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# pysv
+.sv/
+.build/
+
+# firrtl
+./fir
+
 # C extensions
 *.so
 
