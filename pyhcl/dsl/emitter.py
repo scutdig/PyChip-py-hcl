@@ -6,6 +6,7 @@ from pyhcl.core._dynamic_ctx import DynamicContext
 from pyhcl.core._emit_context import EmitterContext
 from pyhcl.dsl.module import Module
 from pyhcl.ir import low_ir
+from pyhcl.util.firrtltools import replacewithfirmod
 
 
 class Emitter:
@@ -18,6 +19,7 @@ class Emitter:
     def elaborate(m: Module) -> low_ir.Circuit:
         ec: EmitterContext = EmitterContext(m, {}, Counter())
         modIRs: Dict[int, low_ir.DefModule] = ec.emit()
+        modIRs = replacewithfirmod(modIRs)
         circuit = low_ir.Circuit(list(modIRs.values()), ec.name)
         DynamicContext.clearScope()
         return circuit

@@ -8,7 +8,7 @@ __pycache__/
 .build/
 
 # firrtl
-./fir
+.fir/
 
 # C extensions
 *.so

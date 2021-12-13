@@ -8,6 +8,8 @@ from pyhcl.dsl.cio import Input, Output
 from pyhcl.dsl.cdatatype import *
 from pysv import DataType, sv, compile_lib, generate_sv_binding
 
+from pyhcl.util.functions import make_dirs
+
 
 class PysvModGen:
     def __init__(self, name: str, inputs: {}, outputs: {}, funcname):
@@ -122,10 +124,6 @@ def filterIOs(bbox):
 
 bboxs_list = {}
 
-def make_dirs(filename):
-    dirname = os.path.dirname(filename)
-    if dirname and not os.path.exists(dirname):
-        os.makedirs(dirname, exist_ok=True)
 
 def addpysvmodule(bbox: MetaBlackBox, func, path=".sv/bbox"):
     # need some check on bbox ios and func args
