@@ -18,6 +18,13 @@ class PysvModGen:
         self.outputs = outputs
 
         self.fname = funcname
+        self.name_wid_map = {}
+
+
+    # map to wire or reg 's name
+    def nm(self, name):
+        return "__tmp_"+name
+
 
     def input_ports(self):
         str = ""
@@ -27,7 +34,8 @@ class PysvModGen:
             wstr=""
             if w != 1:
                 wstr = f"[{w-1}:0]"
-            str += f"input {wstr}\t\t{k} ;\n"
+            self.name_wid_map[k] = wstr
+            str += f"\tinput {wstr}\t\t{k} ,\n"
         return str
 
     def output_ports(self):
@@ -38,8 +46,33 @@ class PysvModGen:
             wstr=""
             if w != 1:
                 wstr = f"[{w-1}:0]"
-            str += f"output {wstr}\t\t{k} ;\n"
+            self.name_wid_map[k] = wstr
+            str += f"\toutput {wstr}\t\t{k} ,\n"
         return str
+
+    def def_wires(self):
+        res = ""
+        for k in self.inputs.keys():
+            res += f"\twire {self.name_wid_map[k]}\t{self.nm(k)} ;\n"
+        return res
+
+    def def_regs(self):
+        res = ""
+        for k in self.outputs.keys():
+            res += f"\treg {self.name_wid_map[k]}\t{self.nm(k)} ;\n"
+        return res
+
+    def assign_wires(self):
+        res = ""
+        for k in self.inputs.keys():
+            res += f"\tassign {self.nm(k)} = {k} ;\n"
+        return res
+
+    def assign_regs(self):
+        res = ""
+        for k in self.outputs.keys():
+            res += f"\tassign {k} = {self.nm(k)} ;\n"
+        return res
 
     def modname(self):
         return self.name
@@ -52,25 +85,64 @@ class PysvModGen:
         if len(self.inputs) == 0:
             return str
         for k in self.inputs.keys():
-            str += f"{k}, "
+            str += f"{self.nm(k)}, "
+        if len(self.outputs) == 0:
+            return str
+        for k in self.outputs.keys():
+            str += f"{self.nm(k)}, "
         return str[:-2]
 
+    # return type must be written as Reference
+    # so this function will not be called
     def retvalues(self):
         str = ""
         if len(self.outputs) == 0:
             return str
+        # return type must be written as Reference
         for k in self.outputs.keys():
             str += f"{k}, "
         return str[:-2]
 
+    """demo 
+    // Pysv
+    module Xor(
+        input 		in1 ,
+        input 		in2 ,
+    
+        output 		out 
+        );
+        wire 	__tmp_in1 ;
+        wire 	__tmp_in2 ;
+    
+        reg 	__tmp_out ;
+    
+        assign __tmp_in1 = in1 ;
+        assign __tmp_in2 = in2 ;
+    
+    
+        import pysv::* ;
+        initial begin
+            fn(__tmp_in1, __tmp_in2, __tmp_out)
+        end
+        assign out = __tmp_out ;
+    
+    endmodule
+    """
     def tosvmodule(self):
         res = "// Pysv\n"
-        res += f"module {self.modname()}\n"
+        res += f"module {self.modname()}(\n"
         res += f"{self.input_ports()}\n{self.output_ports()}\n"
-        res += f"import pysv::*\n"
-        res += f"initial begin\n"
-        res += f"\t{self.retvalues()} = {self.funcname()}({self.funcargs()})\n"
-        res += f"end\n"
+        res = res[:-3] + "\n\t);\n"
+
+        res += f"{self.def_wires()}\n{self.def_regs()}\n"
+        res += f"{self.assign_wires()}\n\n"
+
+        res += f"\timport pysv::* ;\n"
+        res += f"\tinitial begin\n"
+        res += f"\t\t{self.funcname()}({self.funcargs()}) ;\n"
+        res += f"\tend\n"
+
+        res += f"{self.assign_regs()}\n"
         res += f"endmodule\n"
         return res
 

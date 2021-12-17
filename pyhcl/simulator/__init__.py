@@ -1,3 +1,4 @@
+import logging
 import mmap
 import os
 
@@ -126,8 +127,17 @@ class Handler:
         return hash(self.sig)
 
 
+class DpiConfig(object):
+    def __init__(self, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
+        self.sv = pkg_sv_path
+        self.lib = lib_path
+        self.bdir = bbox_sv_dir
+        self.bname = " ".join(os.listdir(self.bdir))
+        ...
+
+
 class Simulator(object):
-    def __init__(self, module):
+    def __init__(self, module, dpiconfig: DpiConfig = None):
         low_module = Emitter.elaborate(module)
         module_name = low_module.main
         ports = next(m.typ for m in low_module.modules if m.name == module_name)
@@ -275,15 +285,36 @@ int main(int argc, char **argv)
             getmodule(Simulator).__file__.split("/")[:-1]) + "/src/simulator.h"
         os.system("cp {} ./simulation".format(src_file))
 
-        # Using verilator backend
-        os.chdir("./simulation")
-        os.system(
-            "verilator --cc {vfn} --trace --exe {hfn}".format(vfn=vfn, hfn=hfn))
+        # dpi
+        if dpiconfig:
+            pysv_pkg = "{}_pysv_pkg.sv".format(self.dut_name)
+            pysv_lib = "libpysv_{}.so".format(self.dut_name)
+
+            os.system("cp {} ./simulation/{}_pysv_pkg.sv".format(dpiconfig.sv, self.dut_name))
+            os.system("cp {} ./simulation/libpysv_{}.so".format(dpiconfig.lib, self.dut_name))
+            os.system("cp {}* ./simulation/".format(dpiconfig.bdir))
+
+            os.chdir("./simulation")
+            # Using verilator backend
+            os.system(
+                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib, prefix=efn))
+            os.system("cp {} ./obj_dir/".format(pysv_lib))
+
+        else:
+            os.chdir("./simulation")
+            # Using verilator backend
+            os.system(
+                "verilator --cc {vfn} --trace --exe {hfn}".format(vfn=vfn, hfn=hfn))
+
         os.system(
             "make -j -C ./obj_dir -f {mfn} {efn}".format(mfn=mfn, efn=efn))
 
         # Run simulation backend program
-        os.system("./obj_dir/{}&".format(efn))
+        if dpiconfig:
+            os.system("LD_LIBRARY_PATH=. ./obj_dir/VTop")
+        else:
+            os.system("./obj_dir/{}&".format(efn))
 
         time.sleep(1)
 

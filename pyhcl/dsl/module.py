@@ -63,14 +63,13 @@ class Module(metaclass=MetaModule):
             mod = ctx._emittedModules[id(mod)]
             ref = low_ir.Reference(name, mod.typ)
 
-            if not self.raw:
-                # auto connect
-                scopeId = get_attr(self, "scopeId")
-                ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name), scopeId)
-                ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
-                                                        ctx.getClock(self)), scopeId)
-                ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
-                                                        ctx.getReset(self)), scopeId)
+            # auto connect
+            scopeId = get_attr(self, "scopeId")
+            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name), scopeId)
+            ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
+                                                    ctx.getClock(self)), scopeId)
+            ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
+                                                    ctx.getReset(self)), scopeId)
             ctx.updateRef(self, ref)
 
             return ref

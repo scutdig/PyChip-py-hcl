@@ -1,47 +1,53 @@
 from pyhcl import *
+from pysv import sv, DataType, Reference
+from pyhcl.simulator import DpiConfig, Simulator
 
-
-class ShiftRegister(Module):
+class Xor(BlackBox):
     io = IO(
-        i=Input(Bool),
-        o=Output(Bool),
-        en=Input(Bool),
+        in1=Input(U.w(1)),
+        in2=Input(U.w(1)),
+        out=Output(U.w(1))
     )
 
-    r0 = RegInit(U(0))
-    r1 = RegInit(U(0))
-    r2 = RegInit(U(0))
-    r3 = RegInit(U(0))
+@sv(a=DataType.Bit, b=DataType.Bit, return_type=Reference(x = DataType.Bit))
+def fn(a, b):
+    return a ^ b
 
-    with when(io.en):
-        r0 <<= io.i
-        r1 <<= r0
-        r2 <<= r1
-        r3 <<= r2
+addpysvmodule(Xor, fn)
+compile_and_binding_all()
 
-    io.o <<= r3
 
-class M(RawModule):
+class Top(Module):
     io = IO(
-        i=Input(Bool),
-        o=Output(Bool),
-        en=Input(Bool),
+        a=Input(U.w(1)),
+        b=Input(U.w(1)),
+        c=Output(U.w(1))
     )
 
-    myclock = Input(Clock())
-    myreset = Input(Bool)
+    xor = Xor()
+    xor.io.in1 <<= io.a
+    xor.io.in2 <<= io.b
+    io.c <<= xor.io.out
 
-    with clockdomin("myclock", "myreset"):
-        sr = ShiftRegister()
 
-        sr.io.i <<= io.i
-        sr.io.en <<= io.en
-        io.o <<= sr.io.o
-
-def main():
-    f = Emitter.dump(Emitter.emit(M()), "m.fir")
-    #Emitter.dumpVerilog(f)
-
+from random import randint
 
 if __name__ == '__main__':
-    main()
+    cfg = DpiConfig()
+    #Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+
+    s = Simulator(Top(),cfg)
+    
+    handler = s.handler
+
+    # ---------- Simulation begin ---------- #
+    s.start()
+
+    for i in range(16):
+        s.poke(handler.io.a, randint()&1)
+        s.poke(handler.io.b, randint()&1)
+        s.step()
+        s.peek(handler.io.c)
+    s.term()
+    # ---------- Simulation end ---------- #
+    
