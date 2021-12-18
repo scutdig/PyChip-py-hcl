@@ -138,7 +138,8 @@ class PysvModGen:
         res += f"{self.assign_wires()}\n\n"
 
         res += f"\timport pysv::* ;\n"
-        res += f"\tinitial begin\n"
+        #res += f"\tinitial begin\n"
+        res += f"\talways begin\n"
         res += f"\t\t{self.funcname()}({self.funcargs()}) ;\n"
         res += f"\tend\n"
 
@@ -214,6 +215,7 @@ def addpysvmodule(bbox: MetaBlackBox, func, path=".sv/bbox"):
 
 
 def compile_and_binding_all():
+    print("\n\n-----------------------pysv build info---------------------------\n")
     funclist = bboxs_list.values()
     # compile the a shared_lib into build folder
     lib_path = compile_lib(funclist, cwd=".build")
