@@ -7,7 +7,7 @@ from ..simulator import DpiConfig
 
 
 class Simlite(object):
-    def __init__(self, module, dpiconfig: DpiConfig = None):
+    def __init__(self, module, harness_code=None, dpiconfig: DpiConfig = None):
         self.low_module = Emitter.elaborate(module)
         self.dpiconfig = dpiconfig
         module_name = self.low_module.main
@@ -26,8 +26,10 @@ class Simlite(object):
                 self.outputs.append(k)
 
         self.dut_name = module_name
-
-        self.compile(self.codegen(module_name, ports))
+        if harness_code:
+            self.compile(harness_code)
+        else:
+            self.compile(self.codegen(module_name, ports))
 
     def compile(self, harness_code):
         print("\n\n---------------------verilator build info--------------------------\n")
@@ -121,6 +123,7 @@ class Simlite(object):
     def codegen(self, name, ports):
         tempfile = """#include "V{modname}.h"
 #include "verilated.h"
+#include "verilated_vcd_c.h"
 #include <vector>
 #include <iostream>
 #include <cstdio>
@@ -159,18 +162,30 @@ void output_handler(){{
 
 int main(int argc, char** argv, char** env) {{
     Verilated::commandArgs(argc, argv);
-    V{modname}* top = new V{modname};
-    Verilated::internalsDump();  // See scopes to help debug
     ioinit();
+    
+    V{modname}* top = new V{modname};
+    
+    Verilated::internalsDump();  // See scopes to help debug
+    Verilated::traceEverOn(true);
+    
+    VerilatedVcdC* tfp = new VerilatedVcdC;
+    top->trace(tfp, 0);
+    tfp->open("wave.vcd");
+
     while (!Verilated::gotFinish()) {{
         input_handler();
         //get inputs
 {inputs_init}
         top->eval();
+        tfp->dump(main_time);
 {outputs_log}
         //get output
         output_handler();
+        main_time++;
     }}
+    top->final();
+    tfp->close();
     delete top;
     return 0;
 }}""".format(modname=name, innum=len(self.inputs), outnum=len(self.outputs), inputs_init=self.handle_inputs(),
