@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from pyhcl.ir.low_node import FirrtlNode
 from pyhcl.ir.low_prim import PrimOp, Bits
-from pyhcl.ir.utils import indent
+from pyhcl.ir.utils import backspace, indent
 
 
 class Info(FirrtlNode, ABC):
@@ -16,10 +16,16 @@ class Info(FirrtlNode, ABC):
         """default implementation"""
         return self.__repr__()
 
+    def verilog_serialize(self) -> str:
+        return self.__repr__()
+
 
 @dataclass(frozen=True, init=False)
 class NoInfo(Info):
     def serialize(self) -> str:
+        return ''
+
+    def verilog_serialize(self) -> str:
         return ''
 
 
@@ -29,6 +35,9 @@ class FileInfo(Info):
 
     def serialize(self) -> str:
         return f" @[{self.info.serialize()}]"
+
+    def verilog_serialize(self) -> str:
+        return f" /*[{self.info.verilog_serialize()}]*/"
 
 
 @dataclass(frozen=True)
@@ -41,6 +50,9 @@ class StringLit(FirrtlNode):
 
     def serialize(self) -> str:
         return self.escape()[1:-1]
+
+    def verilog_serialize(self) -> str:
+        return self.serialize()
 
 
 class Expression(FirrtlNode, ABC):
@@ -58,6 +70,9 @@ class UnknownType(Type):
     def serialize(self) -> str:
         return '?'
 
+    def verilog_serialize(self) -> str:
+        return self.serialize()
+
 
 @dataclass(frozen=True)
 class Reference(Expression):
@@ -66,6 +81,9 @@ class Reference(Expression):
 
     def serialize(self) -> str:
         return self.name
+
+    def verilog_serialize(self) -> str:
+        return self.serialize()
 
 
 @dataclass(frozen=True)
@@ -77,6 +95,9 @@ class SubField(Expression):
     def serialize(self) -> str:
         return f"{self.expr.serialize()}.{self.name}"
 
+    def verilog_serialize(self) -> str:
+        return f"{self.expr.verilog_serialize()}_{self.name}"
+
 
 @dataclass(frozen=True)
 class SubIndex(Expression):
@@ -87,6 +108,9 @@ class SubIndex(Expression):
     def serialize(self) -> str:
         return f"{self.expr.serialize()}[{self.value}]"
 
+    def verilog_serialize(self) -> str:
+        return f"{self.expr.verilog_serialize()}[{self.value}]"
+
 
 @dataclass(frozen=True)
 class SubAccess(Expression):
@@ -96,6 +120,9 @@ class SubAccess(Expression):
 
     def serialize(self) -> str:
         return f"{self.expr.serialize()}[{self.index.serialize()}]"
+
+    def verilog_serialize(self) -> str:
+        return f"{self.expr.verilog_serialize()}[{self.index.verilog_serialize()}]"
 
 
 @dataclass(frozen=True)
@@ -108,6 +135,9 @@ class Mux(Expression):
     def serialize(self) -> str:
         return f"mux({self.cond.serialize()}, {self.tval.serialize()}, {self.fval.serialize()})"
 
+    def verilog_serialize(self) -> str:
+        return f"{self.cond.serialize()} ? {self.tval.serialize()} : {self.fval.serialize()}"
+
 
 @dataclass(frozen=True)
 class DoPrim(Expression):
@@ -119,6 +149,10 @@ class DoPrim(Expression):
     def serialize(self) -> str:
         sl: List[str] = [arg.serialize() for arg in self.args] + [repr(con) for con in self.consts]
         return f'{self.op.serialize()}({", ".join(sl)})'
+
+    def verilog_serialize(self) -> str:
+        sl: List[str] = [arg.serialize() for arg in self.args] + [repr(con) for con in self.consts]
+        return f'{self.op.serialize().join(sl)}'
 
 
 @dataclass(frozen=True)
@@ -133,12 +167,18 @@ class IntWidth(Width):
     def serialize(self) -> str:
         return f'<{self.width}>'
 
+    def verilog_serialize(self) -> str:
+        return f'[{self.width-1}:0]' if self.width - 1 else ""
+
 
 @dataclass(frozen=True, init=False)
 class UnknownWidth(Width):
     width: int = None
 
     def serialize(self) -> str:
+        return ""
+
+    def verilog_serialize(self) -> str:
         return ""
 
 
@@ -159,6 +199,9 @@ class UIntLiteral(Expression):
     def serialize(self) -> str:
         return f'UInt{self.width.serialize()}("h{hex(self.value)[2:]}")'
 
+    def verilog_serialize(self) -> str:
+        return f'{self.width}\'h{hex(self.value)}'
+
 
 @dataclass(frozen=True, init=False)
 class SIntLiteral(Expression):
@@ -177,6 +220,9 @@ class SIntLiteral(Expression):
     def serialize(self) -> str:
         return f'SInt{self.width.serialize()}("h{hex(self.value)[2:]}")'
 
+    def verilog_serialize(self) -> str:
+        return f'{self.width}\'h{hex(self.value)}'
+
 
 class GroundType(Type, ABC):
     ...
@@ -192,6 +238,9 @@ class UIntType(GroundType):
 
     def serialize(self) -> str:
         return f'UInt{self.width.serialize()}'
+
+    def verilog_serialize(self) -> str:
+        return f'{self.width.verilog_serialize()}'
 
     def irWithIndex(self, index):
         if isinstance(index, slice):
@@ -219,6 +268,9 @@ class SIntType(GroundType):
     def serialize(self) -> str:
         return f'SInt{self.width.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        return f'{self.width.serialize()}'
+
 
 class Orientation(FirrtlNode, ABC):
     """# Orientation of [[Field]]"""
@@ -230,11 +282,17 @@ class Default(Orientation):
     def serialize(self) -> str:
         return ''
 
+    def verilog_serialize(self) -> str:
+        return ''
+
 
 @dataclass(frozen=True, init=False)
 class Flip(Orientation):
     def serialize(self) -> str:
         return 'flip '
+
+    def verilog_serialize(self) -> str:
+        return 'flip'
 
 
 @dataclass(frozen=True)
@@ -247,6 +305,9 @@ class Field(FirrtlNode):
     def serialize(self) -> str:
         return f'{self.flip.serialize()}{self.name} : {self.typ.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        return f'{self.flip.verilog_serialize()}{self.typ.verilog_serialize()}\t${self.name}'
+
 
 @dataclass(frozen=True)
 class BundleType(AggregateType):
@@ -254,6 +315,16 @@ class BundleType(AggregateType):
 
     def serialize(self) -> str:
         return '{' + ', '.join([f.serialize() for f in self.fields]) + '}'
+
+    def verilog_serialize(self) -> list:
+        field_list = []
+        for f in self.fields:
+            if type(f.typ.verilog_serialize()) is list:
+                for t in f.typ.verilog_serialize():
+                    field_list.append(f'${f.name}{t}')
+            else:
+                field_list.append(f.verilog_serialize())
+        return field_list
 
 
 @dataclass(frozen=True)
@@ -263,6 +334,9 @@ class VectorType(AggregateType):
 
     def serialize(self) -> str:
         return f'{self.typ.serialize()}[{self.size}]'
+
+    def verilog_serialize(self) -> list:
+        return [f'_{v}' for v in range(self.size)]
 
     def irWithIndex(self, index):
         if isinstance(index, int):
@@ -279,6 +353,9 @@ class MemoryType(AggregateType):
     def serialize(self) -> str:
         return f'{self.typ.serialize()}[{self.size}]'
 
+    def verilog_serialize(self) -> str:
+        return [f'_{v}' for v in range(self.size)]
+
     def irWithIndex(self, index):
         return lambda _: {"ir": lambda name, mem, clk, rw: DefMemPort(name, mem, index, clk, rw), "inPort": True}
 
@@ -289,6 +366,32 @@ class ClockType(GroundType):
 
     def serialize(self) -> str:
         return 'Clock'
+
+    def verilog_serialize(self) -> str:
+        # Todo
+        pass
+
+@dataclass(frozen=True, init=False)
+class ResetType(GroundType):
+    width: Width = IntWidth(1)
+
+    def serialize(self) -> str:
+        return "UInt<1>"
+
+    def verilog_serialize(self) -> str:
+        # Todo
+        pass
+
+@dataclass(frozen=True, init=False)
+class AsyncResetType(GroundType):
+    width: Width = IntWidth(1)
+
+    def serialize(self) -> str:
+        return "AsyncReset"
+
+    def verilog_serialize(self) -> str:
+        # Todo
+        pass
 
 
 class Direction(FirrtlNode, ABC):
@@ -301,10 +404,20 @@ class Input(Direction):
     def serialize(self) -> str:
         return 'input'
 
+    def verilog_serialize(self, flip = False) -> str:
+        if flip is True:
+            return 'output'
+        return 'input'
+
 
 @dataclass(frozen=True, init=False)
 class Output(Direction):
     def serialize(self) -> str:
+        return 'output'
+
+    def verilog_serialize(self, flip = False) -> str:
+        if flip is True:
+            return 'input'
         return 'output'
 
 
@@ -319,6 +432,22 @@ class Port(FirrtlNode):
     def serialize(self) -> str:
         return f'{self.direction.serialize()} {self.name} : {self.typ.serialize()}{self.info.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        if type(self.typ.verilog_serialize()) is str:
+            return f'{self.direction.verilog_serialize()}\t{self.typ.verilog_serialize()}\t{self.name},\n'
+        else:
+            portdeclares = ''
+            seq = self.typ.verilog_serialize()
+            for s in seq:
+                ns = s.replace('$', f'{self.name}_')
+                if "flip" in ns:
+                    ns = ns.replace('flip', "")
+                    portdeclares += f'{self.direction.verilog_serialize(True)}\t{ns},\n'
+                else:
+                    portdeclares += f'{self.direction.verilog_serialize()}\t{ns},\n'
+            return portdeclares
+            
+
 
 class Statement(FirrtlNode, ABC):
     ...
@@ -328,6 +457,9 @@ class Statement(FirrtlNode, ABC):
 class EmptyStmt(Statement):
     def serialize(self) -> str:
         return 'skip'
+
+    def verilog_serialize(self) -> str:
+        return '// skip'
 
 
 @dataclass(frozen=True)
@@ -339,6 +471,8 @@ class DefWire(Statement):
     def serialize(self) -> str:
         return f'wire {self.name} : {self.typ.serialize()}{self.info.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        return f'wire\t{self.typ.verilog_serialize()}\t{self.name}{self.info.verilog_serialize()};'
 
 @dataclass(frozen=True)
 class DefRegister(Statement):
@@ -354,15 +488,25 @@ class DefRegister(Statement):
             if self.init is not None else ""
         return f'reg {self.name} : {self.typ.serialize()}, {self.clock.serialize()}{i}{self.info.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        return f'reg {self.typ.verilog_serialize()}\t{self.name}{self.info.verilog_serialize()}'
+
 
 @dataclass(frozen=True)
 class DefInstance(Statement):
     name: str
     module: str
+    ports: List[Port]
     info: Info = NoInfo()
 
     def serialize(self) -> str:
         return f'inst {self.name} of {self.module}{self.info.serialize()}'
+
+    def verilog_serialize(self) -> str:
+        instdeclares = ''
+        for p in self.ports:
+            instdeclares += f'\n.{p.name}({self.name}_{p.name}),'
+        return f'{self.module} {self.name} ({instdeclares}\n);'
 
 
 # @dataclass(frozen=True)
@@ -399,6 +543,12 @@ class DefMemory(Statement):
     def serialize(self) -> str:
         return f'cmem {self.name} : {self.memType.serialize()}{self.info.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        memorydeclares = ''
+        memorydeclares += f'{self.memType.verilog_serialize()}\n'
+        memorydeclares += f'{self.info.verilog_serialize()}\n'
+        return memorydeclares
+
 
 @dataclass(frozen=True)
 class DefNode(Statement):
@@ -408,6 +558,9 @@ class DefNode(Statement):
 
     def serialize(self) -> str:
         return f'node {self.name} = {self.value.serialize()}{self.info.serialize()}'
+
+    def verilog_serialize(self) -> str:
+        return f'wire {self.name} = {self.value.verilog_serialize()}{self.info.verilog_serialize()};'
 
 
 @dataclass(frozen=True)
@@ -424,6 +577,12 @@ class DefMemPort(Statement):
         return f'{rw} mport {self.name} = {self.mem.serialize()}[{self.index.serialize()}], ' \
             f'{self.clk.serialize()}{self.info.serialize()}'
 
+    def verilog_serialize(self) -> str:
+        memportdeclares = ''
+        memportdeclares += indent(f'{self.mem.verilog_serialize()}')
+        # TODO
+        return memportdeclares
+
 
 @dataclass(frozen=True)
 class Conditionally(Statement):
@@ -437,6 +596,9 @@ class Conditionally(Statement):
             ('' if self.alt == EmptyStmt() else '\nelse :' + indent(f'\n{self.alt.serialize()}'))
         return f'when {self.pred.serialize()} :{self.info.serialize()}{s}'
 
+    def verilog_serialize(self) -> str:
+        return ""
+
 
 @dataclass(frozen=True)
 class Block(Statement):
@@ -444,6 +606,9 @@ class Block(Statement):
 
     def serialize(self) -> str:
         return '\n'.join([stmt.serialize() for stmt in self.stmts])
+
+    def verilog_serialize(self) -> str:
+        return '\n'.join([stmt.verilog_serialize() for stmt in self.stmts])
 
 
 @dataclass(frozen=True)
@@ -454,6 +619,9 @@ class Connect(Statement):
 
     def serialize(self) -> str:
         return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}'
+
+    def verilog_serialize(self) -> str:
+        return f'assign {self.loc.verilog_serialize()} = {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
 
 
 # Verification
@@ -471,6 +639,9 @@ class Assert(Verification):
     def serialize(self) -> str:
         return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()}, \"{self.msg}\")\n'
 
+    def verilog_serialize(self) -> str:
+        return ""
+
 
 @dataclass(frozen=True)
 class Assume(Verification):
@@ -481,6 +652,9 @@ class Assume(Verification):
 
     def serialize(self) -> str:
         return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()},{self.msg})\n'
+
+    def verilog_serialize(self) -> str:
+        return ""
 
 
 @dataclass(frozen=True)
@@ -493,12 +667,19 @@ class Cover(Verification):
     def serialize(self) -> str:
         return f'assert({self.clk.serialize()}, {self.pred.serialize()}, {self.en.serialize()},{self.msg})\n'
 
+    def verilog_serialize(self) -> str:
+        return ""
+
 
 # Base class for modules
 class DefModule(FirrtlNode, ABC):
     def serializeHeader(self, typ: str) -> str:
-        ps = indent(''.join([f'\n{p.serialize()}' for p in self.ports]))
-        return f'{typ} {self.name} :{self.info.serialize()}{ps}\n'
+        moduledeclares = indent(''.join([f'\n{p.serialize()}' for p in self.ports]))
+        return f'{typ} {self.name} :{self.info.serialize()}{moduledeclares}\n'
+
+    def verilog_serializeHeader(self, typ:str) -> str:
+        moduledeclares = ''.join([f'{p.verilog_serialize()}' for p in self.ports])
+        return f'{typ} {self.name}(\n{moduledeclares});\n'
 
 
 @dataclass(frozen=True)
@@ -512,6 +693,8 @@ class Module(DefModule):
     def serialize(self) -> str:
         return self.serializeHeader('module') + indent(f'\n{self.body.serialize()}')
 
+    def verilog_serialize(self) -> str:
+        return self.verilog_serializeHeader('module') + f'\n{self.body.verilog_serialize()}' + '\nendmodule'
 
 @dataclass(frozen=True)
 class ExtModule(DefModule):
@@ -525,6 +708,9 @@ class ExtModule(DefModule):
         s = indent(f'\ndefname = {self.defname}\n')
         return f'{self.serializeHeader("extmodule")}{s}'
 
+    def verilog_serialize(self) -> str:
+        return f'{self.verilog_serializeHeader("module")}endmodule\n'
+
 
 
 @dataclass(frozen=True)
@@ -536,3 +722,7 @@ class Circuit(FirrtlNode):
     def serialize(self) -> str:
         ms = '\n'.join([indent(f'\n{m.serialize()}') for m in self.modules])
         return f'circuit {self.main} :{self.info.serialize()}{ms}\n'
+
+    def verilog_serialize(self) -> str:
+        ms = ''.join([f'{m.verilog_serialize()}\n' for m in self.modules])
+        return ms

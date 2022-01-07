@@ -114,3 +114,11 @@ class S(CType, metaclass=SInit):
 class Clock(CType):
     def mapToIR(self, ctx):
         return low_ir.ClockType()
+
+class Reset(CType):
+    def mapToIR(self, ctx):
+        return low_ir.ResetType()
+
+class AsyncReset(CType):
+    def mapToIR(self, ctx):
+        return low_ir.AsyncResetType()

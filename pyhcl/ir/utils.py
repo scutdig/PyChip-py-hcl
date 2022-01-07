@@ -1,6 +1,9 @@
 def indent(string: str) -> str:
     return string.replace('\n', '\n  ')
 
+def backspace(string: str) -> str:
+    return string.replace('\n  ', '\n')
+
 
 def auto_connect(ma, mb):
     from pyhcl import IO
