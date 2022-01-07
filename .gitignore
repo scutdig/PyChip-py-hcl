@@ -6,6 +6,7 @@ __pycache__/
 # pysv
 .sv/
 .build/
+simlutulation/
 
 # firrtl
 .fir/
