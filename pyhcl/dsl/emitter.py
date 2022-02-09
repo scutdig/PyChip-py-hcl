@@ -11,9 +11,12 @@ from pyhcl.util.firrtltools import replacewithfirmod
 
 class Emitter:
     @staticmethod
-    def emit(m: Module) -> str:
+    def emit(m: Module, toverilog=False) -> str:
         circuit = Emitter.elaborate(m)
-        return circuit.serialize()
+        if(toverilog):
+            return circuit.verilog_serialize()
+        else:
+            return circuit.serialize()
 
     @staticmethod
     def elaborate(m: Module) -> low_ir.Circuit:
