@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Type, Union
 
+from pyhcl.core._dynamic_ctx import DynamicContext
 from pyhcl.core._emit_context import EmitterContext
 from pyhcl.core._repr import CType, Node, And, Eq
 from pyhcl.core._interface import BundleAccessor, VecOps
@@ -31,6 +32,7 @@ class RegInit(CType):
 
     def __post_init__(self):
         super().__post_init__()
+        self.scopeId = DynamicContext.currentScope()
         self.typ = self.initValue
         from pyhcl.core._clock_manager import Clock_manager
         Clock_manager.register(id(self))
@@ -53,6 +55,7 @@ class Reg(BundleAccessor, VecOps, CType):
     def __post_init__(self):
         from pyhcl.core._clock_manager import Clock_manager
         Clock_manager.register(id(self))
+        self.scopeId = DynamicContext.currentScope()
 
     def mapToIR(self, ctx: EmitterContext):
         typ = self.typ.mapToIR(ctx)

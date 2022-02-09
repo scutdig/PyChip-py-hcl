@@ -1,8 +1,19 @@
 def indent(string: str) -> str:
     return string.replace('\n', '\n  ')
 
+
 def backspace(string: str) -> str:
     return string.replace('\n  ', '\n')
+
+
+def backspace1(string: str) -> str:
+    return string if string[-3:-1] != '\n  ' else string[:-2]
+
+
+def deleblankline(string: str) -> str:
+    list = string.split("\n")
+    lines = [line for line in list if line.strip()]
+    return "\n".join(lines)
 
 
 def auto_connect(ma, mb):

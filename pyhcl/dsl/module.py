@@ -29,7 +29,6 @@ class MetaModule(type):
         cls._statements = DynamicContext.get()
 
 
-
 class Module(metaclass=MetaModule):
     def __init__(self):
         object.__setattr__(self, "scopeId", DynamicContext.currentScope())
