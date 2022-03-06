@@ -11,6 +11,9 @@ simulation/
 # firrtl
 .fir/
 
+# obj
+obj_dir/*
+
 # C extensions
 *.so
 

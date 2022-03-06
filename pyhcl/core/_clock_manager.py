@@ -55,4 +55,5 @@ class Clock_manager:
 
     @staticmethod
     def defaultclock():
-        Clock_manager.push("clock", "reset")
+        from ..dsl.module import shared_clock, shared_reset
+        Clock_manager.push(shared_clock, shared_reset)

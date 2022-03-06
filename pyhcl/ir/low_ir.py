@@ -711,9 +711,14 @@ class Connect(Statement):
     expr: Expression
     info: Info = NoInfo()
     blocking: bool = True
+    bidirection: bool = False
 
     def serialize(self) -> str:
-        return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}'
+        if not self.bidirection:
+            return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}'
+        else:
+            return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}\n' + \
+                   f'{self.expr.serialize()} <= {self.loc.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
         op = "=" if self.blocking else "<="

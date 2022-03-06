@@ -20,6 +20,7 @@ class MetaModule(type):
         Clock_manager.defaultclock()
 
         rawTable = {}
+        # rawTable is used to get name for obj
         for k, v in cls.__dict__.items():
             r = get_attr(v, 'extractForName')
             if r is not None:

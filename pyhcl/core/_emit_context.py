@@ -127,8 +127,10 @@ class EmitterContext:
 
     def getClock(self, m):
         from pyhcl.core._clock_manager import Clock_manager
-        return low_ir.Reference(Clock_manager.getClockByID(id(m)), low_ir.ClockType())
+        clock_obj = Clock_manager.getClockByID(id(m))
+        return low_ir.Reference(self._rawNameTable[id(clock_obj)], low_ir.UIntType(low_ir.IntWidth(1)))
 
     def getReset(self,m):
         from pyhcl.core._clock_manager import Clock_manager
-        return low_ir.Reference(Clock_manager.getResetByID(id(m)), low_ir.UIntType(low_ir.IntWidth(1)))
+        reset_obj = Clock_manager.getResetByID(id(m))
+        return low_ir.Reference(self._rawNameTable[id(reset_obj)], low_ir.UIntType(low_ir.IntWidth(1)))
