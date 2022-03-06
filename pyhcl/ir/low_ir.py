@@ -11,7 +11,6 @@ from pyhcl.ir.utils import backspace, indent, deleblankline, backspace1
 
 class Info(FirrtlNode, ABC):
     """INFOs"""
-
     def serialize(self) -> str:
         """default implementation"""
         return self.__repr__()
@@ -19,22 +18,19 @@ class Info(FirrtlNode, ABC):
     def verilog_serialize(self) -> str:
         return self.__repr__()
 
-
-@dataclass(frozen=True, init=False)
 class NoInfo(Info):
     def serialize(self) -> str:
-        return ''
+        return ""
 
     def verilog_serialize(self) -> str:
-        return ''
-
+        return ""
 
 @dataclass(frozen=True)
 class FileInfo(Info):
     info: StringLit
 
     def serialize(self) -> str:
-        return f" @[{self.info.serialize()}]"
+        return f"\t\t@[{self.info.serialize()}]"
 
     def verilog_serialize(self) -> str:
         return f" /*[{self.info.verilog_serialize()}]*/"

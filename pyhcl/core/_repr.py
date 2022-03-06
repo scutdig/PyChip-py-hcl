@@ -9,6 +9,7 @@ from pyhcl.core._utils import get_attr, has_attr
 from pyhcl.dsl.funcs import OneDimensionalization
 from pyhcl.ir import low_ir
 from pyhcl.ir import low_prim
+from pyhcl.util.functions import  debug_info
 
 
 class Node:
@@ -20,7 +21,8 @@ class Node:
         self.scopeId = DynamicContext.currentScope()
 
     def __ilshift__(self, other):
-        connect = Connect(self, other)
+        info = debug_info(2)
+        connect = Connect(self, other, info)
         DynamicContext.push(connect)
         return self
 
@@ -693,6 +695,7 @@ class Declare:
 class Connect(Declare):
     lhs: Node
     rhs: Node
+    info: str
 
     def __post_init__(self):
         super().__post_init__()
@@ -711,10 +714,10 @@ class Connect(Declare):
                 raise Exception("vector size does not match")
 
             for l, r in zip(lhs, rhs):
-                Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId)
+                Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId, self.info)
 
         else:
-            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId, self.info)
 
         """
         # A trick to do inheriting connect
@@ -736,31 +739,34 @@ class Connect(Declare):
         """
 
     @staticmethod
-    def _doConnect(ctx, lref, rref, scopeId):
+    def _doConnect(ctx, lref, rref, scopeId, info=""):
         if isinstance(lref.typ, low_ir.UIntType) and isinstance(rref.typ, low_ir.UIntType):
             if lref.typ.width.width is not None and rref.typ.width.width is not None:
                 if lref.typ.width.width >= rref.typ.width.width:
-                    Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                    Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
                 else:
                     bits = low_ir.DoPrim(low_ir.Bits(), [rref], [lref.typ.width.width - 1, 0], lref.typ)
-                    Connect._unsafeConnect(lref, bits, ctx, scopeId)
+                    Connect._unsafeConnect(lref, bits, ctx, scopeId, info)
             else:
-                Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
         elif isinstance(lref.typ, low_ir.SIntType) and isinstance(rref.typ, low_ir.SIntType):
             if lref.typ.width.width is not None and rref.typ.width.width is not None:
                 if lref.typ.width.width >= rref.typ.width.width:
-                    Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                    Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
                 else:
                     bits = low_ir.DoPrim(low_ir.Bits(), [rref], [lref.typ.width.width - 1, 0], lref.typ)
-                    Connect._unsafeConnect(lref, bits, ctx, scopeId)
+                    Connect._unsafeConnect(lref, bits, ctx, scopeId, info)
             else:
-                Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
         else:
             raise Exception("type does not match")
 
     @staticmethod
-    def _unsafeConnect(lref, rref, ctx, scopeId):
-        c = low_ir.Connect(lref, rref)
+    def _unsafeConnect(lref, rref, ctx, scopeId, info=""):
+        if info:
+            c = low_ir.Connect(lref, rref, low_ir.FileInfo(low_ir.StringLit(info)))
+        else:
+            c = low_ir.Connect(lref, rref)
         ctx.appendFinalStatement(c, scopeId)
 
 
