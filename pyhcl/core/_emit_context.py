@@ -41,8 +41,7 @@ class EmitterContext:
         self._finalStatements[scopeId].append(statement)
 
     def getScopeStatements(self, scopeId):
-        res = self._finalStatements[scopeId]
-        return res
+        return self._finalStatements[scopeId] if scopeId in self._finalStatements else None
 
     def appendFinalPort(self, port):
         self._finalPorts.append(port)

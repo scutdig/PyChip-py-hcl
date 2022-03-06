@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -21,6 +22,11 @@ class Node:
     def __ilshift__(self, other):
         connect = Connect(self, other)
         DynamicContext.push(connect)
+        return self
+
+    def __irshift__(self, other):
+        biconnect = BiConnect(self,other)
+        DynamicContext.push(biconnect)
         return self
 
     def __and__(self, other):
@@ -707,6 +713,10 @@ class Connect(Declare):
             for l, r in zip(lhs, rhs):
                 Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId)
 
+        else:
+            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+
+        """
         # A trick to do inheriting connect
         elif has_attr(self.lhs, "value") and has_attr(self.rhs, "value") \
                 and (isinstance(self.lhs.value, IO) or isinstance(self.rhs.value, IO)):
@@ -723,9 +733,7 @@ class Connect(Declare):
                             Connect(lhs, rhs).mapToIR(ctx)
                         else:
                             Connect(rhs, lhs).mapToIR(ctx)
-
-        else:
-            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+        """
 
     @staticmethod
     def _doConnect(ctx, lref, rref, scopeId):
@@ -754,6 +762,38 @@ class Connect(Declare):
     def _unsafeConnect(lref, rref, ctx, scopeId):
         c = low_ir.Connect(lref, rref)
         ctx.appendFinalStatement(c, scopeId)
+
+
+@dataclass(eq=False)
+class BiConnect(Declare):
+    lhs: Node
+    rhs: Node
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.lhs._mem_rw = False
+
+    def mapToIR(self, ctx):
+        from ..dsl.cio import IO
+        from ..dsl.bundle import Bundle, SubField
+        if not (has_attr(self.lhs, "typ") and has_attr(self.rhs, "typ")\
+                and has_attr(self.lhs, "value") and has_attr(self.rhs,"value")\
+                and self.lhs.typ == Bundle and self.lhs == self.rhs):
+            from ..dsl.cio import Input
+            if type(self.lhs.value) == Input:
+                return Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+            else:
+                return Connect._doConnect(ctx, ctx.getRef(self.rhs), ctx.getRef(self.lhs), self.scopeId)
+
+        left_ios = self.lhs.value._ios
+        right_ios = self.rhs.value._ios
+        same_key = left_ios.keys() & right_ios.keys()
+        for k in same_key:
+            lhs = getattr(self.lhs, k)
+            rhs = getattr(self.rhs, k)
+            BiConnect(lhs, rhs).mapToIR(ctx)
+
+
 
 
 @dataclass(eq=False)

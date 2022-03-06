@@ -694,14 +694,14 @@ class Block(Statement):
     stmts: List[Statement]
 
     def serialize(self) -> str:
-        return '\n'.join([stmt.serialize() for stmt in self.stmts])
+        return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
         manager = PassManager(self)
         new_blocks = manager.renew()
         always_blocks = manager.gen_all_always_block()
 
-        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}'
+        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if self.stmts else ""
 
 
 # pass will change the  "blocking" feature of Connect Stmt
