@@ -30,7 +30,7 @@ class FileInfo(Info):
     info: StringLit
 
     def serialize(self) -> str:
-        return f"\t\t@[{self.info.serialize()}]"
+        return f"@[{self.info.serialize()}]"
 
     def verilog_serialize(self) -> str:
         return f" /*[{self.info.verilog_serialize()}]*/"
@@ -734,10 +734,10 @@ class Connect(Statement):
 
     def serialize(self) -> str:
         if not self.bidirection:
-            return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}'
+            return f'{self.info.serialize()}\n{self.loc.serialize()} <= {self.expr.serialize()}'
         else:
-            return f'{self.loc.serialize()} <= {self.expr.serialize()}{self.info.serialize()}\n' + \
-                   f'{self.expr.serialize()} <= {self.loc.serialize()}{self.info.serialize()}'
+            return f'{self.info.serialize()}\n{self.loc.serialize()} <= {self.expr.serialize()}\n' + \
+                   f'{self.info.serialize()}\n{self.expr.serialize()} <= {self.loc.serialize()}'
 
     def verilog_serialize(self) -> str:
         op = "=" if self.blocking else "<="
