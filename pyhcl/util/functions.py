@@ -27,5 +27,7 @@ def make_dirs(filename):
         os.makedirs(dirname, exist_ok=True)
 
 def debug_info(depth):
-    lineno = sys._getframe(depth).f_lineno
-    return f"Module {sys._getframe(depth).f_code.co_name}:{lineno}c    " + src.getline(lineno-1)
+    if src:
+        lineno = sys._getframe(depth).f_lineno
+        return f"Module {sys._getframe(depth).f_code.co_name}:{lineno}    " + src.getline(lineno-1)
+    return ""

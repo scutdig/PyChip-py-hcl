@@ -639,7 +639,6 @@ class RegTracer(ValTracer):
         return res
 
 
-
 class PassManager:
     def __init__(self, target_block):
         self.block = target_block
@@ -689,8 +688,32 @@ class PassManager:
 class Block(Statement):
     stmts: List[Statement]
 
+    """
     def serialize(self) -> str:
         return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
+    """
+
+    def auto_gen_node(self, stmt):
+        return isinstance(stmt, DefNode) and stmt.name.startswith("_T")
+
+    # use less nodes
+    def serialize(self) -> str:
+        node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+
+        # replace all reference in node_exp_map
+        for k, v in node_exp_map.items():
+            if isinstance(v.value, DoPrim):
+                args = v.value.args
+                cnt = 0
+                for arg in args:
+                    if isinstance(arg, Reference) and arg.name in node_exp_map:
+                        node_exp_map[k].value.args[cnt] = node_exp_map[arg.name].value
+                    cnt += 1
+        # replace all reference in connect
+        for stmt in self.stmts:
+            if isinstance(stmt, Connect) and isinstance(stmt.expr, Reference) and stmt.expr.name in node_exp_map:
+                stmt.expr = node_exp_map[stmt.expr.name].value
+        return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
         manager = PassManager(self)
