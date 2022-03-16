@@ -1,4 +1,6 @@
 from abc import ABC
+from typing import overload
+from pyhcl.ir.low_ir import *
 
 class Flow(ABC):
     ...
@@ -20,3 +22,9 @@ class Kind(ABC):
 
 class PortKind(Kind):
     ...
+
+class VarWidth(Width):
+    name: str
+
+    def serialize(self):
+        return self.name

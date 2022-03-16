@@ -138,7 +138,7 @@ class Mux(Expression):
     def verilog_serialize(self, ext: str = '') -> str:
         return f"{self.cond.verilog_serialize()} ? {self.tval.verilog_serialize()}{ext} : {self.fval.verilog_serialize()}{ext}"
     
-
+@dataclass(frozen=True)
 class ValidIf(Expression):
     cond: Expression
     value: Expression

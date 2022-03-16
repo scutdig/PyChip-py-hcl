@@ -3,6 +3,7 @@ from pyhcl.passes.wir import Flow, SinkFlow, SourceFlow
 from typing import List
 from pyhcl.passes._pass import PassException
 
+# CheckForm utils
 def is_max(w1: Width, w2: Width):
     return IntWidth(max(w1.width, w2.width))
 
@@ -77,3 +78,54 @@ def has_flip(typ: Type) -> bool:
         return has_flip(typ.typ)
     else:
         return False
+
+# InterTypes utils
+
+def to_flip(d: Direction):
+    if type(d) == Output:
+        return Default()
+    if type(d) == Input:
+        return Flip()
+
+def module_type(m: DefModule) -> BundleType:
+    fields = [Field(p.name, to_flip(p.direction), p.typ) for p in m.ports]
+    return BundleType(fields)
+
+def field_type(v: Type, s: str) -> Type:
+    if type(v) == BundleType:
+        def match_type(f: Field) -> Type:
+            if f is None:
+                return UnknownType
+            return  f.typ
+        
+        for f in v.fields:
+            if f.name == s:
+                return match_type(f)
+    return UnknownType()
+
+def sub_type(v: Type) -> Type:
+    if type(v) == VectorType:
+        return v.typ
+    return UnknownType()
+
+def mux_type(e1: Expression, e2: Expression) -> Type:
+    return mux_types(e1.typ, e2.typ)
+
+def mux_types(t1: Type, t2: Type) -> Type:
+    if type(t1) == ClockType and type(t2) == ClockType:
+        return ClockType()
+    elif type(t1) == AsyncResetType and type(t2) == AsyncResetType:
+        return AsyncResetType()
+    elif type(t1) == UIntType and type(t2) == UIntType:
+        return UIntType(UnknownType())
+    elif type(t1) == SIntType and type(t2) == SIntType:
+        return SIntType(UnknownType())
+    elif type(t1) == VectorType and type(t2) == VectorType:
+        return VectorType(mux_types(t1.typ, t2.typ), t1.size)
+    elif type(t1) == BundleType and type(t2) == BundleType:
+        return BundleType(list(map(lambda f1, f2: Field(f1.name, f1.flip, mux_types(f1.typ, f2.typ)), list(zip(t1.fields, t2.fields)))))
+    else:
+        return UnknownType()
+
+def get_or_else(cond, a, b):
+    return a if cond else b
