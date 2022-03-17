@@ -256,7 +256,7 @@ class CheckTypes(Pass):
                 
                 if self.legal_reset_type(s.reset.typ) is False:
                     errors.append(IllegalResetType(get_info(s), mname, s.name))
-                if type(s.clock.typ) != ClockType:
+                if type(s.clock.typ) != UIntType or type(s.clock.typ.width) != IntWidth or s.clock.typ.width.width != 1:
                     errors.append(RegReqClk(get_info(s), mname, s.name))
             elif type(s) == Conditionally and self.legal_cond_type(s.pred.typ) is False:
                 errors.append(PredNotUInt(get_info(s), mname))

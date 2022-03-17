@@ -87,7 +87,7 @@ class CheckFlow(Pass):
             else:
                 ...
             
-            for _, ss in s.__dict___.items():
+            for _, ss in s.__dict__.items():
                 if type(ss) == Expression:
                     check_flow_e(info, mname, flows)
                 if type(ss) == Statement:
@@ -98,7 +98,7 @@ class CheckFlow(Pass):
             for p in m.ports:
                 flows[p.name] = to_flow(p.direction)
             for stmt in m.body.stmts:
-                check_flow_s(m.info, m.name, stmt)
+                check_flow_s(m.info, m.name, flows, stmt)
         
         errors.trigger()
         return c

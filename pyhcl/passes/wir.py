@@ -29,7 +29,8 @@ class VarWidth(Width):
         return self.name
 
 class WrappedType(Type):
-    t: Type
+    def __init__(self, t: Type):
+        self.t = t
 
     def __eq__(self, o):
         if type(o) == WrappedType:
@@ -72,3 +73,9 @@ class WrappedType(Type):
             return len(sink.fields) == len(source.fields) and final
         else:
             return False
+    
+    def serialize(self) -> str:
+        ...
+    
+    def verilog_serialize(self) -> str:
+        ...

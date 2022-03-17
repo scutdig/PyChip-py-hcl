@@ -349,3 +349,4 @@ class CheckHighForm(Pass):
                     self.check_high_form_m(m)
         
         self.errors.trigger()
+        return self.c

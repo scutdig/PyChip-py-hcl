@@ -99,9 +99,9 @@ class Mul3(Module):
     io.o <<= tbl[io.x][io.y][io.z]
 
 if __name__ == '__main__':
-    Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    # Emitter.dump(Emitter.emit(Mul3(), True), "Mul3.v")
-    # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
+    Emitter.dump(Emitter.emit(MOD(), True), "MOD.v")
+    # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
     
 
 
