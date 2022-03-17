@@ -1,5 +1,5 @@
 from pyhcl.ir.low_ir import *
-from pyhcl.passes.wir import Flow, SinkFlow, SourceFlow
+from pyhcl.passes.wir import DuplexFlow, Flow, SinkFlow, SourceFlow, UnknownFlow
 from typing import List
 from pyhcl.passes._pass import PassException
 
@@ -129,3 +129,62 @@ def mux_types(t1: Type, t2: Type) -> Type:
 
 def get_or_else(cond, a, b):
     return a if cond else b
+
+# CheckTypes utils
+def swp_flow(f: Flow) -> Flow:
+    if type(f) == UnknownFlow:
+        return UnknownFlow()
+    elif type(f) == SourceFlow:
+        return SinkFlow()
+    elif type(f) == SinkFlow:
+        return SourceFlow()
+    elif type(f) == DuplexFlow:
+        return DuplexFlow()
+    else:
+        return Flow()
+
+def swp_direction(d: Direction) -> Direction:
+    if type(d) == Input:
+        return Output()
+    elif type(d) == Output:
+        return Input()
+    else:
+        return Direction()
+
+def swp_orientation(o: Orientation) -> Orientation:
+    if type(o) == Default:
+        return Default()
+    elif type(o) == Flip:
+        return Flip()
+    else:
+        return Orientation()
+
+def times_d_flip(d: Direction, flip: Orientation) -> Direction:
+    if type(flip) == Default:
+        return d
+    elif type(flip) == Flip:
+        return swp_direction(d)
+
+def times_g_d(g: Flow, d: Direction) -> Direction:
+    return times_d_g(d, g)
+
+def times_d_g(d: Direction, g: Flow) -> Direction:
+    if type(g) == SinkFlow:
+        return d
+    elif type(g) == SourceFlow:
+        return swp_flow(d)
+
+def times_g_flip(g: Flow, flip: Orientation) -> Flow:
+    return times_flip_g(flip, g)
+
+def times_flip_g(flip: Orientation, g: Flow) -> Flow:
+    if type(flip) == Default:
+        return g
+    elif type(flip) == Flip:
+        return swp_flow(g)
+
+def times_f_f(f1: Orientation, f2: Orientation) -> Orientation:
+    if type(f2) == Default:
+        return f1
+    elif type(f2) == Flip:
+        return swp_orientation(f1)
