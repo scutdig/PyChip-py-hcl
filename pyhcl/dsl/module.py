@@ -65,7 +65,8 @@ class Module(metaclass=MetaModule):
 
             # auto connect
             scopeId = get_attr(self, "scopeId")
-            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name), scopeId)
+            # TODO DefInstance need 3 arguments
+            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name, []), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
                                                     ctx.getClock(self)), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
@@ -187,7 +188,8 @@ class BlackBox(metaclass=MetaBlackBox):
             ref = low_ir.Reference(insName, mod.typ)
 
             scopeId = get_attr(self, "scopeId")
-            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name), scopeId)
+            # TODO DefInstance need 3 arguments
+            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name, []), scopeId)
             ctx.updateRef(self, ref)
 
             return ref

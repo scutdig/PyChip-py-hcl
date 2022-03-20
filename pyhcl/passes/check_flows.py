@@ -73,9 +73,9 @@ class CheckFlow(Pass):
             elif type(s) == DefRegister:
                 flows[s.name] = DuplexFlow()
             elif type(s) == DefMemory:
-                flows[s.name] == SourceFlow()
+                flows[s.name] = SourceFlow()
             elif type(s) == DefInstance:
-                flows[s.name] == SourceFlow()
+                flows[s.name] = SourceFlow()
             elif type(s) == DefNode:
                 check_flow(info, mname, flows, SourceFlow(), s)
                 flows[s.name] = SourceFlow()
@@ -95,10 +95,15 @@ class CheckFlow(Pass):
         
         for m in c.modules:
             flows: Dict[str, Flow] = {}
-            for p in m.ports:
-                flows[p.name] = to_flow(p.direction)
-            for stmt in m.body.stmts:
-                check_flow_s(m.info, m.name, flows, stmt)
+            for mk, ma in m.__dict__.items():
+                if mk == 'ports' and type(ma) == list:
+                    for p in m.ports:
+                        flows[p.name] = to_flow(p.direction)
+                if mk == 'body' and type(ma) == Block:
+                    for bk, ba in ma.__dict__.items():
+                        if type(ba) == list and bk == 'stmts':
+                            for stmt in m.body.stmts:
+                                check_flow_s(m.info, m.name, flows, stmt)
         
         errors.trigger()
         return c

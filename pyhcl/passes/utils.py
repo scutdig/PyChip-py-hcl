@@ -1,3 +1,5 @@
+import math
+
 from pyhcl.ir.low_ir import *
 from pyhcl.passes.wir import DuplexFlow, Flow, SinkFlow, SourceFlow, UnknownFlow
 from typing import List
@@ -188,3 +190,22 @@ def times_f_f(f1: Orientation, f2: Orientation) -> Orientation:
         return f1
     elif type(f2) == Flip:
         return swp_orientation(f1)
+
+# CheckWidth Utils
+def get_binary_width(target):
+    width = 1
+    while target / 2 >= 1:
+        width += 1
+        target = math.floor(target / 2)
+    return width
+
+def get_width(w: Width) -> int:
+    if type(w) == UnknownWidth:
+        return 0
+    return w.width
+
+def has_width(t: Type) -> bool:
+    if hasattr(t, 'width'):
+        return True
+    else:
+        return False

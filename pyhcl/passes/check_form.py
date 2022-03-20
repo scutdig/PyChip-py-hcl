@@ -312,9 +312,9 @@ class CheckHighForm(Pass):
     def find_bad_reset_type_ports(self, m: DefModule, dir: Direction) -> List[tuple[Port, Expression]]:
         bad_reset_type_ports = []
         bad = to_flow(dir)
-        gen = ((create_exps(ref), p1) for (ref, p1) in [(Reference(p.name, p.typ, PortKind, UnknownFlow), p) for p in m.ports])
+        gen = ((create_exps(ref), p1) for (ref, p1) in [(Reference(p.name, p.typ), p) for p in m.ports])
         for expr, port in gen:
-            if expr.typ == ResetType and flow(expr) == bad:
+            if expr is not None and expr.typ == ResetType and flow(expr) == bad:
                 bad_reset_type_ports.append((port, expr))
         
         return bad_reset_type_ports

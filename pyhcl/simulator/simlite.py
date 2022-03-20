@@ -45,6 +45,7 @@ class Simlite(object):
         with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
             f.write(self.low_module.serialize())
 
+        # 调用FIRRTL工具链
         os.system(
             f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
 
