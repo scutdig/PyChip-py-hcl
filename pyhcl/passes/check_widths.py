@@ -134,6 +134,8 @@ class CheckWidths(Pass):
         
         def check_width_s(minfo: Info, target: str, s: Statement):
             info = get_info(s)
+            if type(info) == NoInfo:
+                info = minfo
             for _, ss in s.__dict__.items():
                 if type(ss) == Expression:
                     check_width_e(info, target, 4, ss)

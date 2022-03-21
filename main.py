@@ -111,12 +111,12 @@ class Add(BlackBox):
     )
 
 
-@sv(a=DataType.UInt, return_type=Reference(x=DataType.UInt))
-def fn(a):
-    return a + 10000
+# @sv(a=DataType.UInt, return_type=Reference(x=DataType.UInt))
+# def fn(a):
+#     return a + 10000
 
 
-addpysvmodule(Add, fn)
+# addpysvmodule(Add, fn)
 
 class Rand(BlackBox):
     io = IO(
@@ -126,13 +126,13 @@ class Rand(BlackBox):
     )
 
 
-@sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x=DataType.UInt))
-def fn2(a, b):
-    return random.randint(a, b)
+# @sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x=DataType.UInt))
+# def fn2(a, b):
+#     return random.randint(a, b)
 
 
-addpysvmodule(Rand, fn2)
-compile_and_binding_all()
+# addpysvmodule(Rand, fn2)
+# compile_and_binding_all()
 
 
 class Top(Module):
@@ -156,7 +156,7 @@ class Top(Module):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    Emitter.dump(Emitter.emit(Top(), True), "Top.v")
+    Emitter.dump(Emitter.emit(FullAdder(), True), "FullAdder.v")
     # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))

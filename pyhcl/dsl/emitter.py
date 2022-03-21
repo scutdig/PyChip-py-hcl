@@ -7,7 +7,6 @@ from pyhcl.core._emit_context import EmitterContext
 from pyhcl.dsl.module import Module
 from pyhcl.ir import low_ir
 from pyhcl.util.firrtltools import replacewithfirmod
-from pyhcl.dsl.check import CheckUtils
 
 
 class Emitter:
@@ -25,7 +24,6 @@ class Emitter:
         modIRs: Dict[int, low_ir.DefModule] = ec.emit()
         modIRs = replacewithfirmod(modIRs)
         circuit = low_ir.Circuit(list(modIRs.values()), ec.name)
-        circuit = CheckUtils.run_check(circuit)
         DynamicContext.clearScope()
         return circuit
 
