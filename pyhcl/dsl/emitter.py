@@ -39,5 +39,22 @@ class Emitter:
         return f
 
     @staticmethod
-    def dumpVerilog(filename):
-        os.system('firrtl -i %s -o %s -X verilog' % (filename, filename))
+    def dumpVerilog(filename, use_jar=False):
+        if use_jar:
+            os.system('java -jar firrtl.jar -i %s -o %s -X verilog' % (filename, filename))
+        else:
+            os.system('firrtl -i %s -o %s -X verilog' % (filename, filename))
+    
+    @staticmethod
+    def dumpMidForm(filename, use_jar=False):
+        if use_jar:
+            os.system('java -jar firrtl.jar -i %s -o %s -X middle' % (filename, filename))
+        else:
+            os.system('firrtl -i %s -o %s -X middle' % (filename, filename))
+    
+    @staticmethod
+    def dumpLowForm(filename, use_jar):
+        if use_jar:
+            os.system('java -jar firrtl.jar -i %s -o %s -X low' % (filename, filename))
+        else:
+            os.system('firrtl -i %s -o %s -X low' % (filename, filename))

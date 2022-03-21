@@ -122,3 +122,6 @@ venv.bak/
 
 
 temp
+
+# jar
+*.jar

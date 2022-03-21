@@ -1,5 +1,6 @@
-def indent(string: str) -> str:
-    return string.replace('\n', '\n  ')
+import math
+def indent(string: str, space: int = 1) -> str:
+    return string.replace('\n', '\n' + '  ' * space)
 
 
 def backspace(string: str) -> str:
@@ -34,3 +35,10 @@ def auto_connect(ma, mb):
                     io_left <<= io_right
                 else:
                     io_right <<= io_left
+
+def get_binary_width(target):
+    width = 1
+    while target / 2 >= 1:
+        width += 1
+        target = math.floor(target / 2)
+    return width
