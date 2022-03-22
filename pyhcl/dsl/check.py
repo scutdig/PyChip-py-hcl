@@ -6,5 +6,6 @@ class CheckUtils:
         c = check_form.CheckHighForm(c).run()
         c = check_types.CheckTypes().run(c)
         c = check_flows.CheckFlow().run(c)
+        c = check_widths.CheckWidths().run(c)
         return c
         

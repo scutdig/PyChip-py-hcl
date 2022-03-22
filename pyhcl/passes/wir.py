@@ -33,7 +33,7 @@ class WrappedType(Type):
         self.t = t
 
     def __eq__(self, o):
-        if type(o) == WrappedType:
+        if isinstance(o, WrappedType):
             return WrappedType.compare(self.t, o.t)
         else:
             return False
@@ -41,33 +41,33 @@ class WrappedType(Type):
     @staticmethod
     def compare(sink: Type, source: Type):
         def legal_reset_type(self, typ: Type) -> bool:
-            if type(typ) == UIntType and type(typ.width) == IntWidth:
+            if isinstance(typ, UIntType) and isinstance(typ.width, IntWidth):
                 return typ.width.width == 1
-            elif type(typ) == AsyncResetType:
+            elif isinstance(typ, AsyncResetType):
                 return True
-            elif type(typ) == ResetType:
+            elif isinstance(typ, ResetType):
                 return True
             else:
                 return False
 
-        if type(sink) == UIntType and type(source) == UIntType:
+        if isinstance(sink, UIntType) and isinstance(source, UIntType):
             return True
-        elif type(sink) == SIntType and type(source) == SIntType:
+        elif isinstance(sink, SIntType) and isinstance(source, SIntType):
             return True
-        elif type(sink) == ClockType and type(source) == ClockType:
+        elif isinstance(sink, ClockType) and isinstance(source, ClockType):
             return True
-        elif type(sink) == AsyncResetType and type(source) == AsyncResetType:
+        elif isinstance(sink, AsyncResetType) and isinstance(source, AsyncResetType):
             return True
-        elif type(sink) == ResetType:
+        elif isinstance(sink, ResetType):
             return legal_reset_type(source)
-        elif type(source) == ResetType:
+        elif isinstance(source, ResetType):
             return legal_reset_type(sink)
-        elif type(sink) == VectorType and type(source) == VectorType:
+        elif isinstance(sink, VectorType) and isinstance(source, VectorType):
             return sink.size == source.size and WrappedType.compare(sink.typ, source.typ)
-        elif type(sink) == BundleType and type(source) == BundleType:
+        elif isinstance(sink, BundleType) and isinstance(source, BundleType):
             final = True
             for f1, f2 in list(zip(sink.fields, source.fields)):
-                f1_final = WrappedType.compare(f2.typ, f1.typ) if type(f1.flip) == Flip else WrappedType.compare(f1.typ, f2.typ)
+                f1_final = WrappedType.compare(f2.typ, f1.typ) if isinstance(f1.flip, Flip) else WrappedType.compare(f1.typ, f2.typ)
                 final = f1.flip == f2.flip and f1.name == f2.name and f1_final and final
             
             return len(sink.fields) == len(source.fields) and final

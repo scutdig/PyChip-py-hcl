@@ -61,61 +61,61 @@ class CheckWidths(Pass):
             return f'{name}-{subname}'
 
         def check_width_w(info: Info, target: str, t: Type, w: Width):
-            if type(w) == IntWidth and w.width >= maxWidth:
+            if isinstance(w, IntWidth) and w.width >= maxWidth:
                 errors.append(WidthTooBig(info, target, w.width))
-            elif type(w) == IntWidth:
+            elif isinstance(w, IntWidth):
                 ...
             else:
                 errors.append(UninferredWidth(info, target))
         
         def has_width(typ: Type) -> bool:
-            if type(typ) == GroundType and hasattr(typ, 'width') and type(typ.width) == IntWidth:
+            if isinstance(typ, GroundType) and hasattr(typ, 'width') and isinstance(typ.width, IntWidth):
                 return True
-            elif type(typ) == GroundType:
+            elif isinstance(typ, GroundType):
                 return False
             else:
                 raise PassException(f'hasWidth - {typ}')
         
         def check_width_t(info: Info, target: str, t: Type):
-            if type(t) == BundleType:
+            if isinstance(t, BundleType):
                 for f in t.fields:
                     check_width_f(info, target, f)
             else:
                 for _, tt in t.__dict__.items():
-                    if type(tt) == Type:
+                    if isinstance(tt, Type):
                         check_width_t(info, target, tt)
             
             for _, tt in t.__dict__.items():
-                if type(tt) == Width:
-                    check_width_w(info, target, tt)
+                if isinstance(tt, Width):
+                    check_width_w(info, target, t, tt)
         
         def check_width_f(info: Info, target: str, f: Field):
             check_width_t(info, target, f.typ)
 
         def check_width_e_leaf(info: Info, target: str, expr: Expression):
-            if type(expr) == UIntLiteral and get_binary_width(expr.value) > get_width(expr.width):
+            if isinstance(expr, UIntLiteral) and get_binary_width(expr.value) > get_width(expr.width):
                 errors.append(WidthTooSmall(info, target, expr.value))
-            elif type(expr) == SIntLiteral and get_binary_width(expr.value) + 1 > get_width(expr.width):
+            elif isinstance(expr, SIntLiteral) and get_binary_width(expr.value) + 1 > get_width(expr.width):
                 errors.append(WidthTooSmall(info, target, expr.value))
-            elif type(expr) == DoPrim and len(expr.args) == 2:
-                if type(expr.op) == Dshl and has_width(expr.args[0].typ) and get_width(expr.args[1].typ) > maxWidth:
+            elif isinstance(expr, DoPrim) and len(expr.args) == 2:
+                if isinstance(expr.op, Dshl) and has_width(expr.args[0].typ) and get_width(expr.args[1].typ) > maxWidth:
                     errors.append(DshlTooBig(info, target))
-            elif type(expr) == DoPrim and len(expr.args) == 1:
-                if type(expr.op) == Bits and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.consts[0]:
+            elif isinstance(expr, DoPrim) and len(expr.args) == 1:
+                if isinstance(expr.op, Bits) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.consts[0]:
                     errors.append(BitsWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ), expr.serialize()))
-                elif type(expr.op) == Head and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
+                elif isinstance(expr.op, Head) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
                     errors.append(HeadWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ)))
-                elif type(expr.op) == Tail and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
+                elif isinstance(expr.op, Tail) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
                     errors.append(TailWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ)))
-                elif type(expr.op) == AsClock and get_width(expr.consts[0].typ) != 1:
+                elif isinstance(expr.op, AsClock) and get_width(expr.consts[0].typ) != 1:
                     errors.append(MultiBitAsClock(info, target))
         
         def check_width_e(info: Info, target: str, rec_depth: int, e: Expression):
             check_width_e_leaf(info, target, e)
-            if type(e) in [Mux, ValidIf, DoPrim]:
+            if isinstance(e, (Mux, ValidIf, DoPrim)):
                 if rec_depth > 0:
                     for _, ee in e.__dict__.items():
-                        if type(ee) == Expression:
+                        if isinstance(ee, Expression):
                             check_width_e(info, target, rec_depth - 1, ee)
                 else:
                     check_width_e_dfs(info, target, e)
@@ -128,31 +128,31 @@ class CheckWidths(Pass):
                 current = stack
                 check_width_e_leaf(info, target, current)
                 for _, leaf in current.__dict__.items():
-                    if type(leaf) == Expression:
+                    if isinstance(leaf, Expression):
                         push(leaf)
             
         
         def check_width_s(minfo: Info, target: str, s: Statement):
             info = get_info(s)
-            if type(info) == NoInfo:
+            if isinstance(info, NoInfo):
                 info = minfo
             for _, ss in s.__dict__.items():
-                if type(ss) == Expression:
+                if isinstance(ss, Expression):
                     check_width_e(info, target, 4, ss)
-                if type(ss) == Statement:
+                if isinstance(ss, Statement):
                     check_width_s(info, target, ss)
-                if type(ss) == Type:
+                if isinstance(ss, Type):
                     check_width_t(info, target, ss)
                 
-            if type(s) == DefRegister:
+            if isinstance(s, DefRegister):
                 sx = s.reset.typ
-                if type(sx) == UIntType and get_width(sx) == 1:
+                if isinstance(sx, UIntType) and get_width(sx) == 1:
                     # TODO
                     ...
-                elif type(sx) == AsyncResetType:
+                elif isinstance(sx, AsyncResetType):
                     # TODO
                     ...
-                elif type(sx) == ResetType:
+                elif isinstance(sx, ResetType):
                     #TODO
                     ...
                 else:
@@ -167,12 +167,12 @@ class CheckWidths(Pass):
             check_width_t(p.info, target, p.typ)
         
         def check_width_m(target: str, m: DefModule):
-            if hasattr(m, 'ports') and type(m.ports) == list:
+            if hasattr(m, 'ports') and isinstance(m.ports, list):
                 for p in m.ports:
                     check_width_p(m.info, gen_target(target, m.name), p)
         
-            if hasattr(m, 'body') and type(m.body) == Block:
-                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+            if hasattr(m, 'body') and isinstance(m.body, Block):
+                if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                     for s in m.body.stmts:
                         check_width_s(m.info, gen_target(target, m.name), s)
         

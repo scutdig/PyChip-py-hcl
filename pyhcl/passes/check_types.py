@@ -1,4 +1,5 @@
 from typing import List
+
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
 from pyhcl.passes._pass import Pass, PassException, Error
@@ -120,37 +121,37 @@ class IllegalUnknownType(PassException):
 
 class CheckTypes(Pass):
     def legal_reset_type(self, typ: Type) -> bool:
-        if type(typ) == UIntType and type(typ.width) == IntWidth:
+        if isinstance(typ, UIntType) and isinstance(typ.width, IntWidth):
             return typ.width.width == 1
-        elif type(typ) == AsyncResetType:
+        elif isinstance(typ, AsyncResetType):
             return True
-        elif type(typ) == ResetType:
+        elif isinstance(typ, ResetType):
             return True
         else:
             return False
     
     def legal_cond_type(self, typ: Type) -> bool:
-        if  type(typ) == UIntType and type(typ.width) == IntWidth:
+        if isinstance(typ, UIntType) and isinstance(typ.width, IntWidth):
             return typ.width.width == 1
-        elif type(type) == UIntType:
+        elif isinstance(typ, UIntType):
             return True
         else:
             return False
     
     def bulk_equals(self, t1: Type, t2: Type, flip1: Orientation, flip2: Orientation) -> bool:
-        if type(t1) == ClockType and type(t2) == ClockType:
+        if isinstance(t1, ClockType) and isinstance(t2, ClockType):
             return flip1 == flip2
-        elif type(t1) == UIntType and type(t2) == UIntType:
+        elif isinstance(t1, UIntType) and isinstance(t2, UIntType):
             return flip1 == flip2
-        elif type(t1) == SIntType and type(t2) == SIntType:
+        elif isinstance(t1, SIntType) and isinstance(t2, SIntType):
             return flip1 == flip2
-        elif type(t1) == AsyncResetType and type(t2) == AsyncResetType:
+        elif isinstance(t1, AsyncResetType) and isinstance(t2, AsyncResetType):
             return flip1 == flip2
-        elif type(t1) == ResetType:
+        elif isinstance(t1, ResetType):
             return self.legal_reset_type(t2) and flip1 == flip2
-        elif type(t2) == ResetType:
+        elif isinstance(t2, ResetType):
             return self.legal_reset_type(t1) and flip1 == flip2
-        elif type(t1) == BundleType and type(t2) == BundleType:
+        elif isinstance(t1, BundleType) and isinstance(t2, BundleType):
             t1_fields = {}
             for f1 in t1.fields:
                 t1_fields[f1.name] = (f1.typ, f1.flip)
@@ -160,14 +161,14 @@ class CheckTypes(Pass):
                     return self.bulk_equals(t1_flip, f2.typ, times_f_f(flip1, t1_flip) ,times_f_f(flip2, f2.flip))
                 else:
                     return True
-        elif type(t1) == VectorType and type(t2) == VectorType:
+        elif isinstance(t1, VectorType) and isinstance(t2, VectorType):
             return self.bulk_equals(t1.typ, t2.typ, flip1, flip2)
         else:
             return False
     
     def valid_connect(self, locTyp: Type, exprTyp: Type) -> bool:
         # TODO
-        ...
+        return True
 
     def valid_connects(self, c: Connect) -> bool:
         return self.valid_connect(c.loc.typ, c.expr.typ)
@@ -176,11 +177,11 @@ class CheckTypes(Pass):
         errors = Error()
 
         def passive(t: Type) -> bool:
-            if type(t) in [UIntType, SIntType]:
+            if isinstance(t, (UIntType, SIntType)):
                 return True
-            elif type(t) == VectorType:
+            elif isinstance(t, VectorType):
                 return passive(t.typ)
-            elif type(t) == BundleType:
+            elif isinstance(t, BundleType):
                 final = True
                 for f in t.fields:
                     final = f.flip == Default and passive(f.typ) and final
@@ -191,67 +192,64 @@ class CheckTypes(Pass):
         def check_typs_primop(info: Info, mname: str, e: DoPrim):
             def check_all_typs(exprs: List[Expression], okUInt: bool, okSInt: bool, okClock: bool, okAsync: bool):
                 for expr in exprs:
-                    if type(expr.typ) == UIntType and okUInt is False:
+                    if isinstance(expr.typ, UIntType) and okUInt is False:
                         errors.append(OpNotCorrectType(info, mname, e.op.serialize(), [expr.typ.serialize() for expr in exprs]))
-                    elif type(expr.typ) == SIntType and okSInt is False:
+                    elif isinstance(expr.typ, UIntType) and okSInt is False:
                         errors.append(OpNotCorrectType(info, mname, e.op.serialize(), [expr.typ.serialize() for expr in exprs]))
-                    elif type(expr.typ) == ClockType and okClock is False:
+                    elif isinstance(expr.typ, ClockType) and okClock is False:
                         errors.append(OpNotCorrectType(info, mname, e.op.serialize(), [expr.typ.serialize() for expr in exprs]))
-                    elif type(expr.typ) == AsyncResetType and okAsync is False:
+                    elif isinstance(expr.typ, AsyncResetType) and okAsync is False:
                         errors.append(OpNotCorrectType(info, mname, e.op.serialize(), [expr.typ.serialize() for expr in exprs]))
                 
-                if type(e.op) in [AsUInt, AsSInt, AsClock, AsyncResetType]:
-                    # TODO
+                if isinstance(e.op, (AsUInt, AsSInt, AsClock, AsyncResetType)):
                     ...
-                elif type(e.op) in [Dshl, Dshr]:
+                elif isinstance(e.op, (Dshl, Dshr)):
                     check_all_typs(list(e.args[0]), True, True, False, False)
                     check_all_typs(e.args[1:], True, False, False, False)
-                elif type(e.op) in [Add, Sub, Mul, Lt, Leq, Gt, Geq, Eq, Neq]:
+                elif isinstance(e.op, (Add, Sub, Mul, Lt, Leq, Gt, Geq, Eq, Neq)):
                     check_all_typs(e.args, True, True, False, False)
-                elif type(e.op) in [Pad, Bits, Head, Tail]:
+                elif isinstance(e.op, (Pad, Bits, Head, Tail)):
                     check_all_typs(e.args, True, True, False, False)
-                elif type(e.op) in [Shr, Shl, Cat]:
+                elif isinstance(e.op, (Shr, Shl, Cat)):
                     check_all_typs(e.args, True, True, False, False)
                 else:
                     check_all_typs(e.args, True, True, False, False)
         
         def check_types_e(info: Info, mname: str, e: Expression):
-            if type(e) == DoPrim:
+            if isinstance(e, DoPrim):
                 check_typs_primop(info, mname, e)
-            elif type(e) == Mux:
+            elif isinstance(e, Mux):
                 if WrappedType(e.tval.typ) != WrappedType(e.fval.typ):
                     errors.append(MuxSameType(info, mname, e.tval.typ.serialize(), e.fval.typ.serialize()))
                 if passive(e.typ) is False:
                     errors.append(MuxPassiveTypes(info, mname))
                 if self.legal_cond_type(e.cond.typ) is False:
                     errors.append(MuxCondUInt(info, mname))
-            elif type(e) == ValidIf:
+            elif isinstance(e, ValidIf):
                 if passive(e.typ) is False:
                     errors.append(ValidIfPassiveTypes(info, mname))
-                if type(e.cond.typ) == UIntType:
-                    # TODO
+                if isinstance(e.cond.typ, UIntType):
                     ...
                 else:
                     errors.append(ValidIfCondUInt(info, mname))
             else:
-                # TODO
                 ...
             
             for _, ee in e.__dict__.items():
-                if type(ee) == Expression:
+                if isinstance(ee, Expression):
                     check_types_e(info, mname, ee)
         
         def check_types_s(minfo: Info, mname: str, s: Statement):
             def get_info(s):
-                if type(s) == NoInfo:
+                if isinstance(s, NoInfo):
                     return minfo
                 else:
                     return s
             
-            if type(s) == Connect and self.valid_connects(s) is False:
+            if isinstance(s, Connect) and self.valid_connects(s) is False:
                 con_msg = Connect(s.loc, s.expr, NoInfo()).serialize()
                 errors.append(InvalidConnect(get_info(s), mname, con_msg, s.loc, s.expr))
-            elif type(s) == DefRegister:
+            elif isinstance(s, DefRegister):
                 if WrappedType(s.typ) != WrappedType(s.init.typ):
                     errors.append(InvalidRegInit(get_info(s), mname))
                 if self.valid_connect(s.typ, s.init.typ) is False:
@@ -260,29 +258,27 @@ class CheckTypes(Pass):
                 
                 if self.legal_reset_type(s.reset.typ) is False:
                     errors.append(IllegalResetType(get_info(s), mname, s.name))
-                if type(s.clock.typ) != UIntType or type(s.clock.typ.width) != IntWidth or s.clock.typ.width.width != 1:
+                if isinstance(s.clock.typ, UIntType) is False or isinstance(s.clock.typ.width, IntWidth) is False or s.clock.typ.width.width != 1:
                     errors.append(RegReqClk(get_info(s), mname, s.name))
-            elif type(s) == Conditionally and self.legal_cond_type(s.pred.typ) is False:
+            elif isinstance(s, Conditionally) and self.legal_cond_type(s.pred.typ) is False:
                 errors.append(PredNotUInt(get_info(s), mname))
-            elif type(s) == DefNode:
+            elif isinstance(s, DefNode):
                 if passive(s.value.typ) is False:
                     errors.append(NodePassiveType(get_info(s), mname))
-            elif type(s) == DefMemory:
-                # TODO
+            elif isinstance(s, DefMemory):
                 ...
             else:
-                # TODO
                 ...
             
             for _, ss in s.__dict__.items():
-                if type(ss) == Statement:
+                if isinstance(ss, Statement):
                     check_types_s(get_info(s), mname, ss)
-                if type(ss) == Expression:
+                if isinstance(ss, Expression):
                     check_types_e(get_info(s), mname, ss)
         
         for m in c.modules:
-            if hasattr(m, 'body') and type(m.body) == Block:
-                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+            if hasattr(m, 'body') and isinstance(m.body, Block):
+                if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                     for s in m.body.stmts:
                         check_types_s(m.info, m.name, s)
         

@@ -2,7 +2,7 @@ from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
 from pyhcl.passes._pass import Pass, PassException, Error
-from pyhcl.passes.utils import to_flow, flow, create_exps, get_info, has_flip
+from pyhcl.passes.utils import ModuleGraph, to_flow, flow, create_exps, get_info, has_flip
 from pyhcl.passes.wir import *
 
 
@@ -21,9 +21,9 @@ class ScopeView:
         self.moduleNS.add(name)
 
     def expand_m_port_visibility(self, port: DefMemPort):
-      # Legacy CHIRRTL ports are visible in any scope where their parent memory is visible
-      # TODO
-      ...
+        # Legacy CHIRRTL ports are visible in any scope where their parent memory is visible
+        # TODO
+        ...
     
     def legal_decl(self, name: str) -> bool:
         return name in self.moduleNS
@@ -146,7 +146,7 @@ class CheckHighForm(Pass):
         self.c: Circuit = c
         self.ms: List[DefModule] = c.modules
         self.module_names: List[str] = [_.name for _ in c.modules]
-        self.int_module_name: List[str] = [_.name for _ in c.modules if type(_) == Module]
+        self.int_module_name: List[str] = [_.name for _ in c.modules if isinstance(_, Module)]
         self.errors: Error = Error()
     
     def check_unique_module_name(self):
@@ -157,18 +157,18 @@ class CheckHighForm(Pass):
     
     def check_extmodule(self):
         for m in self.ms:
-            if type(m) == ExtModule and m.name in self.int_module_name:
+            if isinstance(m, ExtModule) and m.name in self.int_module_name:
                 self.errors.append(DefnameConflictException(m.info, m.name, m.defname))
 
     def strip_width(self, typ: Type) -> Type:
-        if type(typ) == GroundType:
+        if isinstance(typ, GroundType):
             return typ.map_width(UnknownWidth)
-        elif type(typ) == AggregateType:
+        elif isinstance(typ, AggregateType):
             return typ.map_type(self.strip_width())
 
     def check_highForm_primOp(self, info: Info, mname: str, e: DoPrim):
         def correct_num(ne, nc):
-            if type(ne) == int and len(e.args) != ne:
+            if isinstance(ne, int) and len(e.args) != ne:
                 self.errors.append(IncorrectNumArgsException(info, mname, e.op.serialize(), ne))
             
             if len(e.consts) != nc:
@@ -178,81 +178,80 @@ class CheckHighForm(Pass):
             for _ in [c for c in e.consts if c < 0]:
                 self.errors.append(NegArgException(info, mname, e.op.serialize(), _))
         
-        if type(e.op) in [Add, Sub, Mul, Div, Rem, Lt, Leq, Gt, Geq, Eq, Neq, Dshl, Dshr, And, Or, Xor, Cat]:
+        if isinstance(e.op, (Add, Sub, Mul, Div, Rem, Lt, Leq, Gt, Geq, Eq, Neq, Dshl, Dshr, And, Or, Xor, Cat)):
             correct_num(2, 0)
-        elif type(e.op) in [AsUInt, AsSInt, AsClock, Cvt, Neq, Not]:
+        elif isinstance(e.op, (AsUInt, AsSInt, AsClock, Cvt, Neq, Not)):
             correct_num(1, 0)
-        elif type(e.op) in [AsFixedPoint]:
+        elif isinstance(e.op, AsFixedPoint):
             correct_num(1, 1)
-        elif type(e.op) in [Shl, Shr, Pad, Head, Tail]:
+        elif isinstance(e.op, (Shl, Shr, Pad, Head, Tail)):
             correct_num(1, 1)
             non_negative_consts()
-        elif type(e.op) in [Bits]:
+        elif isinstance(e.op, Bits):
             correct_num(1, 2)
             non_negative_consts()
             if len(e.consts) == 2:
                 msb, lsb = e.consts[0], e.consts[1]
                 if msb > lsb:
                     self.errors.append(LsbLargerThanMsbException(info, mname, e.op.serialize(), lsb, msb))
-        elif type(e.op) in [Andr, Orr, Xorr, Neg]:
+        elif isinstance(e.op, (Andr, Orr, Xorr, Neg)):
             correct_num(1, 0)
     
     def check_valid_loc(self, info: Info, mname: str, e: Expression):
-        if type(e) in [UIntLiteral, SIntLiteral, DoPrim]:
+        if isinstance(e, (UIntLiteral, SIntLiteral, DoPrim)):
             self.errors.append(InvalidLOCException(info, mname))
     
     def check_instance(self, info: Info, child: str, parent: str):
         if child not in self.module_names:
             self.errors.append(ModuleNotDefinedException(info, parent, child))
-        # TODO Check to see if a recursive module instantiation has occured
+        childToParent = ModuleGraph().add(parent, child)
+        if childToParent is not None and len(childToParent) > 0:
+            self.errors.append(InstanceLoop(info, parent, "->".join(childToParent)))
     
     def check_high_form_w(self, info: Info, mname: str, w: Width):
-        if type(w) == IntWidth and w.width < 0:
+        if isinstance(w, IntWidth) and w.width < 0:
             self.errors.append(NegWidthException(info, mname))
     
     def check_high_form_t(self, info: Info, mname: str, typ: Type):
         t_attr = typ.__dict__.items()
         for _, ta in t_attr:
-            if type(ta) == Type:
+            if isinstance(ta, Type):
                 self.check_high_form_t(info, mname, ta)
-            if type(ta) == Width:
+            if isinstance(ta, Width):
                     self.check_high_form_w(info, mname, ta)
         
-        if type(typ) == VectorType and typ.size < 0:
+        if isinstance(typ, VectorType) and typ.size < 0:
             self.errors.append(NegVecSizeException(info, mname))
                 
     def valid_sub_exp(self, info: Info, mname: str, e: Expression):
-        if type(e) in [Reference, SubField, SubIndex, SubAccess]:
-            # TODO
+        if isinstance(e, (Reference, SubField, SubIndex, SubAccess)):
             ...
-        elif type(e) in [Mux, ValidIf]:
-            # TODO
+        elif isinstance(e, (Mux, ValidIf)):
             ...
         else:
             self.errors.append(InvalidAccessException(info, mname))
 
     def check_high_form_e(self, info: Info, mname: str, names: ScopeView, e: Expression):
         e_attr = e.__dict__.items()
-        if type(e) == Reference and names.legal_ref(e.name) is False:
+        if isinstance(e, Reference) and names.legal_ref(e.name) is False:
             self.errors.append(UndecleardReferenceException(info, mname, e.name))
-        elif type(e) == UIntLiteral and e.value < 0:
+        elif isinstance(e, UIntLiteral) and e.value < 0:
             self.errors.append(NegUIntException(info, mname, e.name))
-        elif type(e) == DoPrim:
+        elif isinstance(e, DoPrim):
             self.check_highForm_primOp(info, mname, e)
-        elif type(e) in [Reference, UIntLiteral, Mux, ValidIf]:
-            # TODO
+        elif isinstance(e, (Reference, UIntLiteral, Mux, ValidIf)):
             ...
-        elif type(e) == SubAccess:
+        elif isinstance(e, SubAccess):
             self.valid_sub_exp(info, mname, e.expr)
         else:
             for _, ea in e_attr:
-                if type(ea) == Expression:
+                if isinstance(ea, Expression):
                     self.valid_sub_exp(info, mname, ea)
         
         for _, ea in e_attr:
-            if type(ea) == Width:
+            if isinstance(ea, Width):
                 self.check_high_form_w(info, mname + '/' + e.serialize(), ea)
-            if type(ea) == Expression:
+            if isinstance(ea, Expression):
                 self.check_high_form_e(info, mname, names, ea)
     
     def check_name(self, info: Info, mname: str, names: ScopeView, referenced: bool, s: Statement):
@@ -271,35 +270,36 @@ class CheckHighForm(Pass):
     def check_high_form_s(self, minfo: Info, mname: str, names: ScopeView, s: Statement):
         s_attr = s.__dict__.items()
         t_info = get_info(s)
-        info = t_info if type(t_info) != NoInfo else minfo
-        referenced = True if type(s) in [DefWire, DefRegister, DefInstance, DefMemory, DefNode, Port] else False
+        info = t_info if isinstance(t_info, NoInfo) is False else minfo
+        referenced = True if isinstance(s, (DefWire, DefRegister, DefInstance, DefMemory, DefNode, Port)) else False
         self.check_name(info, mname, names, referenced, s)
-        if type(s) == DefRegister:
+        if isinstance(s, DefRegister):
             if has_flip(s.typ):
                 self.errors.append(RegWithFlipException(info, mname, s.name))
-        elif type(s) == DefMemory:
-            # TODO check readLatency | writeLatency | flip | depth
+        elif isinstance(s, DefMemory):
+            if has_flip(s.memType.typ):
+                self.errors.append(MemWithFlipException(info, mname, s.name))
             if s.memType.size < 0:
                 self.errors.append(NegMemSizeException(info, mname))
-        elif type(s) == DefInstance:
+        elif isinstance(s, DefInstance):
             self.check_instance(info, mname, s.module)
-        elif type(s) == Connect:
+        elif isinstance(s, Connect):
             self.check_valid_loc(info, mname, s.loc)
         else:
             ...
 
         for _, sa in s_attr:
-            if type(sa) == Type:
+            if isinstance(sa, Type):
                 self.check_high_form_t(info, mname, sa)
-            elif type(sa) == Expression:
-                self.check_high_form_e(info, mname, names. sa)
+            elif isinstance(sa, Expression):
+                self.check_high_form_e(info, mname, names, sa)
 
-        if type(s) == Conditionally:
+        if isinstance(s, Conditionally):
             self.check_high_form_s(minfo, mname, names.child_scope(), s.conseq)
             self.check_high_form_s(minfo, mname, names.child_scope(), s.alt)
         else:
             for _, sa in s_attr:
-                if type(sa) == Statement:
+                if isinstance(sa, Statement):
                     self.check_high_form_s(minfo, mname, names, sa)
 
 
@@ -315,31 +315,36 @@ class CheckHighForm(Pass):
         bad = to_flow(dir)
         gen = ((create_exps(ref), p1) for (ref, p1) in [(Reference(p.name, p.typ), p) for p in m.ports])
         for expr, port in gen:
-            if expr is not None and expr.typ == ResetType and flow(expr) == bad:
-                bad_reset_type_ports.append((port, expr))
+            if isinstance(expr, list):
+                for exx in expr:
+                    if exx is not None and exx.typ == ResetType and flow(exx) == bad:
+                        bad_reset_type_ports.append((port, exx))
+            else:
+                if expr is not None and expr.typ == ResetType and flow(expr) == bad:
+                    bad_reset_type_ports.append((port, expr))
+            
         
         return bad_reset_type_ports
     
     def check_high_form_m(self, m: DefModule):
         names = scope_view()
-        if hasattr(m, 'ports') and type(m.ports) == list:
+        if hasattr(m, 'ports') and isinstance(m.ports, list):
             for p in m.ports:
                 self.check_high_form_p(m.name, names, p)
         
-        if hasattr(m, 'body') and type(m.body) == Block:
-            if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+        if hasattr(m, 'body') and isinstance(m.body, Block):
+            if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                 for s in m.body.stmts:
                     self.check_high_form_s(m.info, m.name, names, s)
         
-        if type(m) == Module:
-            # TODO
+        if isinstance(m, Module):
             ...
-        elif type(m) == ExtModule:
+        elif isinstance(m, ExtModule):
             for port, expr in self.find_bad_reset_type_ports(m, Output):
                 self.errors.append(ResetExtModuleOutputException(port.info, m.name, expr))
 
     def run(self):
-        if hasattr(self.c, 'modules') and type(self.c.modules) == list:
+        if hasattr(self.c, 'modules') and isinstance(self.c.modules, list):
             for m in self.c.modules:
                 self.check_high_form_m(m)                    
         

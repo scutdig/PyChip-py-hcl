@@ -12,53 +12,53 @@ class InferTypes(Pass):
             mtyps[m.name] = module_type(m)
 
         def infer_types_e(typs: Dict[str, Type], e: Expression) -> Expression:
-            if type(e) == Expression:
+            if isinstance(e, Expression):
                 return infer_types_e(typs, e)
-            elif type(e) == Reference:
+            elif isinstance(e, Reference):
                 return Reference(e.name, get_or_else(e.name in typs.keys(), typs[e.name], UnknownType))
-            elif type(e) == SubField:
+            elif isinstance(e, SubField):
                 return SubField(e.expr, e.name, field_type(e.expr.typ, e.name))
-            elif type(e) == SubIndex:
+            elif isinstance(e, SubIndex):
                 return SubIndex(e.name, e.expr, e.value, sub_type(e.expr.typ))
-            elif type(e) == SubAccess:
+            elif isinstance(e, SubAccess):
                 return SubAccess(e.expr, e.index, sub_type(e.expr.typ))
-            elif type(e) == DoPrim:
+            elif isinstance(e, DoPrim):
                 return DoPrim(e.op, e.args, e.consts, UnknownType())
-            elif type(e) == Mux:
+            elif isinstance(e, Mux):
                 return Mux(e.cond, e.tval, e.fval, mux_type(e.tval, e.fval))
-            elif type(e) == ValidIf:
+            elif isinstance(e, ValidIf):
                 return ValidIf(e.cond, e.value, e.value.typ)
             else:
                 return e
         
         def infer_types_s(typs: Dict[str, Type], s: Statement) -> Statement:
-            if type(s) == DefRegister:
+            if isinstance(s, DefRegister):
                 typs[s.name] = s.typ
                 for _, e in s.__dict__.items():
-                    if type(e) == Expression:
+                    if isinstance(e, Expression):
                         s[_] = infer_types_e(typs, e)
                 return s
-            elif type(s) == DefWire:
+            elif isinstance(s, DefWire):
                 typs[s.name] = s.typ
                 return s
-            elif type(s) == DefNode:
+            elif isinstance(s, DefNode):
                 for _, e in s.__dict__.items():
-                    if type(e) == Expression:
+                    if isinstance(e, Expression):
                         s[_] = infer_types_e(typs, e)
                 typs[s.name] = s.value.typ
                 return s
-            elif type(s) == DefMemory:
+            elif isinstance(s, DefMemory):
                 typs[s.name] = DefMemPort(s.name, _, _, _, _, NoInfo())
                 return s
-            elif type(s) == DefInstance:
+            elif isinstance(s, DefInstance):
                 typs[s.name] = mtyps[s.name]
                 return s
             else:
                 s_attr = s.__dict__.items()
                 for _, sa in s_attr:
-                    if type(sa) == Statement:
+                    if isinstance(sa, Statement):
                         s[_] = infer_types_s(typs, sa)
-                    if type(sa) == Expression:
+                    if isinstance(sa, Expression):
                         s[_] = infer_types_e(typs, sa)
                 return s
 
@@ -69,12 +69,12 @@ class InferTypes(Pass):
         
         def infer_types(m: DefModule) -> DefModule:
             types = Dict[str, Type]
-            if hasattr(m, 'ports') and type(m.ports) == list:
+            if hasattr(m, 'ports') and isinstance(m.ports, list):
                 for p in m.ports:
                     infer_types_p(types, p)
             
-            if hasattr(m, 'body') and type(m.body) == Block:
-                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+            if hasattr(m, 'body') and isinstance(m.body, Block):
+                if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                     for s in m.body.stmts:
                         infer_types_s(types, s)
         
