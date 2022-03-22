@@ -42,12 +42,16 @@ class Simlite(object):
         with open(f"./simulation/{self.dut_name}-harness.cpp", "w+") as f:
             f.write(harness_code)
 
+        # 调用FIRRTL工具链
         with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
             f.write(self.low_module.serialize())
 
-        # 调用FIRRTL工具链
         os.system(
             f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
+        
+        # 调用PyHCL编译链
+        # with open(f"./simulation/{self.dut_name}.v", "w+") as f:
+        #     f.write(self.low_module.verilog_serialize())
 
         vfn = "{}.v".format(self.dut_name)
         hfn = "{}-harness.cpp".format(self.dut_name)
@@ -110,6 +114,7 @@ class Simlite(object):
         self.p.stdout.flush()
         self.raw_res = str(line,encoding="utf-8").strip()
         strs = self.raw_res.split(" ")
+        strs = [sx for sx in strs if sx != '']
         res = [int(x) for x in strs]
         self.results = res
 

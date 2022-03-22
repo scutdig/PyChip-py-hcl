@@ -538,9 +538,13 @@ class DefInstance(Statement):
 
     def verilog_serialize(self) -> str:
         instdeclares = ''
-        for p in self.ports:
-            instdeclares += f'\n.{p.name}({self.name}_{p.name}),'
-        return f'{self.module} {self.name} ({instdeclares}\n);'
+        portdeclares = ''
+        ports = InstanceManager._getInstancePorts(self.module)
+        for p in ports:
+            portdeclares += f'wire\t{p.typ.verilog_serialize()}\t{self.name}_{p.name};\n'
+            instdeclares += indent(f'\n.{p.name}({self.name}_{p.name}),')
+        return f'{portdeclares}{self.module} {self.name} ({instdeclares[:-1]}\n);'
+
 
 
 # @dataclass(frozen=True)
@@ -743,6 +747,8 @@ class PassManager:
             elif type(stmt) == Conditionally:
                 stmt.conseq = self.stmts_pass(stmt.conseq, stmt.pred.verilog_serialize())
                 stmt.alt = self.stmts_pass(stmt.alt, "!" + stmt.pred.verilog_serialize())
+            elif type(stmt) == DefInstance:
+                ...
             else:
                 pass
         stmts = [stmt for stmt in block.stmts if self.pass_check(stmt)]
@@ -921,7 +927,8 @@ class ExtModule(DefModule):
         return f'{self.serializeHeader("extmodule")}{s}'
 
     def verilog_serialize(self) -> str:
-        return f'{self.verilog_serializeHeader("module")}endmodule\n'
+        # return f'{self.verilog_serializeHeader("module")}endmodule\n'
+        return ''
 
 
 @dataclass(frozen=True)
@@ -935,5 +942,22 @@ class Circuit(FirrtlNode):
         return f'circuit {self.main} :{self.info.serialize()}{ms}\n'
 
     def verilog_serialize(self) -> str:
+        InstanceManager(self)
         ms = ''.join([f'{m.verilog_serialize()}\n' for m in self.modules])
         return ms
+
+class InstanceManager:
+    _extModules: Dict[str, DefModule] = {}
+
+    def __init__(self, c: Circuit):
+        self._c = c
+        self._dealExtModules()
+
+    def _dealExtModules(self):
+        for m in self._c.modules:
+            if isinstance(m, ExtModule):
+                InstanceManager._extModules[m.name] = m
+    
+    @staticmethod
+    def _getInstancePorts(name):
+        return InstanceManager._extModules[name].ports
