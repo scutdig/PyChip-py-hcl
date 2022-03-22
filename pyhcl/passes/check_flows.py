@@ -50,6 +50,7 @@ class CheckFlow(Pass):
                 # TODO check PortKind or InstanceKind
                 ...
             else:
+                # TODO
                 ...
         
         def check_flow_e(info: Info, mname: str, flows: Dict[str, Flow], e: Expression):
@@ -85,6 +86,7 @@ class CheckFlow(Pass):
             elif type(s) == Conditionally:
                 check_flow(info, mname, flows, SourceFlow(), s.pred)
             else:
+                # TODO
                 ...
             
             for _, ss in s.__dict__.items():
@@ -95,15 +97,14 @@ class CheckFlow(Pass):
         
         for m in c.modules:
             flows: Dict[str, Flow] = {}
-            for mk, ma in m.__dict__.items():
-                if mk == 'ports' and type(ma) == list:
-                    for p in m.ports:
-                        flows[p.name] = to_flow(p.direction)
-                if mk == 'body' and type(ma) == Block:
-                    for bk, ba in ma.__dict__.items():
-                        if type(ba) == list and bk == 'stmts':
-                            for stmt in m.body.stmts:
-                                check_flow_s(m.info, m.name, flows, stmt)
+            if hasattr(m, 'ports') and type(m.ports) == list:
+                for p in m.ports:
+                    flows[p.name] = to_flow(p.direction)
+        
+            if hasattr(m, 'body') and type(m.body) == Block:
+                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+                    for stmt in m.body.stmts:
+                        check_flow_s(m.info, m.name, flows, stmt)
         
         errors.trigger()
         return c

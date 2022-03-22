@@ -166,7 +166,8 @@ class CheckTypes(Pass):
             return False
     
     def valid_connect(self, locTyp: Type, exprTyp: Type) -> bool:
-            ...
+        # TODO
+        ...
 
     def valid_connects(self, c: Connect) -> bool:
         return self.valid_connect(c.loc.typ, c.expr.typ)
@@ -200,6 +201,7 @@ class CheckTypes(Pass):
                         errors.append(OpNotCorrectType(info, mname, e.op.serialize(), [expr.typ.serialize() for expr in exprs]))
                 
                 if type(e.op) in [AsUInt, AsSInt, AsClock, AsyncResetType]:
+                    # TODO
                     ...
                 elif type(e.op) in [Dshl, Dshr]:
                     check_all_typs(list(e.args[0]), True, True, False, False)
@@ -227,10 +229,12 @@ class CheckTypes(Pass):
                 if passive(e.typ) is False:
                     errors.append(ValidIfPassiveTypes(info, mname))
                 if type(e.cond.typ) == UIntType:
+                    # TODO
                     ...
                 else:
                     errors.append(ValidIfCondUInt(info, mname))
             else:
+                # TODO
                 ...
             
             for _, ee in e.__dict__.items():
@@ -264,8 +268,10 @@ class CheckTypes(Pass):
                 if passive(s.value.typ) is False:
                     errors.append(NodePassiveType(get_info(s), mname))
             elif type(s) == DefMemory:
+                # TODO
                 ...
             else:
+                # TODO
                 ...
             
             for _, ss in s.__dict__.items():
@@ -275,12 +281,10 @@ class CheckTypes(Pass):
                     check_types_e(get_info(s), mname, ss)
         
         for m in c.modules:
-            for mk, ma in m.__dict__.items():
-                if type(ma) == Block and mk == 'body':
-                    for bk, ba in ma.__dict__.items():
-                        if type(ba) == list and bk == 'stmts':
-                            for s in m.body.stmts:
-                                check_types_s(m.info, m.name, s)
+            if hasattr(m, 'body') and type(m.body) == Block:
+                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+                    for s in m.body.stmts:
+                        check_types_s(m.info, m.name, s)
         
         errors.trigger()
         return c

@@ -147,10 +147,13 @@ class CheckWidths(Pass):
             if type(s) == DefRegister:
                 sx = s.reset.typ
                 if type(sx) == UIntType and get_width(sx) == 1:
+                    # TODO
                     ...
                 elif type(sx) == AsyncResetType:
+                    # TODO
                     ...
                 elif type(sx) == ResetType:
+                    #TODO
                     ...
                 else:
                     errors.append(IllegalResetType(info, target, s.name))
@@ -164,12 +167,13 @@ class CheckWidths(Pass):
             check_width_t(p.info, target, p.typ)
         
         def check_width_m(target: str, m: DefModule):
-            for mk, ma in m.__dict__.items():
-                if type(ma) == List[Port] and mk == 'ports':
-                    for p in ma:
-                        check_width_p(m.info, gen_target(target, m.name), p)
-                if type(ma) == Block and mk == 'body':
-                    for s in ma.stmts:
+            if hasattr(m, 'ports') and type(m.ports) == list:
+                for p in m.ports:
+                    check_width_p(m.info, gen_target(target, m.name), p)
+        
+            if hasattr(m, 'body') and type(m.body) == Block:
+                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+                    for s in m.body.stmts:
                         check_width_s(m.info, gen_target(target, m.name), s)
         
         for m in c.modules:

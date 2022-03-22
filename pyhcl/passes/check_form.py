@@ -209,8 +209,6 @@ class CheckHighForm(Pass):
     def check_high_form_w(self, info: Info, mname: str, w: Width):
         if type(w) == IntWidth and w.width < 0:
             self.errors.append(NegWidthException(info, mname))
-        else:
-            ...
     
     def check_high_form_t(self, info: Info, mname: str, typ: Type):
         t_attr = typ.__dict__.items()
@@ -225,8 +223,10 @@ class CheckHighForm(Pass):
                 
     def valid_sub_exp(self, info: Info, mname: str, e: Expression):
         if type(e) in [Reference, SubField, SubIndex, SubAccess]:
+            # TODO
             ...
         elif type(e) in [Mux, ValidIf]:
+            # TODO
             ...
         else:
             self.errors.append(InvalidAccessException(info, mname))
@@ -240,6 +240,7 @@ class CheckHighForm(Pass):
         elif type(e) == DoPrim:
             self.check_highForm_primOp(info, mname, e)
         elif type(e) in [Reference, UIntLiteral, Mux, ValidIf]:
+            # TODO
             ...
         elif type(e) == SubAccess:
             self.valid_sub_exp(info, mname, e.expr)
@@ -320,33 +321,27 @@ class CheckHighForm(Pass):
         return bad_reset_type_ports
     
     def check_high_form_m(self, m: DefModule):
-        m_attr = m.__dict__.items()
         names = scope_view()
-        for mk, ma in m_attr:
-            # check [Port]
-            if type(ma) == list:
-                for p in ma:
-                    self.check_high_form_p(m.name, names, p)
-    
-            # check Block([Statement])
-            if type(ma) == Block and mk == 'body':
-                for bk, ba in ma.__dict__.items():
-                    if type(ba) == list and bk == 'stmts':
-                        for s in m.body.stmts:
-                            self.check_high_form_s(m.info, m.name, names, s)
+        if hasattr(m, 'ports') and type(m.ports) == list:
+            for p in m.ports:
+                self.check_high_form_p(m.name, names, p)
+        
+        if hasattr(m, 'body') and type(m.body) == Block:
+            if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+                for s in m.body.stmts:
+                    self.check_high_form_s(m.info, m.name, names, s)
         
         if type(m) == Module:
+            # TODO
             ...
         elif type(m) == ExtModule:
             for port, expr in self.find_bad_reset_type_ports(m, Output):
                 self.errors.append(ResetExtModuleOutputException(port.info, m.name, expr))
 
     def run(self):
-        c_attr = self.c.__dict__.items()
-        for ck, ca in c_attr:
-            if type(ca) == list and ck == 'modules':
-                for m in self.c.modules:
-                    self.check_high_form_m(m)
+        if hasattr(self.c, 'modules') and type(self.c.modules) == list:
+            for m in self.c.modules:
+                self.check_high_form_m(m)                    
         
         self.errors.trigger()
         return self.c

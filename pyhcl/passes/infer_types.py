@@ -69,13 +69,13 @@ class InferTypes(Pass):
         
         def infer_types(m: DefModule) -> DefModule:
             types = Dict[str, Type]
-            m_attr = m.__dict__.items()
-            for mk, ma in m_attr:
-                if mk == 'ports':
-                    for p in ma:
-                        infer_types_p(types, p)
-                if mk == 'body':
-                    for s in ma.stmt:
+            if hasattr(m, 'ports') and type(m.ports) == list:
+                for p in m.ports:
+                    infer_types_p(types, p)
+            
+            if hasattr(m, 'body') and type(m.body) == Block:
+                if hasattr(m.body, 'stmts') and type(m.body.stmts) == list:
+                    for s in m.body.stmts:
                         infer_types_s(types, s)
         
         return Circuit(list(map(lambda m: infer_types(m), c.modules)), c.main, c.info)
