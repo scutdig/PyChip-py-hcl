@@ -14,7 +14,7 @@ class CheckFlow(Pass):
         errors = Error()
 
         def get_flow(e: Expression, flows: Dict[str, Flow]) -> Flow:
-            if isinstance(e, Reference):
+            if isinstance(e, (DefWire, DefRegister, DefNode, Port, DefMemory, DefInstance)):
                 return flows[e.name]
             elif isinstance(e, SubIndex):
                 return get_flow(e.expr, flows)
@@ -25,6 +25,8 @@ class CheckFlow(Pass):
                     for f in e.expr.typ.fields:
                         if f.name == e.name:
                             return times_g_flip(get_flow(e.expr, flows), f.flip)
+            elif isinstance(e, Reference):
+                return SinkFlow()
             
             return SourceFlow()
             
@@ -47,7 +49,7 @@ class CheckFlow(Pass):
             if isinstance(flow, SourceFlow) and isinstance(desired, SinkFlow):
                 errors.append(WrongFlow(info, mname, e.serialize(), desired, flow))
             elif isinstance(flow, SinkFlow) and isinstance(desired, SourceFlow):
-                # TODO check PortKind or InstanceKind, but never implement.
+                # TODO: check PortKind or InstanceKind, but never implement.
                 ...
             else:
                 ...
@@ -58,7 +60,7 @@ class CheckFlow(Pass):
                     if isinstance(ee, Expression):
                         check_flow(info, mname, flows, SourceFlow(), ee)
             if isinstance(e, DoPrim):
-                for _, ee in e.args.__dict__.items():
+                for ee in e.args:
                     if isinstance(ee, Expression):
                         check_flow(info, mname, flows, SourceFlow(), ee)
             
@@ -67,7 +69,7 @@ class CheckFlow(Pass):
                         check_flow_e(info, mname, flows, ee)
         
         def check_flow_s(minfo: Info, mname: str, flows: Dict[str, Flow], s: Statement):
-            info = lambda s: minfo if isinstance(s, NoInfo) else s
+            info = lambda s: minfo if isinstance(s, NoInfo) else s.info
             if isinstance(s, DefWire):
                 flows[s.name] = DuplexFlow()
             elif isinstance(s, DefRegister):
@@ -77,15 +79,15 @@ class CheckFlow(Pass):
             elif isinstance(s, DefInstance):
                 flows[s.name] = SourceFlow()
             elif isinstance(s, DefNode):
-                check_flow(info, mname, flows, SourceFlow(), s)
+                check_flow(info, mname, flows, SourceFlow(), s.value)
                 flows[s.name] = SourceFlow()
             elif isinstance(s, Connect):
                 check_flow(info, mname, flows, SinkFlow(), s.loc)
                 check_flow(info, mname, flows, SourceFlow(), s.expr)
+                ...
             elif isinstance(s, Conditionally):
                 check_flow(info, mname, flows, SourceFlow(), s.pred)
             else:
-                # TODO
                 ...
             
             for _, ss in s.__dict__.items():

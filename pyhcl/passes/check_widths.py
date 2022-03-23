@@ -145,20 +145,19 @@ class CheckWidths(Pass):
                     check_width_t(info, target, ss)
                 
             if isinstance(s, DefRegister):
-                sx = s.reset.typ
-                if isinstance(sx, UIntType) and get_width(sx) == 1:
-                    # TODO
+                sx = s.reset.typ if isinstance(s.reset, Expression) else None
+                if sx is None:
+                    ...
+                elif isinstance(sx, UIntType) and get_width(sx) == 1:
                     ...
                 elif isinstance(sx, AsyncResetType):
-                    # TODO
                     ...
                 elif isinstance(sx, ResetType):
-                    #TODO
                     ...
                 else:
                     errors.append(IllegalResetType(info, target, s.name))
                 
-                if CheckTypes.valid_connect(s.typ, s.init.typ) is False:
+                if isinstance(s.init, Expression) and CheckTypes.valid_connect(s.typ, s.init.typ) is False:
                     con_msg = DefRegister(s.name, s.typ, s.clock, s.reset, s.init, NoInfo())
                     # TODO WRef class
                     errors.append(InvalidConnect(info, target, con_msg, _, s.init))

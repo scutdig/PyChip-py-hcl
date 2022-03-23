@@ -104,6 +104,7 @@ class Simlite(object):
         print("\n\n--------------------------sim result---------------------------")
 
 
+    # TODO: pipe's output is empty.
     def step(self, inputs):
         inputs = [str(x) for x in inputs]
         self.raw_in = " ".join(inputs)

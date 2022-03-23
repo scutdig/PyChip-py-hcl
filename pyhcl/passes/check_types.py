@@ -250,13 +250,13 @@ class CheckTypes(Pass):
                 con_msg = Connect(s.loc, s.expr, NoInfo()).serialize()
                 errors.append(InvalidConnect(get_info(s), mname, con_msg, s.loc, s.expr))
             elif isinstance(s, DefRegister):
-                if WrappedType(s.typ) != WrappedType(s.init.typ):
+                if isinstance(s.init, Expression) and WrappedType(s.typ) != WrappedType(s.init.typ):
                     errors.append(InvalidRegInit(get_info(s), mname))
-                if self.valid_connect(s.typ, s.init.typ) is False:
+                if isinstance(s.init, Expression) and self.valid_connect(s.typ, s.init.typ) is False:
                     con_msg = Connect(s.loc, s.expr, NoInfo()).serialize()
                     errors.append(InvalidConnect(get_info(s), mname, con_msg, Reference(s.name, s.typ), s.init))
                 
-                if self.legal_reset_type(s.reset.typ) is False:
+                if isinstance(s.init, Expression) and self.legal_reset_type(s.reset.typ) is False:
                     errors.append(IllegalResetType(get_info(s), mname, s.name))
                 if isinstance(s.clock.typ, UIntType) is False or isinstance(s.clock.typ.width, IntWidth) is False or s.clock.typ.width.width != 1:
                     errors.append(RegReqClk(get_info(s), mname, s.name))

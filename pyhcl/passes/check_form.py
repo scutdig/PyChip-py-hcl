@@ -21,9 +21,18 @@ class ScopeView:
         self.moduleNS.add(name)
 
     def expand_m_port_visibility(self, port: DefMemPort):
-        # Legacy CHIRRTL ports are visible in any scope where their parent memory is visible
-        # TODO
-        ...
+        mem_in_scopes = False
+        def expand_m_port(scope: set, mp: DefMemPort):
+            if mp.mem.name in scope:
+                scope.add(mp.name)
+            return scope
+        self.scopes = list(map(lambda scope: expand_m_port(scope, port), self.scopes))
+        for sx in self.scopes:
+            if port.mem.name in sx:
+                mem_in_scopes = True
+        if mem_in_scopes is False:
+            self.scopes[0].add(port.name)
+
     
     def legal_decl(self, name: str) -> bool:
         return name in self.moduleNS
@@ -285,6 +294,9 @@ class CheckHighForm(Pass):
             self.check_instance(info, mname, s.module)
         elif isinstance(s, Connect):
             self.check_valid_loc(info, mname, s.loc)
+        elif isinstance(s, DefMemPort):
+            names.expand_m_port_visibility(s)
+            ...
         else:
             ...
 
