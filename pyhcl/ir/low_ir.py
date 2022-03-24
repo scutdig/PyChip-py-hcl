@@ -122,7 +122,62 @@ class SubAccess(Expression):
         return f"{self.expr.serialize()}[{self.index.serialize()}]"
 
     def verilog_serialize(self) -> str:
-        return f"{self.expr.verilog_serialize()}[{self.index.verilog_serialize()}]"
+        sub_access_declares: List[str] = []
+
+        def auto_gen_name(endwith: int):
+            if endwith < 0:
+                endwith = 0
+            return f'_GEN_{endwith}'
+        
+        def gen_sub_access(s: str, i: str) -> str:
+            return f'{auto_gen_name(i)} = {s} : '
+
+        def verilog_serializes(e: Expression) -> tuple[List[str], List[str]]:
+            conds_rec: List[str] = []
+            conds: List[str] = []
+            vecs_rec: List[str] = []
+            vecs: List[str] = []
+            cond_declares: List[str] = []
+            vec_declares: List[str] = []
+            if type(e.expr) == SubAccess:
+                conds_rec, vecs_rec = verilog_serializes(e.expr)
+            if type(e.expr.typ) == VectorType:
+                typ_size = e.expr.typ.size
+                for i in range(typ_size):
+                    cond = f'{e.index.verilog_serialize()} == {UIntLiteral(i, IntWidth(get_binary_width(typ_size - 1))).verilog_serialize()}'
+                    conds.append(cond)
+                    vecs.append(f'{e.expr.name}_{i}') if hasattr(e.expr, 'name') else vecs.append(f'_{i}')
+
+            for c in conds:
+                if len(conds_rec) > 0:
+                    for cr in conds_rec:
+                        cond_declares.append(f'{cr} & {c}')
+                else:
+                    cond_declares.append(c)
+            
+            for v in vecs:
+                if len(vecs_rec) > 0:
+                    for vr in vecs_rec:
+                        vec_declares.append(f'{vr}{v}')
+                else:
+                    vec_declares.append(v)
+
+            return cond_declares, vec_declares
+
+        cond_declares, vec_declares = verilog_serializes(self)
+        declares = list(zip(cond_declares, vec_declares))
+
+        for i in range(len(declares)):
+            cond, vec = declares[i]
+            sub_access_declare = f'{cond} ? {vec}'
+            gsa = gen_sub_access(sub_access_declare, i)
+            
+            if i == len(declares) - 1:
+                sub_access_declares.append(f'{sub_access_declare}{auto_gen_name(i-1)}')
+            else:
+                sub_access_declares.append(f'wire {self.typ.verilog_serialize()} {gsa}{auto_gen_name(i-1)}')
+        
+        return '\n'.join(sub_access_declares)
 
 
 @dataclass(frozen=True)
@@ -499,7 +554,7 @@ class DefWire(Statement):
         return f'wire {self.name} : {self.typ.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        if type(self.typ) in [VectorType]:
+        if type(self.typ) ==  VectorType:
             wire_declares = ''
             for i in self.typ.verilog_serialize():
                 name = i.replace('$$', self.name)
@@ -598,7 +653,7 @@ class DefNode(Statement):
         return f'node {self.name} = {self.value.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        if type(self.value.typ) in [VectorType]:
+        if type(self.value.typ) == VectorType:
             node_declares = ''
             for i in self.value.typ.verilog_serialize():
                 value = ''
@@ -828,8 +883,17 @@ class Connect(Statement):
                    f'{self.info.serialize()}\n{self.expr.serialize()} <= {self.loc.serialize()}'
 
     def verilog_serialize(self) -> str:
- 
         op = "=" if self.blocking else "<="
+        if type(self.expr) == SubAccess:
+            connect_declares = ''
+            sub_access_list = self.expr.verilog_serialize().split('\n')
+            for i in range(len(sub_access_list)):
+                if i == len(sub_access_list) - 1:
+                    connect_declares += f'\nassign {self.loc.verilog_serialize()} {op} {sub_access_list[i]};'
+                else:
+                    connect_declares += f'\n{sub_access_list[i]};'
+            return connect_declares
+
         for attr, memport in self.mem.items():
             if attr == 'loc':
                 return f'assign {memport.mem.name}_{self.loc.verilog_serialize()}_data' + \
