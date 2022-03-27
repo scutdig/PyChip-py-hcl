@@ -166,12 +166,13 @@ class CheckTypes(Pass):
         else:
             return False
     
-    def valid_connect(self, locTyp: Type, exprTyp: Type) -> bool:
+    @staticmethod
+    def valid_connect(locTyp: Type, exprTyp: Type) -> bool:
         # TODO
         return True
 
     def valid_connects(self, c: Connect) -> bool:
-        return self.valid_connect(c.loc.typ, c.expr.typ)
+        return CheckTypes.valid_connect(c.loc.typ, c.expr.typ)
     
     def run(self, c: Circuit):
         errors = Error()
@@ -252,7 +253,7 @@ class CheckTypes(Pass):
             elif isinstance(s, DefRegister):
                 if isinstance(s.init, Expression) and WrappedType(s.typ) != WrappedType(s.init.typ):
                     errors.append(InvalidRegInit(get_info(s), mname))
-                if isinstance(s.init, Expression) and self.valid_connect(s.typ, s.init.typ) is False:
+                if isinstance(s.init, Expression) and CheckTypes.valid_connect(s.typ, s.init.typ) is False:
                     con_msg = Connect(s.loc, s.expr, NoInfo()).serialize()
                     errors.append(InvalidConnect(get_info(s), mname, con_msg, Reference(s.name, s.typ), s.init))
                 

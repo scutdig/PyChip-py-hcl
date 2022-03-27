@@ -654,17 +654,7 @@ class DefNode(Statement):
 
     def verilog_serialize(self) -> str:
         if type(self.value.typ) == VectorType:
-            node_declares = ''
-            for i in self.value.typ.verilog_serialize():
-                value = ''
-                name = i.replace('$$', self.name)
-                if type(self.value) == Mux:
-                    i = i[i.find("\t") + 1:]
-                    value = self.value.verilog_serialize(i.replace('$$', ""))
-                else:
-                    value = self.value.verilog_serialize()
-                node_declares += f'wire {name} = {value}{self.info.verilog_serialize()};\n'
-            return node_declares
+           return ''
         return f'wire {self.value.typ.verilog_serialize()} {self.name} = {self.value.verilog_serialize()}{self.info.verilog_serialize()};'
 
 
@@ -858,11 +848,53 @@ class Block(Statement):
         return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
-        manager = PassManager(self)
+        node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+        new_stmts = []
+
+        def get_expr_name(e: Expression):
+            if type(e) in [SubIndex, SubAccess, SubField]:
+                return get_expr_name(e.expr)
+            elif type(e) == Reference:
+                return e.name
+            else:
+                ...
+        
+        def gen_sub(e: Expression, target_name: str):
+            if type(e) == SubIndex:
+                return SubIndex(e.name, gen_sub(e.expr, target_name), e.value, e.typ)
+            elif type(e) == SubAccess:
+                return SubAccess(gen_sub(e.expr, target_name), e.index, e.typ)
+            elif type(e) == SubField:
+                return SubField(gen_sub(e.expr, target_name), e.name, e.typ)
+            else:
+                return Reference(target_name, e.typ)
+        
+        def gen_expr(node: Expression, expr: Expression):
+            # TODO: More types of node should be replaced.
+            if type(node) == Mux:
+                return Mux(node.cond, gen_sub(expr, node.tval.name), gen_sub(expr, node.fval.name), node.typ)
+            else:
+                return node
+
+        def replace_node(s: Statement):
+            en = get_expr_name(s.expr)
+            if en in node_exp_map.keys():
+                node = node_exp_map[en]
+                new_stmts.append(Connect(s.loc, gen_expr(node.value, s.expr), s.info))
+            else:
+                new_stmts.append(s)
+                
+        for stmt in self.stmts:
+            if type(stmt) == Connect:
+                replace_node(stmt)
+            else:
+                new_stmts.append(stmt)
+
+        manager = PassManager(Block(new_stmts))
         new_blocks = manager.renew()
         always_blocks = manager.gen_all_always_block()
 
-        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if self.stmts else ""
+        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_stmts else ""
 
 
 # pass will change the  "blocking" feature of Connect Stmt
