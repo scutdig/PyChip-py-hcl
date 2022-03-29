@@ -1,8 +1,8 @@
 import math
 
+from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.passes.wir import DuplexFlow, Flow, SinkFlow, SourceFlow, UnknownFlow
-from typing import List
 from pyhcl.passes._pass import PassException
 
 # CheckForm utils

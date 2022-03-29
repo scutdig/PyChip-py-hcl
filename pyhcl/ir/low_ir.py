@@ -6,9 +6,7 @@ from typing import Dict, List, Optional
 
 from pyhcl.ir.low_node import FirrtlNode
 from pyhcl.ir.low_prim import PrimOp, Bits
-from pyhcl.ir.utils import backspace, indent, deleblankline, backspace1, get_binary_width
-
-
+from pyhcl.ir.utils import backspace, indent, deleblankline, backspace1, get_binary_width, TransformException, DAG
 class Info(FirrtlNode, ABC):
     """INFOs"""
     def serialize(self) -> str:
@@ -893,6 +891,7 @@ class Block(Statement):
         manager = PassManager(Block(new_stmts))
         new_blocks = manager.renew()
         always_blocks = manager.gen_all_always_block()
+        CheckCombLoop.run(new_stmts)
 
         return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_stmts else ""
 
@@ -1038,9 +1037,13 @@ class Circuit(FirrtlNode):
         return f'circuit {self.main} :{self.info.serialize()}{ms}\n'
 
     def verilog_serialize(self) -> str:
-        InstanceManager(self)
+        self.requires()
         ms = ''.join([f'{m.verilog_serialize()}\n' for m in self.modules])
         return ms
+    
+    def requires(self):
+        InstanceManager(self)
+        CheckCombLoop()
 
 class InstanceManager:
     _extModules: Dict[str, DefModule] = {}
@@ -1057,3 +1060,32 @@ class InstanceManager:
     @staticmethod
     def _getInstancePorts(name):
         return InstanceManager._extModules[name].ports
+
+class CheckCombLoop:
+    connect_graph = DAG()
+
+    @staticmethod
+    def run(stmts: List[Statement]):
+        types = [SubIndex, SubField, SubAccess, Mux, Reference]
+        def check_comb_loop_s(s: Statement):
+            if type(s) == Connect:
+                if type(s.loc) in types:
+                    try:
+                        CheckCombLoop.connect_graph.add_node_if_not_exists(s.loc.serialize())
+                    except TransformException as e:
+                        raise e
+                if type(s.expr) in types:
+                    try:
+                        CheckCombLoop.connect_graph.add_node_if_not_exists(s.expr.serialize())
+                    except TransformException as e:
+                        raise e
+                if type(s.loc) in types and type(s.expr) in types:
+                    try:
+                        CheckCombLoop.connect_graph.add_edge(s.expr.serialize(), s.loc.serialize())
+                    except TransformException as e:
+                        raise e
+        
+        for stmt in stmts:
+            check_comb_loop_s(stmt)
+
+        return stmts

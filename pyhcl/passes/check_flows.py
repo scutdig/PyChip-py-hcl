@@ -14,7 +14,7 @@ class CheckFlow(Pass):
         errors = Error()
 
         def get_flow(e: Expression, flows: Dict[str, Flow]) -> Flow:
-            if isinstance(e, (DefWire, DefRegister, DefNode, Port, DefMemory, DefInstance)):
+            if isinstance(e, Reference):
                 return flows[e.name]
             elif isinstance(e, SubIndex):
                 return get_flow(e.expr, flows)
@@ -25,8 +25,6 @@ class CheckFlow(Pass):
                     for f in e.expr.typ.fields:
                         if f.name == e.name:
                             return times_g_flip(get_flow(e.expr, flows), f.flip)
-            elif isinstance(e, Reference):
-                return SinkFlow()
             
             return SourceFlow()
             
