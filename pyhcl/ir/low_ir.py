@@ -119,7 +119,7 @@ class SubAccess(Expression):
     def serialize(self) -> str:
         return f"{self.expr.serialize()}[{self.index.serialize()}]"
 
-    def verilog_serialize(self) -> str:
+    def verilog_serialize(self) -> tuple[str, str]:
         sub_access_declares: List[str] = []
 
         def auto_gen_name(endwith: int):
@@ -164,18 +164,16 @@ class SubAccess(Expression):
 
         cond_declares, vec_declares = verilog_serializes(self)
         declares = list(zip(cond_declares, vec_declares))
+        count = SubAccessGenCounter.get_count()
 
-        for i in range(len(declares)):
-            cond, vec = declares[i]
+        for i in range(count, len(declares) + count):
+            cond, vec = declares[i - count]
             sub_access_declare = f'{cond} ? {vec}'
             gsa = gen_sub_access(sub_access_declare, i)
-            
-            if i == len(declares) - 1:
-                sub_access_declares.append(f'{sub_access_declare}{auto_gen_name(i-1)}')
-            else:
-                sub_access_declares.append(f'wire {self.typ.verilog_serialize()} {gsa}{auto_gen_name(i-1)}')
+            sub_access_declares.append(f'wire {self.typ.verilog_serialize()} {gsa}{auto_gen_name(i-1)}')
+            SubAccessGenCounter.increase()
         
-        return '\n'.join(sub_access_declares)
+        return '\n'.join(sub_access_declares), auto_gen_name(len(declares) - 1)
 
 
 @dataclass(frozen=True)
@@ -916,14 +914,8 @@ class Connect(Statement):
     def verilog_serialize(self) -> str:
         op = "=" if self.blocking else "<="
         if type(self.expr) == SubAccess:
-            connect_declares = ''
-            sub_access_list = self.expr.verilog_serialize().split('\n')
-            for i in range(len(sub_access_list)):
-                if i == len(sub_access_list) - 1:
-                    connect_declares += f'\nassign {self.loc.verilog_serialize()} {op} {sub_access_list[i]};'
-                else:
-                    connect_declares += f'\n{sub_access_list[i]};'
-            return connect_declares
+            rec, sub_access = self.expr.verilog_serialize()
+            return f'{rec}\nassign {self.loc.verilog_serialize()} {op} {sub_access};'
 
         for attr, memport in self.mem.items():
             if attr == 'loc':
@@ -1044,6 +1036,7 @@ class Circuit(FirrtlNode):
     def requires(self):
         InstanceManager(self)
         CheckCombLoop()
+        SubAccessGenCounter()
 
 class InstanceManager:
     _extModules: Dict[str, DefModule] = {}
@@ -1089,3 +1082,14 @@ class CheckCombLoop:
             check_comb_loop_s(stmt)
 
         return stmts
+
+class SubAccessGenCounter:
+    count = 0
+
+    @staticmethod
+    def increase():
+        SubAccessGenCounter.count += 1
+    
+    @staticmethod
+    def get_count():
+        return SubAccessGenCounter.count
