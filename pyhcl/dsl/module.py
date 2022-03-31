@@ -187,7 +187,7 @@ class BlackBox(metaclass=MetaBlackBox):
             ref = low_ir.Reference(insName, mod.typ)
 
             scopeId = get_attr(self, "scopeId")
-            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name), scopeId)
+            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name, mod.ports), scopeId)
             ctx.updateRef(self, ref)
 
             return ref
