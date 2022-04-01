@@ -79,6 +79,8 @@ class CheckFlow(Pass):
             elif isinstance(s, DefNode):
                 check_flow(info, mname, flows, SourceFlow(), s.value)
                 flows[s.name] = SourceFlow()
+            elif isinstance(s, DefMemPort):
+                flows[s.name] = SinkFlow()
             elif isinstance(s, Connect):
                 check_flow(info, mname, flows, SinkFlow(), s.loc)
                 check_flow(info, mname, flows, SourceFlow(), s.expr)
