@@ -10,7 +10,7 @@ class Add(BlackBox):
     )
 
 
-@sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x = DataType.UInt))
+@sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x=DataType.UInt))
 def fn(a, b):
     return a + b
 
@@ -37,9 +37,9 @@ from random import randint
 if __name__ == '__main__':
     cfg = DpiConfig()
     #Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
-
-    s = Simlite(Top(), cfg)
+    s = Simlite(Top(), dpiconfig=cfg)
     s.step([20, 20])
     s.step([15, 10])
     s.step([1000, 1])
     s.step([999, 201])
+    s.close()

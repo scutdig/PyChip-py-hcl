@@ -826,6 +826,8 @@ class Block(Statement):
 
     # use less nodes
     def serialize(self) -> str:
+        if not self.stmts:
+            return ""
         node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
 
         # replace all reference in node_exp_map

@@ -31,6 +31,9 @@ class Simlite(object):
         else:
             self.compile(self.codegen(module_name, ports))
 
+    def close(self):
+        os.system("cd .. && rm -r .sv .fir .build 2>/dev/null")
+
     def compile(self, harness_code):
         print("\n\n---------------------verilator build info--------------------------\n")
         dpiconfig = self.dpiconfig
