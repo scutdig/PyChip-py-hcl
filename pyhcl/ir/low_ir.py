@@ -487,6 +487,8 @@ class DefRegister(Statement):
     def serialize(self) -> str:
         i: str = indent(f' with : \nreset => ({self.reset.serialize()}, {self.init.serialize()})') \
             if self.init is not None else ""
+        i: str = indent(f' with : \nreset => ({self.reset.serialize()})') \
+            if self.reset is not None else ""
         return f'reg {self.name} : {self.typ.serialize()}, {self.clock.serialize()}{i}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
