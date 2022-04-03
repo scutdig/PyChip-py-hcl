@@ -98,16 +98,16 @@ class CheckWidths(Pass):
             elif isinstance(expr, SIntLiteral) and get_binary_width(expr.value) + 1 > get_width(expr.width):
                 errors.append(WidthTooSmall(info, target, expr.value))
             elif isinstance(expr, DoPrim) and len(expr.args) == 2:
-                if isinstance(expr.op, Dshl) and has_width(expr.args[0].typ) and get_width(expr.args[1].typ) > maxWidth:
+                if isinstance(expr.op, Dshl) and has_width(expr.args[0].typ) and get_width(expr.args[1].typ.width) > maxWidth:
                     errors.append(DshlTooBig(info, target))
             elif isinstance(expr, DoPrim) and len(expr.args) == 1:
-                if isinstance(expr.op, Bits) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.consts[0]:
-                    errors.append(BitsWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ), expr.serialize()))
-                elif isinstance(expr.op, Head) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
-                    errors.append(HeadWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ)))
-                elif isinstance(expr.op, Tail) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ) <= expr.args[0]:
-                    errors.append(TailWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ)))
-                elif isinstance(expr.op, AsClock) and get_width(expr.consts[0].typ) != 1:
+                if isinstance(expr.op, Bits) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ.width) <= expr.consts[0]:
+                    errors.append(BitsWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ.width), expr.serialize()))
+                elif isinstance(expr.op, Head) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ.width) <= expr.args[0]:
+                    errors.append(HeadWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ.width)))
+                elif isinstance(expr.op, Tail) and has_width(expr.args[0].typ) and get_width(expr.args[0].typ.width) <= expr.args[0]:
+                    errors.append(TailWidthException(info, target, expr.consts[0], get_width(expr.args[0].typ.width)))
+                elif isinstance(expr.op, AsClock) and expr.consts[0] != 1:
                     errors.append(MultiBitAsClock(info, target))
         
         def check_width_e(info: Info, target: str, rec_depth: int, e: Expression):

@@ -21,7 +21,7 @@ class InferTypes(Pass):
             elif isinstance(e, SubAccess):
                 return SubAccess(e.expr, e.index, sub_type(e.expr.typ))
             elif isinstance(e, DoPrim):
-                return DoPrim(e.op, e.args, e.consts, UnknownType())
+                return DoPrim(e.op, e.args, e.consts, e.typ)
             elif isinstance(e, Mux):
                 return Mux(e.cond, e.tval, e.fval, mux_type(e.tval, e.fval))
             elif isinstance(e, ValidIf):

@@ -175,7 +175,6 @@ class SubAccess(Expression):
         
         return '\n'.join(sub_access_declares), auto_gen_name(len(declares) - 1)
 
-
 @dataclass(frozen=True)
 class Mux(Expression):
     cond: Expression
@@ -386,9 +385,10 @@ class BundleType(AggregateType):
     def verilog_serialize(self) -> list:
         field_list = []
         for f in self.fields:
-            if type(f.typ.verilog_serialize()) is list:
-                for t in f.typ.verilog_serialize():
-                    field_list.append(t.replace('$$', f'${f.name}') if t.find('$$') >= 0 else f'${f.name}{t}')
+            if type(f.typ) is VectorType:
+                vec_declares, typ = f.typ.verilog_serialize()
+                for t in vec_declares:
+                    field_list.append(f'{typ.verilog_serialize()}\t${f.name}{t}')
             else:
                 field_list.append(f.verilog_serialize())
         return field_list
@@ -402,20 +402,23 @@ class VectorType(AggregateType):
     def serialize(self) -> str:
         return f'{self.typ.serialize()}[{self.size}]'
 
-    def verilog_serialize(self) -> list:
+    
+    def verilog_serialize(self) -> tuple[list, Type]:
         index_list = []
         in_index_list = []
         if type(self.typ) == VectorType:
-            in_index_list = self.typ.verilog_serialize()
+            in_index_list, typ = self.typ.verilog_serialize()
         if len(in_index_list) > 0:
             for i in range(self.size):
                 for ii in in_index_list:
-                    index_list.append(ii.replace('$$', f'$$_{i}'))
+                    index_list.append(f'_{i}{ii}')
+            
+            return index_list, typ
         else:
             for i in range(self.size):
-                index_list.append(f'{self.typ.verilog_serialize()}\t$$_{i}')
-        
-        return index_list
+                index_list.append(f'_{i}')
+            
+            return index_list, self.typ
 
     def irWithIndex(self, index):
         if isinstance(index, int):
@@ -552,9 +555,9 @@ class DefWire(Statement):
     def verilog_serialize(self) -> str:
         if type(self.typ) ==  VectorType:
             wire_declares = ''
-            for i in self.typ.verilog_serialize():
-                name = i.replace('$$', self.name)
-                wire_declares += f'wire {name};\n'
+            vec_declares, typ = self.typ.verilog_serialize()
+            for i in vec_declares:
+                wire_declares += f'wire\t{typ.verilog_serialize()}\t{self.name}{i};\n'
             return wire_declares
         return f'wire\t{self.typ.verilog_serialize()}\t{self.name}{self.info.verilog_serialize()};'
 
@@ -649,8 +652,6 @@ class DefNode(Statement):
         return f'node {self.name} = {self.value.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        if type(self.value.typ) == VectorType:
-           return ''
         return f'wire {self.value.typ.verilog_serialize()} {self.name} = {self.value.verilog_serialize()}{self.info.verilog_serialize()};'
 
 
@@ -847,6 +848,8 @@ class Block(Statement):
 
     def verilog_serialize(self) -> str:
         node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+        filter_node = set()
+        stmts = []
         new_stmts = []
 
         def get_expr_name(e: Expression):
@@ -867,26 +870,60 @@ class Block(Statement):
             else:
                 return Reference(target_name, e.typ)
         
+        def expand_doprim(e: Expression) -> Expression:
+            args = e.args
+            new_args = []
+            for arg in args:
+                arg_name = get_expr_name(arg)
+                if arg_name in node_exp_map.keys():
+                    new_args.append(expand_doprim(node_exp_map[arg_name].value))
+                else:
+                    new_args.append(arg)
+            return DoPrim(e.op, new_args, e.consts, e.typ)
+        
         def gen_expr(node: Expression, expr: Expression):
             # TODO: More types of node should be replaced.
-            if type(node) == Mux:
+            if type(node) == Mux and type(node.tval.typ) == VectorType and type(node.fval.typ) == VectorType:
                 return Mux(node.cond, gen_sub(expr, node.tval.name), gen_sub(expr, node.fval.name), node.typ)
+            elif type(node) == DoPrim:
+                return expand_doprim(node)
             else:
                 return node
 
-        def replace_node(s: Statement):
+
+        def merge_connect(s: Statement):
             en = get_expr_name(s.expr)
             if en in node_exp_map.keys():
                 node = node_exp_map[en]
                 new_stmts.append(Connect(s.loc, gen_expr(node.value, s.expr), s.info))
+                filter_node.add(en)
+            else:
+                new_stmts.append(s)
+        
+        def merge_defnode(s: Statement):
+            if type(s.value) == DoPrim:
+                has_node = False
+                args = s.value.args
+                for arg in args:
+                    if get_expr_name(arg) in node_exp_map.keys():
+                        has_node = True
+                        filter_node.add(get_expr_name(arg))
+                if has_node:
+                    new_stmts.append(DefNode(s.name, expand_doprim(s.value), s.info))
+                else:
+                    new_stmts.append(s)
             else:
                 new_stmts.append(s)
                 
         for stmt in self.stmts:
             if type(stmt) == Connect:
-                replace_node(stmt)
+                merge_connect(stmt)
+            elif type(stmt) == DefNode:
+                merge_defnode(stmt)
             else:
                 new_stmts.append(stmt)
+        
+        new_stmts = [ns for ns in new_stmts if not (type(ns) == DefNode and ns.name in filter_node)]
 
         manager = PassManager(Block(new_stmts))
         new_blocks = manager.renew()
