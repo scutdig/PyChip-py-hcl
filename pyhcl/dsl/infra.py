@@ -61,7 +61,7 @@ class Reg(BundleAccessor, VecOps, CType):
         typ = self.typ.mapToIR(ctx)
         name = ctx.getName(self)
 
-        w = low_ir.DefRegister(name, typ, ctx.getClock(self))
+        w = low_ir.DefRegister(name, typ, ctx.getClock(self), ctx.getReset(self))
         ctx.appendFinalStatement(w, self.scopeId)
         ref = low_ir.Reference(name, typ)
         ctx.updateRef(self, ref)

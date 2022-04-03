@@ -125,16 +125,11 @@ class EmitterContext:
         return low_ir.BundleType(fs)
 
     def getClock(self, m):
-        # from pyhcl.core._clock_manager import Clock_manager
-        # clock_obj = Clock_manager.getClockByID(id(m))
-        # return low_ir.Reference(self._rawNameTable[id(m)], low_ir.UIntType(low_ir.IntWidth(1)))
-        '''
-        It seems that names of multi-clock domain are not pushed into _rawNameTable correctly.
-        This problem will be fixed recently.
-        '''
-        return low_ir.Reference('clock', low_ir.UIntType(low_ir.IntWidth(1)))
+        from pyhcl.core._clock_manager import Clock_manager
+        clock_obj = Clock_manager.getClockByID(id(m))
+        return low_ir.Reference(self.getName(clock_obj.extractForName()), low_ir.UIntType(low_ir.IntWidth(1)))
 
-    def getReset(self,m):
+    def getReset(self, m):
         from pyhcl.core._clock_manager import Clock_manager
         reset_obj = Clock_manager.getResetByID(id(m))
-        return low_ir.Reference(self._rawNameTable[id(m)], low_ir.UIntType(low_ir.IntWidth(1)))
+        return low_ir.Reference(self.getName(reset_obj.extractForName()), low_ir.UIntType(low_ir.IntWidth(1)))

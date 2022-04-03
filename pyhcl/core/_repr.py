@@ -27,7 +27,18 @@ class Node:
         return self
 
     def __irshift__(self, other):
-        biconnect = BiConnect(self,other)
+        biconnect = BiConnect(self, other)
+        DynamicContext.push(biconnect)
+        return self
+
+    def __imatmul__(self, other):
+        info = debug_info(2)
+        connect = Connect(self, other, info)
+        DynamicContext.push(connect)
+        return self
+
+    def __matmul__(self, other):
+        biconnect = BiConnect(self, other)
         DynamicContext.push(biconnect)
         return self
 
