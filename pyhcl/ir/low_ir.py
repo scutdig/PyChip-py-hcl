@@ -119,7 +119,7 @@ class SubAccess(Expression):
     def serialize(self) -> str:
         return f"{self.expr.serialize()}[{self.index.serialize()}]"
 
-    def verilog_serialize(self) -> tuple[str, str]:
+    def verilog_serialize(self):
         sub_access_declares: List[str] = []
 
         def auto_gen_name(endwith: int):
@@ -130,7 +130,7 @@ class SubAccess(Expression):
         def gen_sub_access(s: str, i: str) -> str:
             return f'{auto_gen_name(i)} = {s} : '
 
-        def verilog_serializes(e: Expression) -> tuple[List[str], List[str]]:
+        def verilog_serializes(e: Expression):
             conds_rec: List[str] = []
             conds: List[str] = []
             vecs_rec: List[str] = []
@@ -403,7 +403,7 @@ class VectorType(AggregateType):
         return f'{self.typ.serialize()}[{self.size}]'
 
     
-    def verilog_serialize(self) -> tuple[list, Type]:
+    def verilog_serialize(self):
         index_list = []
         in_index_list = []
         if type(self.typ) == VectorType:

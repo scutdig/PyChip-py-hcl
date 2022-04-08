@@ -46,15 +46,15 @@ class Simlite(object):
             f.write(harness_code)
 
         # 调用FIRRTL工具链
-        with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
-            f.write(self.low_module.serialize())
+        # with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
+        #     f.write(self.low_module.serialize())
 
-        os.system(
-            f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
+        # os.system(
+        #     f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
         
         # 调用PyHCL编译链
-        # with open(f"./simulation/{self.dut_name}.v", "w+") as f:
-        #     f.write(self.low_module.verilog_serialize())
+        with open(f"./simulation/{self.dut_name}.v", "w+") as f:
+            f.write(self.low_module.verilog_serialize())
 
         vfn = "{}.v".format(self.dut_name)
         hfn = "{}-harness.cpp".format(self.dut_name)

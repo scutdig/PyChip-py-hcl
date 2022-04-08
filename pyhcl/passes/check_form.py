@@ -322,7 +322,7 @@ class CheckHighForm(Pass):
         names.declare(p.name)
         self.check_high_form_t(p.info, mname, p.typ)
     
-    def find_bad_reset_type_ports(self, m: DefModule, dir: Direction) -> List[tuple[Port, Expression]]:
+    def find_bad_reset_type_ports(self, m: DefModule, dir: Direction):
         bad_reset_type_ports = []
         bad = to_flow(dir)
         gen = ((create_exps(ref), p1) for (ref, p1) in [(Reference(p.name, p.typ), p) for p in m.ports])

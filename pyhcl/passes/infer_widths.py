@@ -7,7 +7,7 @@ from pyhcl.passes.wir import *
 class InferWidths(Pass):
     @staticmethod
     def run(c: Circuit):
-        def infer_widths_t(widths: Dict[str, Width], name: str, t: Type) -> tuple[Type, List[Width]]:
+        def infer_widths_t(widths: Dict[str, Width], name: str, t: Type):
             if isinstance(t, BundleType):
                 bs = list(map(lambda f: infer_widths_t(widths, name, f.typ), t.fields))
                 bs = [b for b in bs if b is not None].pop()
