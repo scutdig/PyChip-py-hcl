@@ -31,16 +31,22 @@ class Top(Module):
     add.io.in2 <<= io.b
     io.c <<= add.io.out
 
+import time
 
-from random import randint
-
-if __name__ == '__main__':
+def test():
     cfg = DpiConfig()
     #Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
-    s = Simlite(Top(), dpiconfig=cfg)
-    s.start()
-    s.step([20, 20])
-    s.step([15, 10])
-    s.step([1000, 1])
-    s.step([999, 201])
+    s = Simlite(Top(), dpiconfig=cfg, debug=True)
+    time1 = time.time()
+    inputs = [[2000, 230032]]*40000000
+    for i in range(2):
+        s.start_task(f"task_{i}", inputs)
+    time2 = time.time()
+    print("time = " + str(time2 - time1))
+    s.start_task(f"task_3", inputs)
+    time3 = time.time()
+    print("time = " + str(time3 - time2))
     s.close()
+
+if __name__ == '__main__':
+    test()

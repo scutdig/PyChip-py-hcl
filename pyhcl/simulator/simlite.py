@@ -1,35 +1,71 @@
 import os
 import subprocess
-import _thread
 
 from pyhcl import *
 from ..simulator import DpiConfig
 
 
 class Simlite(object):
-    def __init__(self, module, harness_code=None, dpiconfig: DpiConfig = None):
-        self.low_module = Emitter.elaborate(module)
-        self.dpiconfig = dpiconfig
-        module_name = self.low_module.main
-        # ports = next(m.typ for m in low_module.modules if m.name == module_name)
-        ports = module.io.value._ios
+    # init for fork method
+    def __fork_init(self, other):
+        import copy
+        self.low_module = other.low_module
+        self.dpiconfig = other.dpiconfig
+        if (hasattr(other, "efn")):
+            self.efn = other.efn
+        self.inputs = copy.deepcopy(other.inputs)
+        self.outputs = copy.deepcopy(other.outputs)
+        self.results = copy.deepcopy(other.outputs)
+        self.cnt = copy.deepcopy(other.cnt)
+        self.dut_name = copy.deepcopy(other.dut_name)
 
-        self.inputs = []
-        self.outputs = []
-        self.results = []
-        self.cnt = 0
+        # recover the status base on self.steps
+        self.steps = []
+        self.debug = False
+        self.start()
+        for inputs in other.steps:
+            self.step(inputs)
+        assert (self.steps == other.steps)
 
-        for k, v in ports.items():
-            if (type(v) == Input):
-                self.inputs.append(k)
-            elif (type(v) == Output):
-                self.outputs.append(k)
+        self.debug = other.debug
+        self.name = other.name + "_" + str(other.fork_cnt)
+        other.fork_cnt += 1
 
-        self.dut_name = module_name
-        if harness_code:
-            self.compile(harness_code)
+    def __init__(self, module, harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0"):
+        self.raw_in = None
+        self.efn = None
+        self.ofn = None
+        self.ifn = None
+        if isinstance(module, Simlite):
+            self.__fork_init(module)
         else:
-            self.compile(self.codegen(module_name, ports))
+            self.low_module = Emitter.elaborate(module)
+            self.dpiconfig = dpiconfig
+            module_name = self.low_module.main
+            # ports = next(m.typ for m in low_module.modules if m.name == module_name)
+            ports = module.io.value._ios
+
+            self.inputs = []
+            self.outputs = []
+            self.results = []
+            self.cnt = 0
+            self.steps = []
+            self.name = name
+
+            self.debug = debug
+            self.fork_cnt = 0
+
+            for k, v in ports.items():
+                if (type(v) == Input):
+                    self.inputs.append(k)
+                elif (type(v) == Output):
+                    self.outputs.append(k)
+
+            self.dut_name = module_name
+            if harness_code:
+                self.compile(harness_code)
+            else:
+                self.compile(self.codegen(module_name, ports))
 
     def close(self):
         os.system("cd .. && rm -r .sv .fir .build 2>/dev/null")
@@ -94,41 +130,70 @@ class Simlite(object):
         else:
             os.system("./obj_dir/{}&".format(efn))
         """
-        args = [f"./obj_dir/{efn}"]
+        self.efn = efn
+
+    def start(self, mode="ia", ofn=None, ifn=None):
         env = None
         if self.dpiconfig:
             env = {"LD_LIBRARY_PATH": "."}
-        self.p = subprocess.Popen(args, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        self.dropinfo()
+        if mode == "ia":
+            args = [f"./obj_dir/{self.efn}"]
+            self.p = subprocess.Popen(args, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            self.dropinfo()
+        elif mode == "task":
+            args = [f"./obj_dir/{self.efn}"]
+            infile = open(ifn, "r")
+            outfile = open(ofn, "a")
+            self.p = subprocess.Popen(args, env=env, shell=True, stdin=infile, stdout=outfile)
 
     def dropinfo(self):
         for i in range(5):
             self.p.stdout.readline()
-        print("\n\n--------------------------sim result---------------------------")
+        if self.debug:
+            print("\n\n--------------------------sim result---------------------------")
+
+    def start_task(self, name, tsk):
+        # input file
+        ifn = f"/tmp/{name}_inputs"
+        ofn = f"/tmp/{name}_outputs"
+        fd = open(ifn, "a")
+        instr = ""
+        for inputs in tsk:
+            inputs = [str(x) for x in inputs]
+            self.raw_in = " ".join(inputs)
+            self.raw_in = "0 " + self.raw_in
+            instr += self.raw_in + "\n"
+        instr += "-1\n"
+        fd.write(instr)
+        fd.close()
+        self.start("task", ofn, ifn)
 
 
     # TODO: pipe's output is empty.
     def step(self, inputs):
+        self.steps.append(inputs)
         inputs = [str(x) for x in inputs]
         self.raw_in = " ".join(inputs)
-        instr = self.raw_in.encode(encoding="utf-8")+b'\n'
+        self.raw_in = "0 " + self.raw_in
+        instr = self.raw_in.encode(encoding="utf-8") + b'\n'
         self.p.stdin.write(instr)
         self.p.stdin.flush()
         line = self.p.stdout.readline()
         self.p.stdout.flush()
-        self.raw_res = str(line,encoding="utf-8").strip()
+        self.raw_res = str(line, encoding="utf-8").strip()
         strs = self.raw_res.split(" ")
         strs = [sx for sx in strs if sx != '']
         res = [int(x) for x in strs]
         self.results = res
-
-        self.pprint()
-        self.cnt+=1
+        if self.debug:
+            self.pprint()
+        self.cnt += 1
+        return res
 
     def pprint(self):
         print("")
-        print(f"[{self.cnt}]IN  : {self.raw_in}")
-        print(f"[{self.cnt}]OUT : {self.raw_res}")
+        print(f"[{self.name}\t\t{self.cnt}]IN  : {self.raw_in}")
+        print(f"[{self.name}\t\t{self.cnt}]OUT : {self.raw_res}")
 
     def codegen(self, name, ports):
         tempfile = """#include "V{modname}.h"
@@ -156,6 +221,10 @@ void ioinit(){{
 }}
 
 void input_handler(){{
+    int status = 0;
+    std::cin>>status;
+    if(status<0)
+        exit(0);
     for(int i = 0; i < INN; i++){{
         std::cin>>inputs[i];
     }}
