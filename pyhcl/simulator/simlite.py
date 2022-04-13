@@ -54,7 +54,7 @@ class Simlite(object):
         
         # 调用PyHCL编译链
         with open(f"./simulation/{self.dut_name}.v", "w+") as f:
-            f.write(self.low_module.verilog_serialize())
+            f.write(Verilog(self.low_module).emit())
 
         vfn = "{}.v".format(self.dut_name)
         hfn = "{}-harness.cpp".format(self.dut_name)

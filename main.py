@@ -100,7 +100,6 @@ class Mul3(Module):
     # --------------------------------
 
     tbl = VecInit(VecInit(VecInit(U.w(6)(i * j * k) for k in range(4)) for i in range(4)) for j in range(4))
-    # TODO Vec下标访问不能转换为可综合Verilog代码
     io.o <<= tbl[io.x][io.y][io.z]
 
 
@@ -111,12 +110,12 @@ class Add(BlackBox):
     )
 
 
-@sv(a=DataType.UInt, return_type=Reference(x=DataType.UInt))
-def fn(a):
-    return a + 10000
+# @sv(a=DataType.UInt, return_type=Reference(x=DataType.UInt))
+# def fn(a):
+#     return a + 10000
 
 
-addpysvmodule(Add, fn)
+# addpysvmodule(Add, fn)
 
 class Rand(BlackBox):
     io = IO(
@@ -131,8 +130,8 @@ def fn2(a, b):
     return random.randint(a, b)
 
 
-addpysvmodule(Rand, fn2)
-compile_and_binding_all()
+# addpysvmodule(Rand, fn2)
+# compile_and_binding_all()
 
 
 class Top(Module):
@@ -156,16 +155,16 @@ class Top(Module):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    # Emitter.dump(Emitter.emit(Top(), True), "Top.v")
+    Emitter.dump(Emitter.emit(Mul3(), LowForm), "Mul3.lo.fir")
     # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
-    cfg = DpiConfig()
+    # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
 
-    s = Simlite(Top(), harness_code=None, dpiconfig=cfg)
-    s.step([20, 20])
-    s.step([15, 100])
-    s.step([1000, 2000])
-    s.step([999, 2010])
+    # s = Simlite(Top(), harness_code=None, dpiconfig=cfg)
+    # s.step([20, 20])
+    # s.step([15, 100])
+    # s.step([1000, 2000])
+    # s.step([999, 2010])
 
 # def main():
 #     f = Emitter.dump(Emitter.emit(MOD()), "mod.v")

@@ -195,7 +195,7 @@ class ValidIf(Expression):
     typ: Type
 
     def serialize(self) -> str:
-        ...
+        return f"validif({self.cond.serialize()}, {self.value.serialize()})"
     
     def verilog_serialize(self) -> str:
         ...
@@ -947,7 +947,7 @@ class Connect(Statement):
 
     def serialize(self) -> str:
         if not self.bidirection:
-            return f'{self.info.serialize()}\n{self.loc.serialize()} <= {self.expr.serialize()}'
+            return f'{self.info.serialize()}{self.loc.serialize()} <= {self.expr.serialize()}'
         else:
             return f'{self.info.serialize()}\n{self.loc.serialize()} <= {self.expr.serialize()}\n' + \
                    f'{self.info.serialize()}\n{self.expr.serialize()} <= {self.loc.serialize()}'

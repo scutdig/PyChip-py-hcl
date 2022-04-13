@@ -160,7 +160,7 @@ class CheckHighForm(Pass):
     
     def check_unique_module_name(self):
         for idx in range(len(self.module_names)):
-            if self.int_module_names[idx] in self.int_module_names[idx:]:
+            if self.int_module_name[idx] in self.int_module_name[idx:]:
                 m = self.ms[idx]
                 self.errors.append(ModuleNameNotUniqueException(m.info, m.name))
     
@@ -358,7 +358,10 @@ class CheckHighForm(Pass):
     def run(self):
         if hasattr(self.c, 'modules') and isinstance(self.c.modules, list):
             for m in self.c.modules:
-                self.check_high_form_m(m)                    
+                self.check_high_form_m(m)
+
+        if self.c.main not in self.int_module_name:
+            self.errors.append(NoTopModuleException(self.c.info, self.c.main))               
         
         self.errors.trigger()
         return self.c

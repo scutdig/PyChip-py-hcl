@@ -7,27 +7,22 @@ from pyhcl.core._emit_context import EmitterContext
 from pyhcl.dsl.module import Module
 from pyhcl.ir import low_ir
 from pyhcl.util.firrtltools import replacewithfirmod
-from pyhcl.dsl.check import CheckUtils
+from pyhcl.dsl.stage import Form, LowForm
 
 
 class Emitter:
-    @staticmethod
-    def emit(m: Module, toverilog=False) -> str:
-        circuit = Emitter.elaborate(m)
-        if(toverilog):
-            return circuit.verilog_serialize()
-        else:
-            return circuit.serialize()
-
     @staticmethod
     def elaborate(m: Module) -> low_ir.Circuit:
         ec: EmitterContext = EmitterContext(m, {}, Counter())
         modIRs: Dict[int, low_ir.DefModule] = ec.emit()
         modIRs = replacewithfirmod(modIRs)
         circuit = low_ir.Circuit(list(modIRs.values()), ec.name)
-        circuit = CheckUtils.run_check(circuit)
         DynamicContext.clearScope()
         return circuit
+
+    @staticmethod
+    def emit(m: Module, f: Form = LowForm) -> str:
+        return f(Emitter.elaborate(m)).emit()
 
     @staticmethod
     def dump(s, filename) -> str:
@@ -55,7 +50,7 @@ class Emitter:
             os.system('firrtl -i %s -o %s -X middle' % (filename, filename))
     
     @staticmethod
-    def dumpLowForm(filename, use_jar):
+    def dumpLoweredForm(filename, use_jar):
         if use_jar:
             os.system('java -jar firrtl.jar -i %s -o %s -X low' % (filename, filename))
         else:
