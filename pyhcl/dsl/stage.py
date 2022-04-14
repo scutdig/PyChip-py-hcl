@@ -43,4 +43,6 @@ class Verilog(Form):
     def emit(self) -> str:
         self.c = CheckAndInfer.run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
+        self.c = ReplaceSubindex().run(self.c)
+        self.c = ExpandAggregate().run(self.c)
         return self.c.verilog_serialize()

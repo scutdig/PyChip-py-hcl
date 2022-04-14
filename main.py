@@ -155,7 +155,7 @@ class Top(Module):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    Emitter.dump(Emitter.emit(Mul3(), LowForm), "Mul3.lo.fir")
+    Emitter.dump(Emitter.emit(Mul3(), Verilog), "Mul3.v")
     # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
