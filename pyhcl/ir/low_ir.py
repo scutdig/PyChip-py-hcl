@@ -131,6 +131,7 @@ class SubAccess(Expression):
             return f'{auto_gen_name(i)} = {s} : '
 
         def verilog_serializes(e: Expression):
+            # TODO: remove dead code
             conds_rec: List[str] = []
             conds: List[str] = []
             vecs_rec: List[str] = []
@@ -383,6 +384,7 @@ class BundleType(AggregateType):
         return '{' + ', '.join([f.serialize() for f in self.fields]) + '}'
 
     def verilog_serialize(self) -> list:
+        # TODO: remove dead code
         field_list = []
         for f in self.fields:
             if type(f.typ) is VectorType:
@@ -404,6 +406,7 @@ class VectorType(AggregateType):
 
     
     def verilog_serialize(self):
+        # TODO: remove dead code
         index_list = []
         in_index_list = []
         if type(self.typ) == VectorType:
@@ -819,34 +822,33 @@ class PassManager:
 class Block(Statement):
     stmts: List[Statement]
 
-    """
     def serialize(self) -> str:
         return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
-    """
 
     def auto_gen_node(self, stmt):
         return isinstance(stmt, DefNode) and stmt.name.startswith("_T")
 
-    # use less nodes
-    def serialize(self) -> str:
-        if not self.stmts:
-            return ""
-        node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+    # TODO: remove
+    # # use less nodes
+    # def serialize(self) -> str:
+    #     if not self.stmts:
+    #         return ""
+    #     node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
 
-        # replace all reference in node_exp_map
-        for k, v in node_exp_map.items():
-            if isinstance(v.value, DoPrim):
-                args = v.value.args
-                cnt = 0
-                for arg in args:
-                    if isinstance(arg, Reference) and arg.name in node_exp_map:
-                        node_exp_map[k].value.args[cnt] = node_exp_map[arg.name].value
-                    cnt += 1
-        # replace all reference in connect
-        for stmt in self.stmts:
-            if isinstance(stmt, Connect) and isinstance(stmt.expr, Reference) and stmt.expr.name in node_exp_map:
-                stmt.expr = node_exp_map[stmt.expr.name].value
-        return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
+    #     # replace all reference in node_exp_map
+    #     for k, v in node_exp_map.items():
+    #         if isinstance(v.value, DoPrim):
+    #             args = v.value.args
+    #             cnt = 0
+    #             for arg in args:
+    #                 if isinstance(arg, Reference) and arg.name in node_exp_map:
+    #                     node_exp_map[k].value.args[cnt] = node_exp_map[arg.name].value
+    #                 cnt += 1
+    #     # replace all reference in connect
+    #     for stmt in self.stmts:
+    #         if isinstance(stmt, Connect) and isinstance(stmt.expr, Reference) and stmt.expr.name in node_exp_map:
+    #             stmt.expr = node_exp_map[stmt.expr.name].value
+    #     return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
         node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}

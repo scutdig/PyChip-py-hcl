@@ -2,18 +2,21 @@ from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
 from pyhcl.passes._pass import Pass
-from pyhcl.passes.utils import get_binary_width
+from pyhcl.passes.utils import get_binary_width, AutoName
 
 @dataclass
 class ReplaceSubaccess(Pass):
-    endwith: int = -1
+    # endwith: int = -1
 
     def run(self, c: Circuit) -> Circuit:
         modules: List[DefModule] = []
 
+        # def auto_gen_name():
+        #     self.endwith += 1
+        #     return f'_GEN_{self.endwith}'
+        
         def auto_gen_name():
-            self.endwith += 1
-            return f'_GEN_{self.endwith}'
+            return AutoName.auto_gen_name()
 
         def get_groud_type(t: Type) -> Type:
             if isinstance(t, VectorType):

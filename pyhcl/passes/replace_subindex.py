@@ -12,7 +12,7 @@ class ReplaceSubindex(Pass):
             if isinstance(e, SubIndex):
                 return Reference(e.verilog_serialize(), e.typ)
             if isinstance(e, SubField):
-                return SubField(replace_subindex_e(e.expr), e.name, e.typ)
+                return Reference(e.verilog_serialize(), e.typ)
             if isinstance(e, SubAccess):
                 return SubAccess(replace_subindex_e(e.expr), replace_subindex_e(e.index), e.typ)
             if isinstance(e, ValidIf):
@@ -27,18 +27,21 @@ class ReplaceSubindex(Pass):
             if isinstance(stmt, Connect):
                 return Connect(replace_subindex_e(stmt.loc), replace_subindex_e(stmt.expr),
                   stmt.info, stmt.blocking, stmt.bidirection, stmt.mem)
-            if isinstance(stmt, DefNode):
+            elif isinstance(stmt, DefNode):
                 return DefNode(stmt.name, replace_subindex_e(stmt.value), stmt.info)
-            if isinstance(stmt, DefRegister):
+            elif isinstance(stmt, DefRegister):
                 return DefRegister(stmt.name, stmt.typ, replace_subindex_e(stmt.clock),
                   replace_subindex_e(stmt.reset), replace_subindex_e(stmt.init), stmt.info)
-            if isinstance(stmt, DefMemPort):
+            elif isinstance(stmt, DefMemPort):
                 return DefMemPort(stmt.name, stmt.mem, replace_subindex_e(stmt.index),
                   replace_subindex_e(stmt.clk), stmt.rw, stmt.info)
-            if isinstance(stmt, Conditionally):
-                return Conditionally(replace_subindex_e(stmt.pred), replace_subindex_s(stmt.conseq),
-                  replace_subindex_s(stmt.alt), stmt.info)    
-            return stmt
+            elif isinstance(stmt, Conditionally):
+                return Conditionally(replace_subindex_e(stmt.pred), replace_subindex(stmt.conseq),
+                  replace_subindex(stmt.alt), stmt.info)
+            elif isinstance(stmt, Block):
+                return Block(replace_subindex_s(stmt.stmts))
+            else:
+                return stmt
 
         def replace_subindex_s(stmts: List[Statement]) -> List[Statement]:
             new_stmts = []

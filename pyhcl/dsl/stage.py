@@ -6,6 +6,8 @@ from pyhcl.dsl.check_and_infer import CheckAndInfer
 from pyhcl.passes.replace_subaccess import ReplaceSubaccess
 from pyhcl.passes.replace_subindex import ReplaceSubindex
 from pyhcl.passes.expand_aggregate import ExpandAggregate
+from pyhcl.passes.expand_whens import ExpandWhens
+from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
     @abstractclassmethod
@@ -30,10 +32,12 @@ class LowForm(Form):
     c: low_ir.Circuit
 
     def emit(self) -> str:
+        AutoName()
         self.c = CheckAndInfer.run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = ReplaceSubindex().run(self.c)
         self.c = ExpandAggregate().run(self.c)
+        self.c = ExpandWhens().run(self.c)
         return self.c.serialize()
 
 @dataclass

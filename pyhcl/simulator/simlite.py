@@ -88,7 +88,7 @@ class Simlite(object):
         # os.system(
         #     f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
         
-        # 调用PyHCL编译链
+        # # 调用PyHCL编译链
         with open(f"./simulation/{self.dut_name}.v", "w+") as f:
             f.write(Verilog(self.low_module).emit())
 

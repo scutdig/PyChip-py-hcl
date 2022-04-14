@@ -18,6 +18,8 @@ class MOD(Module):
 
     with when(x >= y):
         x <<= x - y
+        with when(x == y):
+            x <<= x + y
 
     with when(io.e):
         x <<= io.a
@@ -125,9 +127,9 @@ class Rand(BlackBox):
     )
 
 
-@sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x=DataType.UInt))
-def fn2(a, b):
-    return random.randint(a, b)
+# @sv(a=DataType.UInt, b=DataType.UInt, return_type=Reference(x=DataType.UInt))
+# def fn2(a, b):
+#     return random.randint(a, b)
 
 
 # addpysvmodule(Rand, fn2)
@@ -155,12 +157,13 @@ class Top(Module):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    Emitter.dump(Emitter.emit(Mul3(), Verilog), "Mul3.v")
+    Emitter.dump(Emitter.emit(GCD(), LowForm), "GCD.lo.fir")
     # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
 
-    # s = Simlite(Top(), harness_code=None, dpiconfig=cfg)
+    # s = Simlite(Top(), harness_code=None, dpiconfig=cfg, debug=True)
+    # s.start()
     # s.step([20, 20])
     # s.step([15, 100])
     # s.step([1000, 2000])

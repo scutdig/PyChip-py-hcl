@@ -1,3 +1,4 @@
+from curses import endwin
 import math
 
 from typing import List
@@ -231,3 +232,11 @@ def has_width(t: Type) -> bool:
         return True
     else:
         return False
+
+class AutoName:
+    endwith: int = -1
+
+    @staticmethod
+    def auto_gen_name():
+        AutoName.endwith += 1
+        return f"GEN_{AutoName.endwith}"
