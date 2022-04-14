@@ -17,7 +17,7 @@ class ReplaceSubaccess(Pass):
 
         def get_groud_type(t: Type) -> Type:
             if isinstance(t, VectorType):
-                get_groud_type(t.typ)
+                return get_groud_type(t.typ)
             else:
                 return t
 

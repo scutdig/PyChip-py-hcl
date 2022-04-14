@@ -198,7 +198,7 @@ class ValidIf(Expression):
         return f"validif({self.cond.serialize()}, {self.value.serialize()})"
     
     def verilog_serialize(self) -> str:
-        ...
+        return f"{self.cond.verilog_serialize()} ? {self.value.verilog_serialize()} : z"
 
 
 @dataclass(frozen=True)
