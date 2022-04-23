@@ -7,11 +7,20 @@ from pyhcl.passes._pass import Pass
 class ReplaceSubindex(Pass):
     def run(self, c: Circuit) -> Circuit:
         modules: List[DefModule] = []
+        keep_subfield: List[str] = []
+
+        def get_name(e: Expression) -> str:
+            if isinstance(e, (SubField, SubIndex, SubAccess)):
+                return get_name(e.expr)
+            else:
+                return e.name
 
         def replace_subindex_e(e: Expression) -> Expression:
             if isinstance(e, SubIndex):
                 return Reference(e.verilog_serialize(), e.typ)
             if isinstance(e, SubField):
+                if get_name(e) in keep_subfield:
+                    return e
                 return Reference(e.verilog_serialize(), e.typ)
             if isinstance(e, SubAccess):
                 return SubAccess(replace_subindex_e(e.expr), replace_subindex_e(e.index), e.typ)
@@ -33,6 +42,7 @@ class ReplaceSubindex(Pass):
                 return DefRegister(stmt.name, stmt.typ, replace_subindex_e(stmt.clock),
                   replace_subindex_e(stmt.reset), replace_subindex_e(stmt.init), stmt.info)
             elif isinstance(stmt, DefMemPort):
+                keep_subfield.append(stmt.mem.name)
                 return DefMemPort(stmt.name, stmt.mem, replace_subindex_e(stmt.index),
                   replace_subindex_e(stmt.clk), stmt.rw, stmt.info)
             elif isinstance(stmt, Conditionally):
@@ -40,6 +50,9 @@ class ReplaceSubindex(Pass):
                   replace_subindex(stmt.alt), stmt.info)
             elif isinstance(stmt, Block):
                 return Block(replace_subindex_s(stmt.stmts))
+            elif isinstance(stmt, DefInstance):
+                keep_subfield.append(stmt.name)
+                return stmt
             else:
                 return stmt
 

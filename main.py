@@ -18,8 +18,6 @@ class MOD(Module):
 
     with when(x >= y):
         x <<= x - y
-        with when(x == y):
-            x <<= x + y
 
     with when(io.e):
         x <<= io.a
@@ -157,8 +155,8 @@ class Top(Module):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    Emitter.dump(Emitter.emit(GCD(), LowForm), "GCD.lo.fir")
-    # Emitter.dumpLowForm(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
+    Emitter.dump(Emitter.emit(MuxVec(), LowForm), "MuxVec.lo.fir")
+    # Emitter.dumpLoweredForm(Emitter.dump(Emitter.emit(Top()), "Top.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
 

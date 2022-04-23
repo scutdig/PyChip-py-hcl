@@ -577,8 +577,8 @@ class DefRegister(Statement):
     def serialize(self) -> str:
         i: str = indent(f' with : \nreset => ({self.reset.serialize()}, {self.init.serialize()})') \
             if self.init is not None else ""
-        i: str = indent(f' with : \nreset => ({self.reset.serialize()})') \
-            if self.reset is not None else ""
+        # i: str = indent(f' with : \nreset => ({self.reset.serialize()})') \
+        #     if self.reset is not None else ""
         return f'reg {self.name} : {self.typ.serialize()}, {self.clock.serialize()}{i}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
@@ -606,30 +606,32 @@ class DefInstance(Statement):
 
 
 
-# @dataclass(frozen=True)
-# class DefMemory(Statement):
-#     name: str
-#     dataType: Type
-#     depth: int
-#     writeLatency: int
-#     readLatency: int
-#     readers: List[str]
-#     writers: List[str]
-#     readWriters: List[str]
-#     readUnderWrite: Optional[str] = None
-#     info: Info = NoInfo()
-#
-#     def serialize(self) -> str:
-#         lst = [f"\ndata-type => {self.dataType.serialize()}",
-#                f"depth => {self.depth}",
-#                f"read-latency => {self.readLatency}",
-#                f"write-latency => {self.writeLatency}"] + \
-#               [f"reader => {r}" for r in self.readers] + \
-#               [f"writer => {w}" for w in self.writers] + \
-#               [f"readwriter => {rw}" for rw in self.readWriters] + \
-#               ['read-under-write => undefined']
-#         s = indent('\n'.join(lst))
-#         return f'mem {self.name} :{self.info.serialize()}{s}'
+@dataclass(frozen=True)
+class WDefMemory(Statement):
+    name: str
+    memType: MemoryType
+    dataType: Type
+    depth: int
+    writeLatency: int
+    readLatency: int
+    readers: List[str]
+    writers: List[str]
+    readUnderWrite: Optional[str] = None
+    info: Info = NoInfo()
+
+    def serialize(self) -> str:
+        lst = [f"\ndata-type => {self.dataType.serialize()}",
+               f"depth => {self.depth}",
+               f"read-latency => {self.readLatency}",
+               f"write-latency => {self.writeLatency}"] + \
+              [f"reader => {r}" for r in self.readers] + \
+              [f"writer => {w}" for w in self.writers] + \
+              ['read-under-write => undefined']
+        s = indent('\n'.join(lst))
+        return f'mem {self.name} :{self.info.serialize()}{s}'
+    
+    def verilog_serialize(self) -> str:
+        return self.memType.verilog_serialize()
 
 @dataclass(frozen=True)
 class DefMemory(Statement):

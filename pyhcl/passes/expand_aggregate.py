@@ -38,7 +38,7 @@ class ExpandAggregate(Pass):
                         decs.append((nx, fx, tx))
             return decs
 
-        def expand_aggregate(stmt: Statement, stmts: List[Statement]):
+        def expand_aggregate_wire(stmt: Statement, stmts: List[Statement]):
             if isinstance(stmt.typ, VectorType):
                 typs = flatten_vector(stmt.name, stmt.typ)
                 for nx, tx in typs:
@@ -49,12 +49,54 @@ class ExpandAggregate(Pass):
                     stmts.append(DefWire(nx, tx, stmt.info))
             else:
                 stmts.append(stmt)
+        
+        def expand_aggregate_node(stmt: Statement, stmts: List[Statement]):
+            value = stmt.value
+            if isinstance(value.typ, VectorType):
+                if isinstance(value, Mux):
+                    tval, fval = value.tval, value.fval
+                    tval_typs, fval_typs = flatten_vector(tval.name, tval.typ), flatten_vector(fval.name, fval.typ)
+                    typs = flatten_vector(stmt.name, value.typ)
+                    for i in range(len(typs)):
+                        stmts.append(DefNode(typs[i][0], Mux(value.cond,
+                            Reference(tval_typs[i][0], tval_typs[i][1]), Reference(fval_typs[i][0], fval_typs[i][1]), typs[i][1])))
+                if isinstance(value, ValidIf):
+                    val = value.value
+                    val_typs = flatten_vector(val.name, val.value)
+                    typs = flatten_vector(stmt.name, value.typ)
+                    for i in range(len(typs)):
+                        stmts.append(DefNode(typs[i][0], ValidIf(value.cond,
+                            Reference(val_typs[i][0], val_typs[i][1]), typs[i][1])))
+                if isinstance(value, DoPrim):
+                    ...
+            elif isinstance(stmt.typ, BundleType):
+                if isinstance(value, Mux):
+                    tval, fval = value.tval, value.fval
+                    tval_typs, fval_typs = flatten_bundle(tval.name, tval.typ), flatten_bundle(fval.name, fval.typ)
+                    typs = flatten_bundle(stmt.name, value.typ)
+                    for i in range(len(typs)):
+                        stmts.append(DefNode(typs[i][0], Mux(value.cond,
+                            Reference(tval_typs[i][0], tval_typs[i][2]), Reference(fval_typs[i][0], fval_typs[i][2]), typs[i][2])))
+                if isinstance(value, ValidIf):
+                    val = value.value
+                    val_typs = flatten_bundle(val.name, val.value)
+                    typs = flatten_bundle(stmt.name, value.typ)
+                    for i in range(len(typs)):
+                        stmts.append(DefNode(typs[i][0], ValidIf(value.cond,
+                            Reference(val_typs[i][0], val_typs[i][2]), typs[i][2])))
+                if isinstance(value, DoPrim):
+                    ...
+            else:
+                stmts.append(stmt)
 
         def expand_aggregate_s(stmts: List[Statement]) -> List[Statement]:
             new_stmts = []
             for stmt in stmts:
                 if isinstance(stmt, DefWire):
-                    expand_aggregate(stmt, new_stmts)
+                    expand_aggregate_wire(stmt, new_stmts)
+                elif isinstance(stmt, DefNode):
+                    expand_aggregate_node(stmt, new_stmts)
+                    # new_stmts.append(stmt)
                 else:
                     new_stmts.append(stmt)
             return new_stmts

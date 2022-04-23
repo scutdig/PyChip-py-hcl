@@ -7,6 +7,8 @@ from pyhcl.passes.replace_subaccess import ReplaceSubaccess
 from pyhcl.passes.replace_subindex import ReplaceSubindex
 from pyhcl.passes.expand_aggregate import ExpandAggregate
 from pyhcl.passes.expand_whens import ExpandWhens
+from pyhcl.passes.expand_memory import ExpandMemory
+from pyhcl.passes.optimize import Optimize
 from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
@@ -19,7 +21,6 @@ class HighForm(Form):
     c: low_ir.Circuit
 
     def emit(self) -> str:
-        self.c = CheckAndInfer.run(self.c)
         return self.c.serialize()
 
 @dataclass
@@ -33,11 +34,13 @@ class LowForm(Form):
 
     def emit(self) -> str:
         AutoName()
+        self.c = ExpandMemory().run(self.c)
         self.c = CheckAndInfer.run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = ReplaceSubindex().run(self.c)
         self.c = ExpandAggregate().run(self.c)
         self.c = ExpandWhens().run(self.c)
+        self.c = Optimize().run(self.c)
         return self.c.serialize()
 
 @dataclass
@@ -46,7 +49,4 @@ class Verilog(Form):
 
     def emit(self) -> str:
         self.c = CheckAndInfer.run(self.c)
-        self.c = ReplaceSubaccess().run(self.c)
-        self.c = ReplaceSubindex().run(self.c)
-        self.c = ExpandAggregate().run(self.c)
         return self.c.verilog_serialize()

@@ -7,7 +7,7 @@ from pyhcl.core._emit_context import EmitterContext
 from pyhcl.dsl.module import Module
 from pyhcl.ir import low_ir
 from pyhcl.util.firrtltools import replacewithfirmod
-from pyhcl.dsl.stage import Form, LowForm
+from pyhcl.dsl.stage import Form, HighForm
 
 
 class Emitter:
@@ -21,7 +21,7 @@ class Emitter:
         return circuit
 
     @staticmethod
-    def emit(m: Module, f: Form = LowForm) -> str:
+    def emit(m: Module, f: Form = HighForm) -> str:
         return f(Emitter.elaborate(m)).emit()
 
     @staticmethod

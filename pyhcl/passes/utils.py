@@ -142,9 +142,9 @@ def mux_types(t1: Type, t2: Type) -> Type:
     elif isinstance(t1, AsyncResetType) and isinstance(t2, AsyncResetType):
         return AsyncResetType()
     elif isinstance(t1, UIntType) and isinstance(t2, UIntType):
-        return UIntType(UnknownType())
+        return t1
     elif isinstance(t1, SIntType) and isinstance(t2, SIntType):
-        return SIntType(UnknownType())
+        return t2
     elif isinstance(t1, VectorType) and isinstance(t2, VectorType):
         return VectorType(mux_types(t1.typ, t2.typ), t1.size)
     elif isinstance(t1, BundleType) and isinstance(t2, BundleType):
