@@ -81,7 +81,7 @@ class GCD(Module):
         y <<= io.b
 
     io.z <<= x
-    io.v <<= y == U(0)
+    io.v <<= y == U.w(32)(0)
 
 class Mul3(Module):
     """
@@ -154,8 +154,8 @@ class Top(Module):
 
 
 if __name__ == '__main__':
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Mul3()), "Mul3.fir"), True)
-    Emitter.dump(Emitter.emit(MuxVec(), LowForm), "MuxVec.lo.fir")
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
+    Emitter.dump(Emitter.emit(GCD(), Verilog), "GCD.v")
     # Emitter.dumpLoweredForm(Emitter.dump(Emitter.emit(Top()), "Top.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))

@@ -69,7 +69,7 @@ class ExpandAggregate(Pass):
                             Reference(val_typs[i][0], val_typs[i][1]), typs[i][1])))
                 if isinstance(value, DoPrim):
                     ...
-            elif isinstance(stmt.typ, BundleType):
+            elif isinstance(value.typ, BundleType):
                 if isinstance(value, Mux):
                     tval, fval = value.tval, value.fval
                     tval_typs, fval_typs = flatten_bundle(tval.name, tval.typ), flatten_bundle(fval.name, fval.typ)

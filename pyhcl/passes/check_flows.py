@@ -46,11 +46,6 @@ class CheckFlow(Pass):
             flow = get_flow(e, flows)
             if isinstance(flow, SourceFlow) and isinstance(desired, SinkFlow):
                 errors.append(WrongFlow(info, mname, e.serialize(), desired, flow))
-            elif isinstance(flow, SinkFlow) and isinstance(desired, SourceFlow):
-                # TODO: check PortKind or InstanceKind, but never implement.
-                ...
-            else:
-                ...
         
         def check_flow_e(info: Info, mname: str, flows: Dict[str, Flow], e: Expression):
             if isinstance(e, Mux):

@@ -852,10 +852,12 @@ class Block(Statement):
     #             stmt.expr = node_exp_map[stmt.expr.name].value
     #     return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
 
-    def verilog_serialize(self) -> str:
-        node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+    def remove_nodes(self, body: Block) -> Block:
+        if isinstance(body, EmptyStmt):
+            return EmptyStmt()
+        stmts = body.stmts
+        node_exp_map = {stmt.name: stmt for stmt in stmts if self.auto_gen_node(stmt)}
         filter_node = set()
-        stmts = []
         new_stmts = []
 
         def get_expr_name(e: Expression):
@@ -865,6 +867,18 @@ class Block(Statement):
                 return e.name
             else:
                 ...
+
+        def fix_not_op(e: Expression) -> Expression:
+            if type(e) == SubIndex:
+                return SubIndex(e.name, fix_not_op(e.expr), e.value, e.typ)
+            elif type(e) == SubAccess:
+                return SubAccess(fix_not_op(e.expr), e.index, e.typ)
+            elif type(e) == SubField:
+                return SubField(fix_not_op(e.expr), e.name, e.typ)
+            elif type(e) == Reference and e.name.startswith('!'):
+                return Reference(f'!({e.name[1:]})', e.typ)
+            else:
+                return e
         
         def gen_sub(e: Expression, target_name: str):
             if type(e) == SubIndex:
@@ -920,23 +934,37 @@ class Block(Statement):
                     new_stmts.append(s)
             else:
                 new_stmts.append(s)
+        
+        def merge_cond(s: Statement):
+            en = get_expr_name(s.pred)
+            if en in node_exp_map:
+                node = node_exp_map[en]
+                new_stmts.append(Conditionally(node.value, self.remove_nodes(s.conseq), self.remove_nodes(s.alt), s.info))
+                filter_node.add(en)
+            else:
+                new_stmts.append(Conditionally(fix_not_op(s.pred), self.remove_nodes(s.conseq), self.remove_nodes(s.alt), s.info))
                 
-        for stmt in self.stmts:
+        for stmt in stmts:
             if type(stmt) == Connect:
                 merge_connect(stmt)
             elif type(stmt) == DefNode:
                 merge_defnode(stmt)
+            elif type(stmt) == Conditionally:
+                merge_cond(stmt)
             else:
                 new_stmts.append(stmt)
         
         new_stmts = [ns for ns in new_stmts if not (type(ns) == DefNode and ns.name in filter_node)]
+        return Block(new_stmts)
 
-        manager = PassManager(Block(new_stmts))
+    def verilog_serialize(self) -> str:
+        new_body = self.remove_nodes(self)
+        manager = PassManager(new_body)
         new_blocks = manager.renew()
         always_blocks = manager.gen_all_always_block()
-        CheckCombLoop.run(new_stmts)
+        CheckCombLoop.run(new_body.stmts)
 
-        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_stmts else ""
+        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_body.stmts else ""
 
 
 # pass will change the  "blocking" feature of Connect Stmt
@@ -969,6 +997,9 @@ class Connect(Statement):
             if attr == 'expr':
                 return f'assign {self.loc.verilog_serialize()}' + \
                     f' {op} {memport.mem.name}_{self.expr.verilog_serialize()}_data{self.info.verilog_serialize()};'
+        
+        if self.blocking is False:
+            return f'{self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
        
         return f'assign {self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
 
@@ -1070,6 +1101,7 @@ class Circuit(FirrtlNode):
     info: Info = NoInfo()
 
     def serialize(self) -> str:
+        CheckCombLoop()
         ms = '\n'.join([indent(f'\n{m.serialize()}') for m in self.modules])
         return f'circuit {self.main} :{self.info.serialize()}{ms}\n'
 

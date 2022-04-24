@@ -49,10 +49,6 @@ class InferWidths(Pass):
                     widths[name] = t.width
 
             return t, widths
-        
-        def infer_widths_p(widths: Dict[str, Width], p: Port):
-            # TODO: infer widths in port
-            return p
 
         def infer_widths_e(widths: Dict[str, Width], e: Expression):
             if isinstance(e, UIntLiteral):
@@ -94,14 +90,11 @@ class InferWidths(Pass):
             if isinstance(m, ExtModule):
                 return m
             widths: Dict[str, Width] = {}
-            ports = None
             stmts = None
-            if hasattr(m, 'ports') and isinstance(m.ports, list):
-                ports = list(map(lambda p: infer_widths_p(widths, p), m.ports))
             if hasattr(m, 'body') and isinstance(m.body, Block):
                 if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                     stmts = list(map(lambda s: infer_widths_s(widths, s), m.body.stmts))
             
-            return Module(m.name, ports, Block(stmts), m.typ, m.info)
+            return Module(m.name, m.ports, Block(stmts), m.typ, m.info)
 
         return Circuit(list(map(lambda m: infer_widths_m(m), c.modules)), c.main, c.info)

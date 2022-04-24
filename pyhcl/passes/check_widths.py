@@ -159,7 +159,6 @@ class CheckWidths(Pass):
                 
                 if isinstance(s.init, Expression) and CheckTypes.valid_connect(s.typ, s.init.typ) is False:
                     con_msg = DefRegister(s.name, s.typ, s.clock, s.reset, s.init, NoInfo())
-                    # TODO WRef class
                     errors.append(InvalidConnect(info, target, con_msg, _, s.init))
         
         def check_width_p(minfo: Info, target: str, p: Port):

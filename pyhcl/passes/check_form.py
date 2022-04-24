@@ -150,6 +150,18 @@ class ModuleNotDefinedException(PassException):
     def __init__(self, info: Info, mname: str, name: str):
         super().__init__(f'{info}: Module {name} is not defined.')
 
+class CircuitHasNoModules(PassException):
+    def __init__(self, info: Info, cname: str):
+        super().__init__(f'{info}: Circuit {cname} has no modules.')
+
+class ModuleHasNoPorts(PassException):
+    def __init__(self, info: Info, mname: str):
+        super().__init__(f'{info}: Module {mname} has no ports.')
+
+class ModuleHasNoBody(PassException):
+    def __init__(self, info: Info, mname: str):
+        super().__init__(f'{info}: Module {mname} has no body.')
+
 class CheckHighForm(Pass):
     def __init__(self, c: Circuit):
         self.c: Circuit = c
@@ -296,7 +308,6 @@ class CheckHighForm(Pass):
             self.check_valid_loc(info, mname, s.loc)
         elif isinstance(s, DefMemPort):
             names.expand_m_port_visibility(s)
-            ...
         else:
             ...
 
@@ -343,15 +354,17 @@ class CheckHighForm(Pass):
         if hasattr(m, 'ports') and isinstance(m.ports, list):
             for p in m.ports:
                 self.check_high_form_p(m.name, names, p)
+        else:
+            self.errors.append(ModuleHasNoPorts(m.info, m.name))
         
         if hasattr(m, 'body') and isinstance(m.body, Block):
             if hasattr(m.body, 'stmts') and isinstance(m.body.stmts, list):
                 for s in m.body.stmts:
                     self.check_high_form_s(m.info, m.name, names, s)
+            else:
+                self.errors.append(ModuleHasNoBody(m.info, m.name))
         
-        if isinstance(m, Module):
-            ...
-        elif isinstance(m, ExtModule):
+        if isinstance(m, ExtModule):
             for port, expr in self.find_bad_reset_type_ports(m, Output):
                 self.errors.append(ResetExtModuleOutputException(port.info, m.name, expr))
 
@@ -359,6 +372,8 @@ class CheckHighForm(Pass):
         if hasattr(self.c, 'modules') and isinstance(self.c.modules, list):
             for m in self.c.modules:
                 self.check_high_form_m(m)
+        else:
+            self.errors.append(CircuitHasNoModules(self.c.info, self.c.main))
 
         if self.c.main not in self.int_module_name:
             self.errors.append(NoTopModuleException(self.c.info, self.c.main))               

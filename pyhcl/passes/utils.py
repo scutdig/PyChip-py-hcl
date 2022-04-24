@@ -80,11 +80,15 @@ def create_exps(e: Expression) -> List[Expression]:
         if isinstance(e.typ, GroundType):
             return [e]
         elif isinstance(e.typ, BundleType):
-            # TODO: add flatMap function
-            return [e]
+            exprs = []
+            for f in e.typ.fields:
+                exprs = exprs + create_exps(Reference(f'{e.name}_{f.name}', f.typ))
+            return exprs
         elif isinstance(e.typ, VectorType):
-            # TODO: add flatMap function
-            return [e]
+            exprs = []
+            for i in range(e.typ.size):
+                exprs = exprs + create_exps(Reference(f'{e.name}_{i}', f.typ))
+            return exprs
 
 def get_info(s: Statement) -> Info:
     if hasattr(s, 'info'):

@@ -168,8 +168,7 @@ class CheckTypes(Pass):
     
     @staticmethod
     def valid_connect(locTyp: Type, exprTyp: Type) -> bool:
-        # TODO: Check the connection between tow interval type.
-        return True
+        return type(locTyp) == type(exprTyp)
 
     def valid_connects(self, c: Connect) -> bool:
         return CheckTypes.valid_connect(c.loc.typ, c.expr.typ)
