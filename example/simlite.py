@@ -2,6 +2,7 @@ from pyhcl import *
 from pysv import sv, DataType, Reference
 from pyhcl.simulator import Simlite, DpiConfig
 
+
 class Add(BlackBox):
     io = IO(
         in1=Input(U.w(32)),
@@ -14,9 +15,9 @@ class Add(BlackBox):
 def fn(a, b):
     return a + b
 
-addpysvmodule(Add, fn)
-compile_and_binding_all()
 
+addpysvmodule(Add, fn)      # 黑盒与函数     # 转换得到.sv/bbox/Add.sv，（SV里调用python函数）
+compile_and_binding_all()   # 编译得到共享库 到.build文件夹下, 生成 SV binding文件 （.sv/pkg/pysv_pkg.sv）
 
 
 class Top(Module):
@@ -36,11 +37,11 @@ from random import randint
 
 if __name__ == '__main__':
     cfg = DpiConfig()
-    #Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     s = Simlite(Top(), dpiconfig=cfg)
     s.start()
     s.step([20, 20])
-    s.step([15, 10])
-    s.step([1000, 1])
-    s.step([999, 201])
+    # s.step([15, 10])
+    # s.step([1000, 1])
+    # s.step([999, 201])
     s.close()

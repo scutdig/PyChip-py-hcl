@@ -126,12 +126,14 @@ class Handler:
     def __hash__(self):
         return hash(self.sig)
 
+
 class DpiConfig(object):
     def __init__(self, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
-        self.sv = pkg_sv_path
-        self.lib = lib_path
-        self.bdir = bbox_sv_dir
-        self.bname = " ".join(os.listdir(self.bdir))
+        self.sv = pkg_sv_path       # .sv/pkg/pysv_pkg.sv
+        self.lib = lib_path         # .build/libpysv.so
+        self.bdir = bbox_sv_dir     # .sv/bbox/
+        # os.listdir()返回指定的文件夹包含的文件或文件夹的名字的列表
+        self.bname = " ".join(os.listdir(self.bdir))    # .sv/bbox/文件夹包含的文件或文件夹的名字的列表
         ...
 
 class Simulator(object):

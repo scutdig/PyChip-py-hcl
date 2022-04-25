@@ -1,4 +1,11 @@
 from pyhcl import *
+# from example import half_adder
+# from example import simlite
+# from example import Simlite_task
+# from injector import simlite_v3
+
+# from injector import simlite_v2
+from injector import simlite_v4
 
 
 class MOD(Module):
@@ -23,8 +30,14 @@ class MOD(Module):
 
 
 def main():
-    f = Emitter.dump(Emitter.emit(MOD()), "mod.v")
-    Emitter.dumpVerilog(f)
+    # f = Emitter.dump(Emitter.emit(MOD()), "mod.v")
+    # Emitter.dumpVerilog(f)
+    # half_adder.main()
+
+    # simlite_v2.main()
+    simlite_v4.main()
+
+    # Simlite_task.test()
 
 
 if __name__ == '__main__':
