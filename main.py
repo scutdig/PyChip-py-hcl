@@ -25,19 +25,6 @@ class MOD(Module):
 
     io.z <<= x
 
-class FullAdder(Module):
-    io = IO(
-        a=Input(U.w(1)),
-        b=Input(U.w(1)),
-        cin=Input(U.w(1)),
-        s=Output(U.w(1)),
-        cout=Output(U.w(1))
-    )
-
-    io.s <<= io.a ^ io.b ^ io.cin
-    io.cout <<= (io.a & io.b) | (io.a & io.cin) | (io.b & io.cin)
-
-
 class MemDemo(Module):
     io = IO(
         i=Input(U.w(16)),
@@ -153,10 +140,83 @@ class Top(Module):
 
 
 
+def matrixMul(x: int, y: int, z: int, width: int):
+    class MatrixMul(Module):
+        io = IO(
+            a=Input(Vec(x, Vec(y, U.w(width)))),
+            b=Input(Vec(y, Vec(z, U.w(width)))),
+            o=Output(Vec(x, Vec(z, U.w(width)))),
+            v=Output(Bool)
+        )
+        counter = RegInit(U.w(32)(0))
+
+        res = Reg(Vec(x, Vec(z, U.w(width))))
+
+        io.v <<= Bool(False)
+        io.o <<= res
+        with when(counter == U(x * z)):
+            counter <<= U(0)
+            io.v <<= Bool(True)
+        with otherwise():
+            counter <<= counter + U(1)
+            row = counter / U(x)
+            col = counter % U(x)
+            res[row][col] <<= (lambda io, row, col: Sum(io.a[row][i] * io.b[i][col] for i in range(y)))(io, row, col)
+
+
+        # # a trick of solving python3 closure scope problem
+        # io.o <<= (lambda io: VecInit(VecInit(
+        #     Sum(a * b for a, b in zip(a_row, b_col)) for b_col in zip(*io.b)) for a_row in io.a))(io)
+
+    return MatrixMul()
+
+
+class FullAdder(Module):
+    io = IO(
+        a=Input(U.w(1)),
+        b=Input(U.w(1)),
+        cin=Input(U.w(1)),
+        s=Output(U.w(1)),
+        cout=Output(U.w(1))
+    )
+
+    io.s <<= io.a ^ io.b ^ io.cin
+    io.cout <<= (io.a & io.b) | (io.a & io.cin) | (io.b & io.cin)
+
+def adder(n: int):
+    class Adder(Module):
+        io = IO(
+            a=Input(U.w(n)),
+            b=Input(U.w(n)),
+            cin=Input(Bool),
+            sum=Output(U.w(n)),
+            cout=Output(Bool),
+        )
+
+        FAs = [FullAdder().io for _ in range(n)]
+        carry = Wire(Vec(n + 1, Bool))
+        sum = Wire(Vec(n, Bool))
+
+        carry[0] <<= io.cin
+
+        for i in range(n):
+            FAs[i].a <<= io.a[i]
+            FAs[i].b <<= io.b[i]
+            FAs[i].cin <<= carry[i]
+            carry[i + 1] <<= FAs[i].cout
+            sum[i] <<= FAs[i].s
+
+        io.sum <<= CatVecH2L(sum)
+        io.cout <<= carry[n]
+
+    return Adder()
+
+
+
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
-    Emitter.dump(Emitter.emit(FullAdder(), LowForm), "FullAdder.lo.fir")
-    # Emitter.dumpLoweredForm(Emitter.dump(Emitter.emit(Top()), "Top.fir"), True)
+    Emitter.dump(Emitter.emit(adder(4), Verilog), "Adder.v")
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(adder(4)), "Adder.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
 

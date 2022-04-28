@@ -279,6 +279,9 @@ class Xorr(PrimOp):
 class Cat(PrimOp):
     def __repr__(self):
         return 'cat'
+    
+    def verilog_op(self):
+        return self.__repr__()
 
 
 # Bit Extraction
@@ -286,6 +289,9 @@ class Cat(PrimOp):
 class Bits(PrimOp):
     def __repr__(self):
         return 'bits'
+    
+    def verilog_op(self):
+        return self.__repr__()
 
 
 # Head

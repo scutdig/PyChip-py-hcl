@@ -168,6 +168,8 @@ class CheckTypes(Pass):
     
     @staticmethod
     def valid_connect(locTyp: Type, exprTyp: Type) -> bool:
+        if isinstance(locTyp, (ClockType, UIntType)) and isinstance(exprTyp, (ClockType, UIntType)):
+            return True
         return type(locTyp) == type(exprTyp)
 
     def valid_connects(self, c: Connect) -> bool:

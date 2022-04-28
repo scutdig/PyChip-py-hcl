@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from pyhcl.ir.low_node import FirrtlNode
-from pyhcl.ir.low_prim import PrimOp, Bits
+from pyhcl.ir.low_prim import PrimOp, Bits, Cat
 from pyhcl.ir.utils import backspace, indent, deleblankline, backspace1, get_binary_width, TransformException, DAG
 class Info(FirrtlNode, ABC):
     """INFOs"""
@@ -215,7 +215,15 @@ class DoPrim(Expression):
 
     def verilog_serialize(self) -> str:
         sl: List[str] = [arg.verilog_serialize() for arg in self.args] + [repr(con) for con in self.consts]
-        return f'{self.op.verilog_serialize().join(sl)}'
+        if isinstance(self.op, Cat):
+            return f'{{{", ".join(sl)}}}'
+        elif isinstance(self.op, Bits):
+            arg = self.args[0]
+            msb, lsb = self.consts[0], self.consts[1]
+            msb_lsb = f'{msb}: {lsb}' if msb != lsb else f'{msb}'
+            return f'{arg.verilog_serialize()}[{msb_lsb}]'
+        else:
+           return f'{self.op.verilog_serialize().join(sl)}'
 
 
 @dataclass(frozen=True)
@@ -958,13 +966,16 @@ class Block(Statement):
         return Block(new_stmts)
 
     def verilog_serialize(self) -> str:
-        new_body = self.remove_nodes(self)
-        manager = PassManager(new_body)
-        new_blocks = manager.renew()
-        always_blocks = manager.gen_all_always_block()
-        CheckCombLoop.run(new_body.stmts)
+        try:
+            new_body = self.remove_nodes(self)
+            manager = PassManager(new_body)
+            new_blocks = manager.renew()
+            always_blocks = manager.gen_all_always_block()
+            CheckCombLoop.run(new_body.stmts)
 
-        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_body.stmts else ""
+            return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_body.stmts else ""
+        except Exception as e:
+            raise e
 
 
 # pass will change the  "blocking" feature of Connect Stmt
@@ -1116,6 +1127,7 @@ class Circuit(FirrtlNode):
         SubAccessGenCounter()
 
 class InstanceManager:
+    _modules: Dict[str, DefModule] = {}
     _extModules: Dict[str, DefModule] = {}
 
     def __init__(self, c: Circuit):
@@ -1124,12 +1136,17 @@ class InstanceManager:
 
     def _dealExtModules(self):
         for m in self._c.modules:
+            if isinstance(m, Module):
+                InstanceManager._modules[m.name] = m
             if isinstance(m, ExtModule):
                 InstanceManager._extModules[m.name] = m
     
     @staticmethod
     def _getInstancePorts(name):
-        return InstanceManager._extModules[name].ports
+        if name in InstanceManager._modules:
+            return InstanceManager._modules[name].ports
+        if name in InstanceManager._extModules:
+            return InstanceManager._extModules[name].ports
 
 class CheckCombLoop:
     connect_graph = DAG()
