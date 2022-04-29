@@ -88,6 +88,19 @@ class ExpandAggregate(Pass):
                     ...
             else:
                 stmts.append(stmt)
+        
+        def expand_aggregate_reg(stmt: Statement, stmts: List[Statement]):
+            typ = stmt.typ
+            if isinstance(typ, VectorType):
+                typs = flatten_vector(stmt.name, typ)
+                for nx, tx in typs:
+                    stmts.append(DefRegister(nx, tx, stmt.clock, stmt.reset, stmt.init, stmt.info))
+            elif isinstance(typ, BundleType):
+                typs = flatten_bundle(stmt.name, stmt.typ)
+                for nx, _, tx in typs:
+                    stmts.append(DefRegister(nx, tx, stmt.clock, stmt.reset, stmt.init, stmt.info))
+            else:
+                stmts.append(stmt)
 
         def expand_aggregate_s(stmts: List[Statement]) -> List[Statement]:
             new_stmts = []
@@ -97,6 +110,8 @@ class ExpandAggregate(Pass):
                 elif isinstance(stmt, DefNode):
                     expand_aggregate_node(stmt, new_stmts)
                     # new_stmts.append(stmt)
+                elif isinstance(stmt, DefRegister):
+                    expand_aggregate_reg(stmt, new_stmts)
                 else:
                     new_stmts.append(stmt)
             return new_stmts

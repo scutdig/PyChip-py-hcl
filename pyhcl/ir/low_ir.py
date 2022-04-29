@@ -744,9 +744,9 @@ class RegTracer(ValTracer):
 
     def gen_always_block(self):
         self.gen_body()
-        res =  f'always @(posedge {self.clock.verilog_serialize()}) begin\n' + \
+        res =  (f'always @(posedge {self.clock.verilog_serialize()}) begin\n' + \
                deleblankline(indent(f'\n{self.body.verilog_serialize()}')) + \
-               f'\nend'
+               f'\nend') if len(self.body.stmts) > 0 else ''
         return res
 
 class MemTracer(ValTracer):
@@ -794,7 +794,7 @@ class PassManager:
         if type(block) == EmptyStmt:
             return EmptyStmt()
         for stmt in block.stmts:
-            if type(stmt) == Connect and stmt.loc.name in self.reg_map:
+            if type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name in self.reg_map:
                 stmt.blocking = False
                 self.reg_map[stmt.loc.name].add_cond(signal, stmt)
             elif type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name in self.mem_map:
@@ -813,18 +813,22 @@ class PassManager:
 
     def pass_check(self, stmt):
         return type(stmt) != Conditionally and type(stmt) != Connect \
-               or type(stmt) == Connect and stmt.loc.name not in self.reg_map \
+               or type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name not in self.reg_map \
                or type(stmt) == Conditionally and type(stmt.conseq) != EmptyStmt
 
     def gen_all_always_block(self):
         res = ""
         for reg, tracer in self.reg_map.items():
-            res += f'\n// handle register {reg}'
-            res += f'\n{tracer.gen_always_block()}'
+            always_block = tracer.gen_always_block()
+            if len(always_block) > 0:
+                res += f'\n// handle register {reg}'
+                res += f'\n{always_block}'
         for mem, tracer in self.mem_map.items():
-            if tracer.rw is False:
-              res += f'\n// handle memory port {mem}'
-            res += f'\n{tracer.gen_always_block()}'
+            always_block = tracer.gen_always_block()
+            if len(always_block) > 0:
+                if tracer.rw is False:
+                    res += f'\n// handle memory port {mem}'
+                res += f'\n{tracer.gen_always_block()}'
         return res
 
 

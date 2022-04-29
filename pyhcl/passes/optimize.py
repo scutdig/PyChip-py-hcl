@@ -22,6 +22,7 @@ class Optimize(Pass):
                     defwires[stmt.name] = stmt
                 if isinstance(stmt, Connect):
                     connects[get_name(stmt.loc)] = stmt
+
             
             for defwire in defwires.keys():
                 if defwire in connects:

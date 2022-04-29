@@ -215,7 +215,8 @@ def adder(n: int):
 
 if __name__ == '__main__':
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(GCD()), "GCD.fir"), True)
-    Emitter.dump(Emitter.emit(adder(4), Verilog), "Adder.v")
+    Emitter.dump(Emitter.emit(matrixMul(2, 3, 2, 8), Verilog), "matrixMul.v")
+    # Emitter.dump(Emitter.emit(MuxVec(), Verilog), "MuxVec.v")
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(adder(4)), "Adder.fir"), True)
     # cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))

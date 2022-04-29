@@ -25,54 +25,76 @@ class ReplaceSubaccess(Pass):
                 return t
 
         def get_type(e: Expression) -> Type:
-            if isinstance(e, SubAccess):
+            if isinstance(e, (SubAccess, SubIndex)):
                 return get_type(e.expr)
             else:
                 return e.typ
 
-        def replace_subaccess_e(e: Expression, t: Type):
+        def replace_subaccess_e(e: Expression):
             exprs = []
-            new_exprs = []
             index = []
-            new_index = []
-            if type(e.expr) == SubAccess:
-                exprs, index = replace_subaccess_e(e.expr, t.typ)
-            if type(e.expr) == Reference:
-                for i in range(t.size):
-                    new_exprs.append(DoPrim(Eq(), [UIntLiteral(i, IntWidth(get_binary_width(i))), e.index], [], UIntType(1)))
-                    new_index.append(SubIndex('', e.expr, i, t))
-            else:
-                for i in range(t.size):
-                    for expr in exprs:
-                        new_exprs.append(DoPrim(And(), [DoPrim(Eq(), [UIntLiteral(i, IntWidth(get_binary_width(i))), e.index],
-                          [], UIntType(1)), expr], [], UIntType(1)))
-                    for ind in index:
-                        new_index.append(SubIndex('', ind, i, t))
+            size = 0
+            if isinstance(e, SubAccess):
+                subexprs, subindex, size = replace_subaccess_e(e.expr)
+                for n in range(size):
+                    if len(subexprs) == 0:
+                        exprs.append(DoPrim(Eq(), [e.index, UIntLiteral(n, IntWidth(get_binary_width(n)))], [], UIntType(1)))
+                    else:
+                        for expr in subexprs:
+                            exprs.append(DoPrim(And(), [DoPrim(Eq(), [e.index, UIntLiteral(n, IntWidth(get_binary_width(n)))],
+                                [], UIntType(1)), expr], [], UIntType(1)))
+                    for ind in subindex:
+                        index.append(SubIndex('', ind, n, e.typ))
+                size = e.typ.size if hasattr(e.typ, 'size') else 0
+            if isinstance(e, SubIndex):
+                subexprs, subindex, size = replace_subaccess_e(e.expr)
+                if len(subexprs) == 0:
+                    index.append(e)
+                else:
+                    exprs = subexprs
+                    index = list(map(lambda i: SubIndex(e.name, i, e.value, e.typ), subindex))
+                size = e.typ.size if hasattr(e.typ, 'size') else 0
+            elif isinstance(e, (Reference, SubField)):
+                index.append(e)
+                size = e.typ.size if hasattr(e.typ, 'size') else 0
                 
-            return new_exprs, new_index       
+            return exprs, index, size      
 
-        def replace_subaccess(target_s: Statement, stmts: List[Statement]):
+        def replace_subaccess(target_e: Expression, stmts: List[Statement]) -> Expression:
+            if isinstance(target_e, Mux):
+                return Mux(target_e.cond, replace_subaccess(target_e.tval, stmts), replace_subaccess(target_e.fval, stmts), target_e.typ)
+            if isinstance(target_e, ValidIf):
+                return ValidIf(target_e.cond, replace_subaccess(target_e.value, stmts), target_e.typ)
+            if isinstance(target_e, DoPrim):
+                return DoPrim(target_e.op, list(map(lambda arg: replace_subaccess(arg, stmts), target_e.args)), target_e.consts, target_e.typ)
             nodes = []
-            exprs, index = replace_subaccess_e(target_s.expr, get_type(target_s.expr))
-            if len(exprs) == len(index):
+            exprs, index, _ = replace_subaccess_e(target_e)
+            if len(exprs) > 0 and len(index) > 0 and len(exprs) == len(index):
                 for i in range(len(exprs)):
                     if i == 0:
                         node = DefNode(auto_gen_name(),
-                          ValidIf(exprs[i], index[i], get_groud_type(get_type(target_s.expr))))
+                          ValidIf(exprs[i], index[i], get_groud_type(get_type(target_e))))
                         stmts.append(node)
                         nodes.append(node)
                     else:
                         node = DefNode(auto_gen_name(), Mux(exprs[i], index[i],
-                        Reference(nodes[-1].name, nodes[-1].value.typ), get_groud_type(get_type(target_s.expr))))
+                        Reference(nodes[-1].name, nodes[-1].value.typ), get_groud_type(get_type(target_e))))
                         stmts.append(node)
                         nodes.append(node)
-                stmts.append(Connect(target_s.loc, Reference(nodes[-1].name, nodes[-1].value.typ)))
+                return Reference(nodes[-1].name, nodes[-1].value.typ)
+            return target_e
 
         def replace_subaccess_s(stmts: List[Statement]) -> List[Statement]:
             new_stmts = []
             for stmt in stmts:
-                if isinstance(stmt, Connect) and isinstance(stmt.expr, SubAccess):
-                    replace_subaccess(stmt, new_stmts)
+                if isinstance(stmt, Connect):
+                    new_stmts.append(Connect(stmt.loc, replace_subaccess(stmt.expr, new_stmts)))
+                elif isinstance(stmt, Conditionally):
+                    conseq = Block(replace_subaccess_s(stmt.conseq.stmts))
+                    alt = EmptyStmt() if isinstance(stmt.alt, EmptyStmt) else Block(replace_subaccess_s(stmt.alt.stmts))
+                    new_stmts.append(Conditionally(stmt.pred, conseq, alt, stmt.info))
+                elif isinstance(stmt, DefNode):
+                    new_stmts.append(DefNode(stmt.name, replace_subaccess(stmt.value, new_stmts), stmt.info))
                 else:
                     new_stmts.append(stmt)
             return new_stmts
