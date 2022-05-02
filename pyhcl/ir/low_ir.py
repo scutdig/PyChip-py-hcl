@@ -912,14 +912,38 @@ class Block(Statement):
                 arg_name = get_expr_name(arg)
                 if arg_name in node_exp_map.keys():
                     new_args.append(expand_doprim(node_exp_map[arg_name].value))
+                    filter_node.add(arg_name)
                 else:
                     new_args.append(arg)
             return DoPrim(e.op, new_args, e.consts, e.typ)
+            
         
-        def gen_expr(node: Expression, expr: Expression):
+        def gen_expr(node: Expression, expr: Expression = None):
             # TODO: More types of node should be replaced.
             if type(node) == Mux and type(node.tval.typ) == VectorType and type(node.fval.typ) == VectorType:
                 return Mux(node.cond, gen_sub(expr, node.tval.name), gen_sub(expr, node.fval.name), node.typ)
+            elif isinstance(node, Mux):
+                exprs = []
+                cond, tval, fval = node.cond, node.tval, node.fval
+                for expr in [cond, tval, fval]:
+                    en = get_expr_name(expr)
+                    if en in node_exp_map:
+                        exprs.append(gen_expr(node_exp_map[en].value))
+                        filter_node.add(en)
+                    else:
+                        exprs.append(expr)
+                return Mux(exprs[0], exprs[1], exprs[2], node.typ)
+            elif isinstance(node, ValidIf):
+                exprs = []
+                cond, value = node.cond, node.value
+                for expr in [cond, value]:
+                    en = get_expr_name(expr)
+                    if en in node_exp_map:
+                        exprs.append(gen_expr(node_exp_map[en].value))
+                        filter_node.add(en)
+                    else:
+                        exprs.append(expr)
+                return ValidIf(exprs[0], exprs[1], node.typ)
             elif type(node) == DoPrim:
                 return expand_doprim(node)
             else:
