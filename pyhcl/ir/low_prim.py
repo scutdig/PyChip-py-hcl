@@ -220,7 +220,7 @@ class Not(PrimOp):
         return 'not'
 
     def verilog_op(self):
-        return " ~ "
+        return "!"
 
 
 # Bitwise And

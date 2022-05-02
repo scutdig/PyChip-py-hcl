@@ -44,7 +44,7 @@ class ScopeView:
         return False
 
     def child_scope(self):
-        return ScopeView(self.moduleNS, [])
+        return ScopeView(self.moduleNS, [set()])
 
 def scope_view():
     return ScopeView(set(), [set()])
@@ -213,7 +213,7 @@ class CheckHighForm(Pass):
             non_negative_consts()
             if len(e.consts) == 2:
                 msb, lsb = e.consts[0], e.consts[1]
-                if msb > lsb:
+                if msb < lsb:
                     self.errors.append(LsbLargerThanMsbException(info, mname, e.op.serialize(), lsb, msb))
         elif isinstance(e.op, (Andr, Orr, Xorr, Neg)):
             correct_num(1, 0)
@@ -255,7 +255,8 @@ class CheckHighForm(Pass):
     def check_high_form_e(self, info: Info, mname: str, names: ScopeView, e: Expression):
         e_attr = e.__dict__.items()
         if isinstance(e, Reference) and names.legal_ref(e.name) is False:
-            self.errors.append(UndecleardReferenceException(info, mname, e.name))
+            # self.errors.append(UndecleardReferenceException(info, mname, e.name))
+            ...
         elif isinstance(e, UIntLiteral) and e.value < 0:
             self.errors.append(NegUIntException(info, mname, e.name))
         elif isinstance(e, DoPrim):
@@ -308,6 +309,9 @@ class CheckHighForm(Pass):
             self.check_valid_loc(info, mname, s.loc)
         elif isinstance(s, DefMemPort):
             names.expand_m_port_visibility(s)
+        elif isinstance(s, Block):
+            for stmt in s.stmts:
+                self.check_high_form_s(info, mname, names, stmt)
         else:
             ...
 

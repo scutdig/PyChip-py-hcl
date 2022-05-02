@@ -222,8 +222,11 @@ class DoPrim(Expression):
             msb, lsb = self.consts[0], self.consts[1]
             msb_lsb = f'{msb}: {lsb}' if msb != lsb else f'{msb}'
             return f'{arg.verilog_serialize()}[{msb_lsb}]'
+        
+        if len(sl) > 1:
+            return f'{self.op.verilog_serialize().join(sl)}'
         else:
-           return f'{self.op.verilog_serialize().join(sl)}'
+           return f'{self.op.verilog_serialize()}{sl}'
 
 
 @dataclass(frozen=True)

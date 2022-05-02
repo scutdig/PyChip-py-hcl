@@ -1,3 +1,4 @@
+from queue import Empty
 from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
@@ -84,20 +85,27 @@ class ReplaceSubaccess(Pass):
                 return Reference(nodes[-1].name, nodes[-1].value.typ)
             return target_e
 
-        def replace_subaccess_s(stmts: List[Statement]) -> List[Statement]:
-            new_stmts = []
-            for stmt in stmts:
-                if isinstance(stmt, Connect):
-                    new_stmts.append(Connect(stmt.loc, replace_subaccess(stmt.expr, new_stmts)))
-                elif isinstance(stmt, Conditionally):
-                    conseq = Block(replace_subaccess_s(stmt.conseq.stmts))
-                    alt = EmptyStmt() if isinstance(stmt.alt, EmptyStmt) else Block(replace_subaccess_s(stmt.alt.stmts))
-                    new_stmts.append(Conditionally(stmt.pred, conseq, alt, stmt.info))
-                elif isinstance(stmt, DefNode):
-                    new_stmts.append(DefNode(stmt.name, replace_subaccess(stmt.value, new_stmts), stmt.info))
-                else:
-                    new_stmts.append(stmt)
-            return new_stmts
+        def replace_subaccess_s(s: Statement) -> Statement:
+            if isinstance(s, Block):
+                new_stmts = []
+                for stmt in s.stmts:
+                    if isinstance(stmt, Connect):
+                        new_stmts.append(Connect(stmt.loc, replace_subaccess(stmt.expr, new_stmts)))
+                    elif isinstance(stmt, DefNode):
+                        new_stmts.append(DefNode(stmt.name, replace_subaccess(stmt.value, new_stmts), stmt.info))
+                    elif isinstance(stmt, Conditionally):
+                        conseq = replace_subaccess_s(stmt.conseq)
+                        alt = replace_subaccess_s(stmt.alt)
+                        new_stmts.append(Conditionally(stmt.pred, conseq, alt, stmt.info))
+                    else:
+                        new_stmts.append(stmt)
+                return Block(new_stmts)
+            elif isinstance(s, EmptyStmt):
+                return EmptyStmt()
+            elif isinstance(s, Conditionally):
+                return Conditionally(s.pred, replace_subaccess_s(s.conseq), replace_subaccess_s(s.alt), s.info)
+            else:
+                ...
 
         def replace_subaccess_m(m: DefModule) -> DefModule:
             if isinstance(m, ExtModule):
@@ -107,7 +115,7 @@ class ReplaceSubaccess(Pass):
             if not hasattr(m.body, 'stmts') or not isinstance(m.body.stmts, list):
                 return m
             
-            return Module(m.name, m.ports, Block(replace_subaccess_s(m.body.stmts)), m.typ, m.info)
+            return Module(m.name, m.ports, replace_subaccess_s(m.body), m.typ, m.info)
 
         for m in c.modules:
             modules.append(replace_subaccess_m(m))
