@@ -42,9 +42,14 @@ class ScopeView:
             if name in s:
                 return True
         return False
+    
+    def get_ref(self):
+        for s in self.scopes:
+            print(s)
 
     def child_scope(self):
         return ScopeView(self.moduleNS, [set()])
+
 
 def scope_view():
     return ScopeView(set(), [set()])
@@ -255,7 +260,7 @@ class CheckHighForm(Pass):
     def check_high_form_e(self, info: Info, mname: str, names: ScopeView, e: Expression):
         e_attr = e.__dict__.items()
         if isinstance(e, Reference) and names.legal_ref(e.name) is False:
-            # self.errors.append(UndecleardReferenceException(info, mname, e.name))
+            self.errors.append(UndecleardReferenceException(info, mname, e.name))
             ...
         elif isinstance(e, UIntLiteral) and e.value < 0:
             self.errors.append(NegUIntException(info, mname, e.name))
@@ -322,8 +327,8 @@ class CheckHighForm(Pass):
                 self.check_high_form_e(info, mname, names, sa)
 
         if isinstance(s, Conditionally):
-            self.check_high_form_s(minfo, mname, names.child_scope(), s.conseq)
-            self.check_high_form_s(minfo, mname, names.child_scope(), s.alt)
+            self.check_high_form_s(minfo, mname, names, s.conseq)
+            self.check_high_form_s(minfo, mname, names, s.alt)
         else:
             for _, sa in s_attr:
                 if isinstance(sa, Statement):

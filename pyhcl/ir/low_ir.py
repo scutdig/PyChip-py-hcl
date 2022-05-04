@@ -226,7 +226,7 @@ class DoPrim(Expression):
         if len(sl) > 1:
             return f'{self.op.verilog_serialize().join(sl)}'
         else:
-           return f'{self.op.verilog_serialize()}{sl}'
+           return f'{self.op.verilog_serialize()}{sl.pop()}'
 
 
 @dataclass(frozen=True)
@@ -796,6 +796,10 @@ class PassManager:
     def stmts_pass(self, block, signal: str = "default") -> Block:
         if type(block) == EmptyStmt:
             return EmptyStmt()
+        if type(block) == Conditionally:
+            conseq = self.stmts_pass(block.conseq, block.pred.verilog_serialize())
+            alt = self.stmts_pass(block.alt, "!" + block.pred.verilog_serialize())
+            return Conditionally(block.pred, conseq, alt, block.info)
         for stmt in block.stmts:
             if type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name in self.reg_map:
                 stmt.blocking = False
@@ -806,7 +810,7 @@ class PassManager:
                 stmt.mem = { 'expr': self.mem_map[stmt.expr.name].get_mem_port()}
             elif type(stmt) == Conditionally:
                 stmt.conseq = self.stmts_pass(stmt.conseq, stmt.pred.verilog_serialize())
-                stmt.alt = self.stmts_pass(stmt.alt, "!" + stmt.pred.verilog_serialize())
+                stmt.alt = self.stmts_pass(stmt.alt, f"!({stmt.pred.verilog_serialize()})")
             elif type(stmt) == DefInstance:
                 ...
             else:
@@ -845,168 +849,86 @@ class Block(Statement):
     def auto_gen_node(self, stmt):
         return isinstance(stmt, DefNode) and stmt.name.startswith("_T")
 
-    # TODO: remove
-    # # use less nodes
-    # def serialize(self) -> str:
-    #     if not self.stmts:
-    #         return ""
-    #     node_exp_map = {stmt.name: stmt for stmt in self.stmts if self.auto_gen_node(stmt)}
+    def get_name(self, e: Expression) -> str:
+        if isinstance(e, (SubIndex, SubField, SubAccess)):
+            return self.get_name(e.expr)
+        elif isinstance(e, Reference):
+            return e.name
 
-    #     # replace all reference in node_exp_map
-    #     for k, v in node_exp_map.items():
-    #         if isinstance(v.value, DoPrim):
-    #             args = v.value.args
-    #             cnt = 0
-    #             for arg in args:
-    #                 if isinstance(arg, Reference) and arg.name in node_exp_map:
-    #                     node_exp_map[k].value.args[cnt] = node_exp_map[arg.name].value
-    #                 cnt += 1
-    #     # replace all reference in connect
-    #     for stmt in self.stmts:
-    #         if isinstance(stmt, Connect) and isinstance(stmt.expr, Reference) and stmt.expr.name in node_exp_map:
-    #             stmt.expr = node_exp_map[stmt.expr.name].value
-    #     return '\n'.join([stmt.serialize() for stmt in self.stmts if not self.auto_gen_node(stmt)]) if self.stmts else ""
-
-    def remove_nodes(self, body: Block) -> Block:
-        if isinstance(body, EmptyStmt):
-            return EmptyStmt()
-        stmts = body.stmts
-        node_exp_map = {stmt.name: stmt for stmt in stmts if self.auto_gen_node(stmt)}
-        filter_node = set()
-        new_stmts = []
-
-        def get_expr_name(e: Expression):
-            if type(e) in [SubIndex, SubAccess, SubField]:
-                return get_expr_name(e.expr)
-            elif type(e) == Reference:
-                return e.name
-            else:
-                ...
-
-        def fix_not_op(e: Expression) -> Expression:
-            if type(e) == SubIndex:
-                return SubIndex(e.name, fix_not_op(e.expr), e.value, e.typ)
-            elif type(e) == SubAccess:
-                return SubAccess(fix_not_op(e.expr), e.index, e.typ)
-            elif type(e) == SubField:
-                return SubField(fix_not_op(e.expr), e.name, e.typ)
-            elif type(e) == Reference and e.name.startswith('!'):
-                return Reference(f'!({e.name[1:]})', e.typ)
-            else:
-                return e
-        
-        def gen_sub(e: Expression, target_name: str):
-            if type(e) == SubIndex:
-                return SubIndex(e.name, gen_sub(e.expr, target_name), e.value, e.typ)
-            elif type(e) == SubAccess:
-                return SubAccess(gen_sub(e.expr, target_name), e.index, e.typ)
-            elif type(e) == SubField:
-                return SubField(gen_sub(e.expr, target_name), e.name, e.typ)
-            else:
-                return Reference(target_name, e.typ)
-        
-        def expand_doprim(e: Expression) -> Expression:
-            args = e.args
-            new_args = []
-            for arg in args:
-                arg_name = get_expr_name(arg)
-                if arg_name in node_exp_map.keys():
-                    new_args.append(expand_doprim(node_exp_map[arg_name].value))
-                    filter_node.add(arg_name)
-                else:
-                    new_args.append(arg)
-            return DoPrim(e.op, new_args, e.consts, e.typ)
-            
-        
-        def gen_expr(node: Expression, expr: Expression = None):
-            # TODO: More types of node should be replaced.
-            if type(node) == Mux and type(node.tval.typ) == VectorType and type(node.fval.typ) == VectorType:
-                return Mux(node.cond, gen_sub(expr, node.tval.name), gen_sub(expr, node.fval.name), node.typ)
-            elif isinstance(node, Mux):
-                exprs = []
-                cond, tval, fval = node.cond, node.tval, node.fval
-                for expr in [cond, tval, fval]:
-                    en = get_expr_name(expr)
-                    if en in node_exp_map:
-                        exprs.append(gen_expr(node_exp_map[en].value))
-                        filter_node.add(en)
-                    else:
-                        exprs.append(expr)
-                return Mux(exprs[0], exprs[1], exprs[2], node.typ)
-            elif isinstance(node, ValidIf):
-                exprs = []
-                cond, value = node.cond, node.value
-                for expr in [cond, value]:
-                    en = get_expr_name(expr)
-                    if en in node_exp_map:
-                        exprs.append(gen_expr(node_exp_map[en].value))
-                        filter_node.add(en)
-                    else:
-                        exprs.append(expr)
-                return ValidIf(exprs[0], exprs[1], node.typ)
-            elif type(node) == DoPrim:
-                return expand_doprim(node)
-            else:
-                return node
-
-
-        def merge_connect(s: Statement):
-            en = get_expr_name(s.expr)
-            if en in node_exp_map.keys():
-                node = node_exp_map[en]
-                new_stmts.append(Connect(s.loc, gen_expr(node.value, s.expr), s.info))
-                filter_node.add(en)
-            else:
-                new_stmts.append(s)
-        
-        def merge_defnode(s: Statement):
-            if type(s.value) == DoPrim:
-                has_node = False
-                args = s.value.args
-                for arg in args:
-                    if get_expr_name(arg) in node_exp_map.keys():
-                        has_node = True
-                        filter_node.add(get_expr_name(arg))
-                if has_node:
-                    new_stmts.append(DefNode(s.name, expand_doprim(s.value), s.info))
-                else:
-                    new_stmts.append(s)
-            else:
-                new_stmts.append(s)
-        
-        def merge_cond(s: Statement):
-            en = get_expr_name(s.pred)
+    def merge_node_e(self, expr: Expression, node_exp_map: Dict[str, Statement], filter_node: set) -> Expression:
+        if isinstance(expr, (UIntLiteral, SIntLiteral)):
+            return expr
+        elif isinstance(expr, Reference):
+            en = self.get_name(expr)
             if en in node_exp_map:
-                node = node_exp_map[en]
-                new_stmts.append(Conditionally(node.value, self.remove_nodes(s.conseq), self.remove_nodes(s.alt), s.info))
                 filter_node.add(en)
+                return self.merge_node_e(node_exp_map[en].value, node_exp_map, filter_node)
             else:
-                new_stmts.append(Conditionally(fix_not_op(s.pred), self.remove_nodes(s.conseq), self.remove_nodes(s.alt), s.info))
+                return expr
+        elif isinstance(expr, (SubField, SubIndex, SubAccess)):
+            return expr
+        elif isinstance(expr, Mux):
+            return Mux(
+                self.merge_node_e(expr.cond, node_exp_map, filter_node),
+                self.merge_node_e(expr.tval, node_exp_map, filter_node),
+                self.merge_node_e(expr.fval, node_exp_map, filter_node),
+                expr.typ)
+        elif isinstance(expr, ValidIf):
+            return ValidIf(
+                self.merge_node_e(expr.cond, node_exp_map, filter_node),
+                self.merge_node_e(expr.value, node_exp_map, filter_node),
+                expr.typ)
+        elif isinstance(expr, DoPrim):
+            args = list(map(lambda arg: self.merge_node_e(arg, node_exp_map, filter_node), expr.args))
+            return DoPrim(expr.op, args, expr.consts, expr.typ)
+        else:
+            raise TransformException("Unknown Expression.")
+    
+    def merge_node_s(self, stmt: Statement, node_exp_map: Dict[str, Statement], filter_node: set) -> Statement:
+        if isinstance(stmt, EmptyStmt):
+            return stmt
+        elif isinstance(stmt, Conditionally):
+            return Conditionally(
+                self.merge_node_e(stmt.pred, node_exp_map, filter_node),
+                self.merge_node_s(stmt.conseq, node_exp_map, filter_node),
+                self.merge_node_s(stmt.alt, node_exp_map, filter_node),
+                stmt.info)
+        elif isinstance(stmt, Block):
+            node_exp_map = {**node_exp_map, **{s.name: s for s in stmt.stmts if self.auto_gen_node(s)}}
+            stmts = []
+            for s in stmt.stmts:
+                if isinstance(s, Connect):
+                    stmts.append(Connect(
+                        self.merge_node_e(s.loc, node_exp_map, filter_node),
+                        self.merge_node_e(s.expr, node_exp_map, filter_node),
+                        s.info, s.blocking, s.bidirection, s.mem))
+                elif isinstance(s, DefNode):
+                    stmts.append(DefNode(
+                        s.name,
+                        self.merge_node_e(s.value, node_exp_map, filter_node),
+                        s.info))
+                elif isinstance(s, Conditionally):
+                    stmts.append(Conditionally(
+                        self.merge_node_e(s.pred, node_exp_map, filter_node),
+                        self.merge_node_s(s.conseq, node_exp_map, filter_node),
+                        self.merge_node_s(s.alt, node_exp_map, filter_node),
+                        s.info))
+                else:
+                    stmts.append(s)
                 
-        for stmt in stmts:
-            if type(stmt) == Connect:
-                merge_connect(stmt)
-            elif type(stmt) == DefNode:
-                merge_defnode(stmt)
-            elif type(stmt) == Conditionally:
-                merge_cond(stmt)
-            else:
-                new_stmts.append(stmt)
-        
-        new_stmts = [ns for ns in new_stmts if not (type(ns) == DefNode and ns.name in filter_node)]
-        return Block(new_stmts)
+            stmts = [s for s in stmts if not (isinstance(s, DefNode) and s.name in filter_node)]
+            return Block(stmts)
+        else:
+            raise TransformException(f"{stmt} is unexpected statement.")
 
     def verilog_serialize(self) -> str:
-        try:
-            new_body = self.remove_nodes(self)
-            manager = PassManager(new_body)
-            new_blocks = manager.renew()
-            always_blocks = manager.gen_all_always_block()
-            CheckCombLoop.run(new_body.stmts)
+        new_body = self.merge_node_s(self, {}, set())
+        manager = PassManager(new_body)
+        new_blocks = manager.renew()
+        CheckCombLoop.run(new_blocks)
+        always_blocks = manager.gen_all_always_block()
 
-            return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_body.stmts else ""
-        except Exception as e:
-            raise e
+        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_blocks.stmts else ""
 
 
 # pass will change the  "blocking" feature of Connect Stmt
@@ -1181,32 +1103,74 @@ class InstanceManager:
 
 class CheckCombLoop:
     connect_graph = DAG()
+    reg_map = {}
 
     @staticmethod
-    def run(stmts: List[Statement]):
-        types = [SubIndex, SubField, SubAccess, Mux, Reference]
-        def check_comb_loop_s(s: Statement):
-            if type(s) == Connect:
-                if type(s.loc) in types:
-                    try:
-                        CheckCombLoop.connect_graph.add_node_if_not_exists(s.loc.serialize())
-                    except TransformException as e:
-                        raise e
-                if type(s.expr) in types:
-                    try:
-                        CheckCombLoop.connect_graph.add_node_if_not_exists(s.expr.serialize())
-                    except TransformException as e:
-                        raise e
-                if type(s.loc) in types and type(s.expr) in types:
-                    try:
-                        CheckCombLoop.connect_graph.add_edge(s.expr.serialize(), s.loc.serialize())
-                    except TransformException as e:
-                        raise e
-        
-        for stmt in stmts:
-            check_comb_loop_s(stmt)
+    def run(stmt: Statement):
+        def check_comb_loop_e(u: Expression, v: Expression):
+            if isinstance(u, (Reference, SubField, SubIndex, SubAccess)):
+                ux, vx = u.serialize(), v.serialize()
+                if ux in CheckCombLoop.reg_map or vx in CheckCombLoop.reg_map:
+                    return
+                try:
+                    CheckCombLoop.connect_graph.add_node_if_not_exists(vx)
+                    CheckCombLoop.connect_graph.add_node_if_not_exists(ux)
+                    CheckCombLoop.connect_graph.add_edge(ux, vx)
+                except TransformException as e:
+                    raise e
+            elif isinstance(u, Mux):
+                check_comb_loop_e(u.tval, v)
+                check_comb_loop_e(u.fval, v)
+            elif isinstance(u, ValidIf):
+                check_comb_loop_e(u.value, v)
+            elif isinstance(u, DoPrim):
+                for arg in u.args:
+                    check_comb_loop_e(arg, v)
+            else:
+                ...
 
-        return stmts
+        def check_comb_loop_s(s: Statement):
+            if isinstance(s, Connect):
+                if isinstance(s.loc, (Reference, SubField, SubIndex, SubAccess)):
+                    check_comb_loop_e(s.expr, s.loc)
+            elif isinstance(s, DefNode):
+                check_comb_loop_e(s.value, Reference(s.name, s.value.typ))
+            elif isinstance(s, Conditionally):
+                check_comb_loop_s(s.conseq)
+                check_comb_loop_s(s.alt)
+            elif isinstance(s, EmptyStmt):
+                ...
+            elif isinstance(s, Block):
+                for stmt in s.stmts:
+                    check_comb_loop_s(stmt)
+
+        def get_reg_map(s: Statement):
+            if isinstance(s, Block):
+                for sx in s.stmts:
+                    if isinstance(sx, DefRegister):
+                        CheckCombLoop.reg_map[sx.name] = sx
+                    elif isinstance(sx, DefMemPort):
+                        CheckCombLoop.reg_map[f"{sx.mem.name}_{sx.name}_data"] = DefWire(f"{sx.mem.name}_{sx.name}_data",
+                            UIntType(IntWidth(sx.mem.typ.size)))
+                        CheckCombLoop.reg_map[f"{sx.mem.name}_{sx.name}_addr"] = DefWire(f"{sx.mem.name}_{sx.name}_addr",
+                            UIntType(IntWidth(get_binary_width(sx.mem.typ.size))))
+                        CheckCombLoop.reg_map[f"{sx.mem.name}_{sx.name}_en"] = DefWire(f"{sx.mem.name}_{sx.name}_en",
+                            UIntType(IntWidth(1)))
+                        if sx.rw is False:
+                            CheckCombLoop.reg_map[f"{sx.mem.name}_{sx.name}_mask"] = DefWire(f"{sx.mem.name}_{sx.name}_mask",
+                                UIntType(IntWidth(1)))
+                    else:
+                        ...
+            elif isinstance(s, EmptyStmt):
+                ...
+            elif isinstance(s, Conditionally):
+                get_reg_map(s.conseq)
+                get_reg_map(s.alt)
+
+        get_reg_map(stmt)
+        check_comb_loop_s(stmt)
+
+        return stmt
 
 class SubAccessGenCounter:
     count = 0
