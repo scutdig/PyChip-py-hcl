@@ -94,7 +94,8 @@ class ExpandAggregate(Pass):
             if isinstance(typ, VectorType):
                 typs = flatten_vector(stmt.name, typ)
                 for nx, tx in typs:
-                    stmts.append(DefRegister(nx, tx, stmt.clock, stmt.reset, stmt.init, stmt.info))
+                    init = Reference(nx, tx)
+                    stmts.append(DefRegister(nx, tx, stmt.clock, stmt.reset, init, stmt.info))
             elif isinstance(typ, BundleType):
                 typs = flatten_bundle(stmt.name, stmt.typ)
                 for nx, _, tx in typs:

@@ -15,11 +15,24 @@ class ExpandWhens(Pass):
         def flatten(s: Statement) -> List[Statement]:
             new_stmts = []
             conseq, alt = s.conseq, s.alt
-            for sx in (conseq.stmts + (alt.stmts if not isinstance(alt, EmptyStmt) else [])):
-                if isinstance(sx, Conditionally):
-                    new_stmts = new_stmts + flatten(sx)
-                else:
-                    new_stmts.append((s.pred, sx))
+            if isinstance(conseq, EmptyStmt) or isinstance(alt, EmptyStmt):
+                ...
+            if isinstance(conseq, Conditionally):
+                new_stmts += flatten(conseq)
+            if isinstance(alt, Conditionally):
+                new_stmts += flatten(alt)
+            if isinstance(conseq, Block):
+                for sx in conseq.stmts:
+                    if isinstance(sx, Conditionally):
+                        new_stmts = new_stmts + flatten(sx)
+                    else:
+                        new_stmts.append((s.pred, sx))
+            if isinstance(alt, Block):
+                for sx in alt.stmts:
+                    if isinstance(sx, Conditionally):
+                        new_stmts += flatten(sx)
+                    else:
+                        new_stmts.append((s.pred, sx))
             return new_stmts
 
         def expand_whens(stmt: Statement, stmts: List[Statement], reference: Dict[str, Expression]):
@@ -28,9 +41,10 @@ class ExpandWhens(Pass):
                 for pred, sx in flat_cond:
                     if isinstance(sx, Connect):
                         name = auto_gen_name()
-                        loc = sx.loc if sx.loc.name not in reference else reference[sx.loc.name]
+                        loc_name = sx.loc.verilog_serialize() if isinstance(sx.loc, SubIndex) else sx.loc.serialize()
+                        loc = sx.loc if loc_name not in reference else reference[loc_name]
                         stmts.append(DefNode(name, Mux(pred, sx.expr, loc, sx.expr.typ)))
-                        reference[sx.loc.name] = Reference(name, sx.loc.typ)
+                        reference[loc_name] = Reference(name, sx.loc.typ)
                     else:
                         stmts.append(sx)
             else:

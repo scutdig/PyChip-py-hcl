@@ -90,13 +90,11 @@ class ReplaceSubaccess(Pass):
                 new_stmts = []
                 for stmt in s.stmts:
                     if isinstance(stmt, Connect):
-                        new_stmts.append(Connect(stmt.loc, replace_subaccess(stmt.expr, new_stmts)))
+                        new_stmts.append(Connect(replace_subaccess(stmt.loc, new_stmts), replace_subaccess(stmt.expr, new_stmts)))
                     elif isinstance(stmt, DefNode):
                         new_stmts.append(DefNode(stmt.name, replace_subaccess(stmt.value, new_stmts), stmt.info))
                     elif isinstance(stmt, Conditionally):
-                        conseq = replace_subaccess_s(stmt.conseq)
-                        alt = replace_subaccess_s(stmt.alt)
-                        new_stmts.append(Conditionally(stmt.pred, conseq, alt, stmt.info))
+                        new_stmts.append(replace_subaccess_s(stmt))
                     else:
                         new_stmts.append(stmt)
                 return Block(new_stmts)
