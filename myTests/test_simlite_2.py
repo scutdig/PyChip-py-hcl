@@ -49,8 +49,8 @@ def main():
     s = Simlite(Top(), debug=True)
 
     # test_step(s)
-    # test_task(s)
-    test_file(s)
+    test_task(s)
+    # test_file(s)
 
     s.close()
 

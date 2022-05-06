@@ -5,9 +5,9 @@ from queue import Queue
 from pyhcl.simulator.simlite_verilog import Simlite
 import random
 
+
 # 每次给输入端口赋值, 跑一个时间单位
 def test_step(s):
-
     s.start()
     s.step([0, 0, 20, 20])
     print("kkk")
@@ -38,25 +38,19 @@ def randomInput(ifn):
     fd.close()
 
 
-def initOutput(ofn):
-    f = open(ofn, "r+")
-    f.truncate()
-
-
 def test_file(s):
     ifn = f"../myTests/tmp/Top_inputs"
     ofn = f"../myTests/tmp/Top_outputs"
     randomInput(ifn)
-    # initOutput(ofn)
     s.start(mode="task", ofn=ofn, ifn=ifn)
     pass
 
 
 def main():
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
-    module_name = 'Top'
-    verilog_path = 'myTests/tmp/Top.v'
-    s = Simlite(module_name, verilog_path, debug=True)
+    top_module_name = 'Top.v'
+    dut_path = 'myTests/tmp/dut/'
+    s = Simlite(top_module_name, dut_path, debug=True)
 
     # test_step(s)
     # test_task(s)

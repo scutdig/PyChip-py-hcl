@@ -11,7 +11,7 @@ class Simlite(object):
     # 根据传入的Simlite对象实例，深度复制得到新的Simlite对象实例
     def __fork_init(self, other):
         import copy
-        self.verilog_path = other.verilog_path
+        self.dut_path = other.dut_path
         self.dpiconfig = other.dpiconfig
         if (hasattr(other, "efn")):
             self.efn = other.efn
@@ -40,12 +40,13 @@ class Simlite(object):
     # self.lib = lib_path       # .build/libpysv.so
     # self.bdir = bbox_sv_dir   # .sv/bbox/
     # self.bname = " ".join(os.listdir(self.bdir))  # .sv/bbox/文件夹包含的文件或文件夹的名字的列表
-    def __init__(self, module_name, verilog_path='', harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0", module=None):
+    def __init__(self, top_module_name='', dut_path='', harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0", module=None):
         self.raw_in = None
         self.efn = None
         self.ofn = None
         self.ifn = None
-        self.verilog_path = verilog_path
+        self.dut_path = dut_path
+        self.top_module_name = top_module_name
         # module为Simlite对象实例
         if isinstance(module, Simlite):
             self.__fork_init(module)
@@ -68,42 +69,41 @@ class Simlite(object):
             self.debug = debug
             self.fork_cnt = 0
 
-            self.inputs, self.outputs = self.parse(verilog_path)
+            self.inputs, self.outputs = self.verilog_parse(dut_path, top_module_name)
 
-            self.dut_name = module_name         # 模块名
+            self.dut_name = top_module_name.split('.')[0]         # 模块名
 
             # 通过harness代码开始仿真
             if harness_code:
                 self.compile(harness_code)
             else:
                 # 传入module_name和ports生成harness代码，然后仿真
-                self.compile(self.codegen(module_name))
+                self.compile(self.codegen(self.dut_name))
 
-    # 解析verilog代码, 返回输入端口名列表 和 输出端口名列表
-    def parse(self, verilog_path):
-        with open(verilog_path, "r") as file:
+    def verilog_parse(self, dut_path, top_module_name):
+        top_module_path = dut_path + top_module_name
+        with open(top_module_path, "r") as file:
             verilog_code = file.readlines()
             verilog_code = ''.join(verilog_code)
             # module_name_match = re.compile(r"module\s*([a-zA-Z0-9_]+)")
 
             # 匹配输入端口        input clock, input [31:0] io_a
-            input_port_match = re.compile(r"input\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
+            input_port_match = re.compile(r"input\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
             # 匹配输出端口        output [31:0] io_c
-            output_port_match = re.compile(r"output\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
+            output_port_match = re.compile(r"output\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
 
             # module_name = re.search(module_name_match, verilog_code).group(1)
             input_ports = re.findall(input_port_match, verilog_code)
             output_ports = re.findall(output_port_match, verilog_code)
             try:
                 # 输入端口名列表
-                input_ports_name = [input_port[1] for input_port in input_ports]
+                input_ports_name = [input_port[2] for input_port in input_ports]
                 # 输出端口名列表
-                output_ports_name = [output_port[1] for output_port in output_ports]
-                # print(module_name)
+                output_ports_name = [output_port[2] for output_port in output_ports]
                 # print(input_ports)
                 # print(output_ports)
-                print(input_ports_name)
-                print(output_ports_name)
+                # print(input_ports_name)
+                # print(output_ports_name)
                 # print(verilog_code)
             except:
                 print("can't find input or output ports")
@@ -128,13 +128,14 @@ class Simlite(object):
         except FileExistsError:
             pass
 
-        os.system("cp {} ./simulation/{}.v".format(self.verilog_path, self.dut_name))
+        os.system("cp {}* ./simulation/".format(self.dut_path))
 
         # 在simulation文件夹下创建dut_name-harness.cpp，写入harness代码
         with open(f"./simulation/{self.dut_name}-harness.cpp", "w+") as f:
             f.write(harness_code)
 
-        vfn = "{}.v".format(self.dut_name)              # {dut_name}.v
+        # vfn = "{}.v".format(self.dut_name)              # {dut_name}.v
+        vfn = self.top_module_name
         hfn = "{}-harness.cpp".format(self.dut_name)    # {dut_name}-harness.cpp
         mfn = "V{}.mk".format(self.dut_name)            # V{dut_name}.mk
         efn = "V{}".format(self.dut_name)               # V{dut_name}
@@ -185,6 +186,7 @@ class Simlite(object):
             # --trace                     Enable waveform creation
             # --exe                       Link to create executable
             # verilator --cc {dut_name}.v --trace --exe {dut_name}-harness.cpp
+            print("verilator --cc {vfn} --trace --exe {hfn}".format(vfn=vfn, hfn=hfn))
             os.system(
                 "verilator --cc {vfn} --trace --exe {hfn}".format(vfn=vfn, hfn=hfn))
 
