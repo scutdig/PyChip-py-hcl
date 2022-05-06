@@ -5,20 +5,8 @@
 - Supports a bunch of convenient operations, such as the addition of `UInt`s, `SInt`s, `Vector`s and `Bundle`s.
 - Supports the parameterization of variables, such as bit width, with the syntax facilities of the host language Python.
 
-## Bool
 
 ## UInt/SInt
-
-## Bundle
-
-## Vec
-
-
-## Bit
-* `Bool`: bool value
-* `true, false`: boolean literals
-
-## Bits and Integers
 * `U(N.w)`: length `N` unsigned integer that includes Bits operators and
   unsigned arithmetic (e.g. `+`, `-`, ...) and comparison operators (e.g.
   `<`, `<=`, ...)
@@ -26,31 +14,44 @@
   signed arithmetic (e.g. `+`, `-`, ...) and comparison operators (e.g.
   `<`, `<=`, ...)
 
-## Vector
+## Bool
+* `Bool`: bool value，which is `U(1.w)`
+* `true, false`: boolean literals
+
+## Clock
+* `Clock`: bool value，which is `U(1.w)`
+* `true, false`: boolean literals
+
+
+## Bundle
+* `Input(T)`, `Output(T)` qualify type `T` to be an input, output, and
+respectively.
+* `IO(T)` qualify type `T` to be an input, output, and
+respectively.
+
+## Vec
 * `Vec(4, U.w(32))`: fixed length array of length `4` containing values of type
   `U.w(32)` with equality operator (`==`) defined
 
+## Registers
 
-# Type qualifiers
-`Input(T)`, `Output(T)` qualify type `T` to be an input, output, and
-respectively.
-
-# Registers
-Retain state until updated:
+* Retain state until updated:
 ```python
 reg = Reg(U.w(32))
 counter = RegInit(U.w(32)(0))
 ```
 
-# Memories
+## Memories
+
 ```python
 m = Mem(10, U.w(8))
 m[U(2)] <<= io.i
 io.o <<= m[U(2)]
 ```
 
-# Circuits
+## Circuits
 **Defining**:  `Module`
+
 ```python
 from pyhcl import *
 from pyhcl.simulator import Simulator
@@ -76,11 +77,13 @@ class FullAdder(Module):
 ```
 **Usage**: circuits are used by instancing them inside another definitions and
   their ports are accessed using dot notation
+
 ```python
 FA = FullAdder()
 ```
 
 **Metaprogramming**: abstract over parameters by generating a circuit definition inside a closure
+
 ```python
 def adder(n: int):
     class Adder(Module):
@@ -123,16 +126,6 @@ The `Bool` type supports the following logical operators.
 - Exclusive or `^`
 - Not `~`
 
-The `Array` type family supports the following operator.
-- Dynamic bit selection `my_arry[add.O]` (select a bit dynamically using a magma value).
-
-The `Bits` type family supports the following logical operators.
-- And `&` (element-wise)
-- Or `|` (element-wise)
-- Exclusive or `^` (element-wise)
-- Not `~` (element-wise)
-- Logical right shift (with zeros) `>>`
-- Logical left shift (with zeros) `<<`
 
 The `UInt` and `SInt` types support all the logical operators
 as well as arithmetic and comparison operators.
@@ -148,16 +141,15 @@ as well as arithmetic and comparison operators.
 Note that the the right shift operator when applied to an `SInt` becomes
 an arithmetic shift right operator (which replicates the sign bit as it shifts right).
 
-## Functional operators
-
-
 ## Combinational
+
 ```python
 # Mux(<选择信号>, <真输出>, <假输出>)
 io.z <<= Mux(io.sel, io.b, io.a)
 ```
 
 ## Sequential
+
 ```python
 class Register(Module):
     io = IO(
