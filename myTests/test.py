@@ -1,4 +1,26 @@
+from typing import Type, Union, Dict
+
+
+class IO:
+    _ios: Dict[str, int]
+
+    def __init__(self, **kwargs):
+        self._ios = kwargs
+
+
+class Add:
+    io = IO(
+        in1=3,
+        in2=4,
+        out=5
+    )
+
+
 if __name__ == '__main__':
+    print(Add.io)
+    print(Add.io._ios)
+    print(Add().io._ios)
+    print(Add().io.value._ios)
 
     path = './tmp/test'
     cnt = 0

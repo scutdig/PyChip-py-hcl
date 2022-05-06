@@ -5,7 +5,12 @@ from pyhcl import *
 # from injector import simlite_v3
 
 # from injector import simlite_v2
-from injector import simlite_v4
+# from injector import simlite_v4
+
+# from myTests import test_simlite
+# from myTests import test_simlite_2
+from myTests import test_verilog
+
 
 
 class MOD(Module):
@@ -35,9 +40,13 @@ def main():
     # half_adder.main()
 
     # simlite_v2.main()
-    simlite_v4.main()
+    # simlite_v4.main()
 
     # Simlite_task.test()
+
+    # test_simlite_2.main()
+    test_verilog.main()
+    pass
 
 
 if __name__ == '__main__':

@@ -37,29 +37,45 @@ class Top(Module):
 from random import randint
 
 
+# 每次给输入端口赋值, 跑一个时间单位
+def test_step(s):
+    s.start()
+
+    s.step([20, 20])
+    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    s.step([15, 10])
+    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    s.step([1000, 1])
+    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    s.step([999, 201])
+
+
+def test_task(s):
+    tasks = []
+    tasks.append([20, 20])
+    tasks.append([15, 10])
+    tasks.append([1000, 1])
+    tasks.append([999, 201])
+
+    s.start_task('Top', tasks)
+
+
+def test_file(s):
+    ifn = f"./tmp/Top_inputs"
+    ofn = f"./tmp/Top_outputs"
+    s.start(mode="task", ofn=ofn, ifn=ifn)
+    pass
+
+
 def main():
     cfg = DpiConfig()
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     s = Simlite(Top(), dpiconfig=cfg, debug=True)
-    # s.start()
-    # s.step([20, 20])
-    # print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
-    # s.step([15, 10])
-    # print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
-    # s.step([1000, 1])
-    # print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
-    # s.step([999, 201])
 
-    tasks = []
-    tasks.append([11, 12])
-    tasks.append([12, 13])
-    tasks.append([13, 14])
-    s.start_task('Top', tasks)
+    # test_step(s)
+    # test_task(s)
+    test_file(s)
 
-    # s.start()
-    # s.step([15, 10])
-    # s.step([1000, 1])
-    # s.step([999, 201])
     s.close()
 
 

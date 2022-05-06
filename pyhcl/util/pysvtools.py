@@ -206,19 +206,18 @@ def addpysvmodule(bbox: MetaBlackBox, func, path=".sv/bbox"):
     inputs, outputs = filterIOs(bbox)
     name = bbox.__name__
     modgen = PysvModGen(name, inputs, outputs, func.func_name)
-    sv = modgen.tosvmodule()        # 转sv代码
-    filepath = f"{path}/{name}.sv"  # .sv/bbox/Add.sv   调用python函数的SV代码
+    sv = modgen.tosvmodule()
+    filepath = f"{path}/{name}.sv"
     make_dirs(filepath)
     with open(filepath, "w") as f:
         f.write(sv)
-    bboxs_list[bbox] = func         # 字典
+    bboxs_list[bbox] = func
 
 
 def compile_and_binding_all():
     print("\n\n-----------------------pysv build info---------------------------\n")
-    funclist = bboxs_list.values()                  # 函数列表
+    funclist = bboxs_list.values()
     # compile the a shared_lib into build folder
-    lib_path = compile_lib(funclist, cwd=".build")  # 将 python 代码编译成一个本地共享对象，该共享对象可以链接到任何支持的模拟器。
+    lib_path = compile_lib(funclist, cwd=".build")
     # generate SV binding
-    # 生成 SystemVerilog binding # 第一个参数接受一个用 @sv 修饰的函数名列表，将binding代码写入指定的文件名
     generate_sv_binding(funclist, filename=".sv/pkg/pysv_pkg.sv")

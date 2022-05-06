@@ -3,6 +3,7 @@ import subprocess
 
 from pyhcl import *
 from ..simulator import DpiConfig
+import re
 
 
 class Simlite(object):
@@ -10,7 +11,7 @@ class Simlite(object):
     # 根据传入的Simlite对象实例，深度复制得到新的Simlite对象实例
     def __fork_init(self, other):
         import copy
-        self.low_module = other.low_module
+        self.verilog_path = other.verilog_path
         self.dpiconfig = other.dpiconfig
         if (hasattr(other, "efn")):
             self.efn = other.efn
@@ -34,31 +35,22 @@ class Simlite(object):
         self.name = other.name + "_" + str(other.fork_cnt)
         other.fork_cnt += 1
 
-    # 传入module（Module子类对象） 和 harness代码
     # dpiconfig对象
     # self.sv = pkg_sv_path     # .sv/pkg/pysv_pkg.sv
     # self.lib = lib_path       # .build/libpysv.so
     # self.bdir = bbox_sv_dir   # .sv/bbox/
     # self.bname = " ".join(os.listdir(self.bdir))  # .sv/bbox/文件夹包含的文件或文件夹的名字的列表
-    def __init__(self, module, harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0"):
+    def __init__(self, module_name, verilog_path='', harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0", module=None):
         self.raw_in = None
         self.efn = None
         self.ofn = None
         self.ifn = None
+        self.verilog_path = verilog_path
         # module为Simlite对象实例
         if isinstance(module, Simlite):
             self.__fork_init(module)
         else:
-            # self.low_module为Circuit对象
-            self.low_module = Emitter.elaborate(module)
             self.dpiconfig = dpiconfig
-            # 模块名
-            module_name = self.low_module.main
-            # ports = next(m.typ for m in low_module.modules if m.name == module_name)
-
-            # 模块端口--字典  _ios: Dict[str, Union[Input, Output]]
-            ports = module.io.value._ios
-
             # 输入端口名列表
             self.inputs = []
             self.inputs_values = []
@@ -76,12 +68,7 @@ class Simlite(object):
             self.debug = debug
             self.fork_cnt = 0
 
-            # k为键，v为值
-            for k, v in ports.items():
-                if (type(v) == Input):
-                    self.inputs.append(k)       # 输入端口名
-                elif (type(v) == Output):
-                    self.outputs.append(k)      # 输出端口名
+            self.inputs, self.outputs = self.parse(verilog_path)
 
             self.dut_name = module_name         # 模块名
 
@@ -90,7 +77,37 @@ class Simlite(object):
                 self.compile(harness_code)
             else:
                 # 传入module_name和ports生成harness代码，然后仿真
-                self.compile(self.codegen(module_name, ports))
+                self.compile(self.codegen(module_name))
+
+    # 解析verilog代码, 返回输入端口名列表 和 输出端口名列表
+    def parse(self, verilog_path):
+        with open(verilog_path, "r") as file:
+            verilog_code = file.readlines()
+            verilog_code = ''.join(verilog_code)
+            # module_name_match = re.compile(r"module\s*([a-zA-Z0-9_]+)")
+
+            # 匹配输入端口        input clock, input [31:0] io_a
+            input_port_match = re.compile(r"input\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
+            # 匹配输出端口        output [31:0] io_c
+            output_port_match = re.compile(r"output\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
+
+            # module_name = re.search(module_name_match, verilog_code).group(1)
+            input_ports = re.findall(input_port_match, verilog_code)
+            output_ports = re.findall(output_port_match, verilog_code)
+            try:
+                # 输入端口名列表
+                input_ports_name = [input_port[1] for input_port in input_ports]
+                # 输出端口名列表
+                output_ports_name = [output_port[1] for output_port in output_ports]
+                # print(module_name)
+                # print(input_ports)
+                # print(output_ports)
+                print(input_ports_name)
+                print(output_ports_name)
+                # print(verilog_code)
+            except:
+                print("can't find input or output ports")
+        return input_ports_name, output_ports_name
 
     def close(self):
         # 2表示标准错误stderr, >表示重定向 ，/dev/mull表示空设备
@@ -111,18 +128,11 @@ class Simlite(object):
         except FileExistsError:
             pass
 
+        os.system("cp {} ./simulation/{}.v".format(self.verilog_path, self.dut_name))
+
         # 在simulation文件夹下创建dut_name-harness.cpp，写入harness代码
         with open(f"./simulation/{self.dut_name}-harness.cpp", "w+") as f:
             f.write(harness_code)
-
-        # 在simulation文件夹下创建dut_name-harness.fir，写入firrtl代码
-        with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
-            f.write(self.low_module.serialize())
-
-        # 调用firrtl命令，传入firrtl代码，得到verilog代码
-        # firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog
-        os.system(
-            f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
 
         vfn = "{}.v".format(self.dut_name)              # {dut_name}.v
         hfn = "{}-harness.cpp".format(self.dut_name)    # {dut_name}-harness.cpp
@@ -198,15 +208,15 @@ class Simlite(object):
             # 确保 libpysv.so（共享库） 在 LD_LIBRARY_PATH 中--  pysv要求的
             env = {"LD_LIBRARY_PATH": "."}          # 环境变量
         if mode == "ia":
-            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/VAdder
+            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/V{dut_name}
 
-            # 创建子进程执行./obj_dir/VAdder
+            # 创建子进程执行./obj_dir/{dut_name}
             self.p = subprocess.Popen(args, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             self.dropinfo()
         elif mode == "task":
-            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/VAdder
+            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/V{dut_name}
             infile = open(ifn, "r")
-            outfile = open(ofn, "a")
+            outfile = open(ofn, "w")
             # subprocess 模块允许我们启动一个新进程，并连接到它们的输入/输出/错误管道，从而获取返回值。
             # Popen 是 subprocess的核心，子进程的创建和管理都靠它处理
             # args：shell命令，可以是字符串或者序列类型（如：list，元组）
@@ -299,7 +309,7 @@ class Simlite(object):
         return self.results
 
     # 传入module_name和ports，生成harness代码
-    def codegen(self, name, ports):
+    def codegen(self, name):
         tempfile = """#include "V{modname}.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
@@ -382,7 +392,7 @@ int main(int argc, char** argv, char** env) {{
         taps = "        "
         i = 0
         for n in self.inputs:
-            res += taps + f"top->io_{n} = inputs[{i}];\n"       # 对输入端口进行赋值
+            res += taps + f"top->{n} = inputs[{i}];\n"       # 对输入端口进行赋值
             i += 1
         return res
 
@@ -392,6 +402,6 @@ int main(int argc, char** argv, char** env) {{
         taps = "        "
         i = 0
         for n in self.outputs:
-            res += taps + f"outputs[{i}] = top->io_{n};\n"      # 对输出端口进行取值
+            res += taps + f"outputs[{i}] = top->{n};\n"      # 对输出端口进行取值
             i += 1
         return res
