@@ -2,6 +2,7 @@ from pyhcl import *
 from pysv import sv, DataType, Reference
 from pyhcl.simulator import Simlite, DpiConfig
 from queue import Queue
+import random
 
 
 class Add(BlackBox):
@@ -34,9 +35,6 @@ class Top(Module):
     io.c <<= add.io.out
 
 
-from random import randint
-
-
 # 每次给输入端口赋值, 跑一个时间单位
 def test_step(s):
     s.start()
@@ -49,6 +47,8 @@ def test_step(s):
     print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
     s.step([999, 201])
 
+    s.stop()
+
 
 def test_task(s):
     tasks = []
@@ -60,9 +60,20 @@ def test_task(s):
     s.start_task('Top', tasks)
 
 
+def randomInput(ifn):
+    fd = open(ifn, "w")
+    instr = ""
+    for i in range(100):
+        instr += "0 " + str(random.randint(1, 2000)) + ' ' + str(random.randint(1, 2000)) + "\n"
+    instr = instr + "-1\n"
+    fd.write(instr)
+    fd.close()
+
+
 def test_file(s):
-    ifn = f"./tmp/Top_inputs"
-    ofn = f"./tmp/Top_outputs"
+    ifn = f"../myTests/tmp/Top_inputs"
+    ofn = f"../myTests/tmp/Top_outputs"
+    randomInput(ifn)
     s.start(mode="task", ofn=ofn, ifn=ifn)
     pass
 

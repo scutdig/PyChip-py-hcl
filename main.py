@@ -1,6 +1,7 @@
 from pyhcl import *
 # from example import half_adder
 # from example import simlite
+# from example import simlite_2
 # from example import Simlite_task
 # from injector import simlite_v3
 
@@ -10,7 +11,6 @@ from pyhcl import *
 # from myTests import test_simlite
 # from myTests import test_simlite_2
 from myTests import test_verilog
-
 
 
 class MOD(Module):
@@ -42,6 +42,8 @@ def main():
     # simlite_v2.main()
     # simlite_v4.main()
 
+    # test_simlite.main()
+    # simlite_2.main()
     # Simlite_task.test()
 
     # test_simlite_2.main()

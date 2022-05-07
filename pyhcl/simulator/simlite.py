@@ -92,6 +92,11 @@ class Simlite(object):
                 # 传入module_name和ports生成harness代码，然后仿真
                 self.compile(self.codegen(module_name, ports))
 
+    def stop(self):
+        instr = '-1'.encode(encoding="utf-8") + b'\n'
+        self.p.stdin.write(instr)
+        self.p.stdin.flush()
+
     def close(self):
         # 2表示标准错误stderr, >表示重定向 ，/dev/mull表示空设备
         # 2>/dev/nul,将标准错误重定向到空设备里，即不输出错误信息
@@ -243,7 +248,7 @@ class Simlite(object):
             self.raw_in = "0 " + self.raw_in        # 0表示状态值，状态值小于0会退出
             instr += self.raw_in + "\n"
         # 所有输入端口值，每一次以\n分隔
-        # instr += "-1\n"
+        instr += "-1\n"
         # 将tsk（整个任务，包含每一次的输入端口列表值）传入ifn（输入文件）
         fd.write(instr)
         fd.close()
@@ -315,6 +320,7 @@ std::vector<unsigned long long> inputs, outputs;
 
 #define INN {innum}
 #define OUTN {outnum}
+int status = 0;
 
 void ioinit(){{
     setvbuf(stdout,0,_IONBF, 0);
@@ -326,10 +332,9 @@ void ioinit(){{
 }}
 
 void input_handler(){{
-    int status = 0;
     std::cin>>status;
-    if(status<0)
-        exit(0);
+    if(status==-1)
+        return;
     for(int i = 0; i < INN; i++){{
         std::cin>>inputs[i];
     }}
@@ -357,8 +362,9 @@ int main(int argc, char** argv, char** env) {{
     top->trace(tfp, 99);
     tfp->open("wave.vcd");
 
-    while (!Verilated::gotFinish() && main_time < sim_time) {{
+    while (!Verilated::gotFinish()) {{
         input_handler();
+        if(status==-1) break;
         //get inputs
 {inputs_init}
         top->eval();

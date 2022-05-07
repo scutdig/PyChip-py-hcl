@@ -17,6 +17,7 @@ def test_step(s):
     s.step([0, 0, 1000, 1])
     print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
     s.step([1, 0, 999, 201])
+    s.stop()
 
 
 def test_task(s):
@@ -34,6 +35,7 @@ def randomInput(ifn):
     instr = ""
     for i in range(100):
         instr += "0 0 0 " + str(random.randint(1, 2000)) + ' ' + str(random.randint(1, 2000)) + "\n"
+    instr = instr + "-1\n"
     fd.write(instr)
     fd.close()
 
