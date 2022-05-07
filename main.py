@@ -8,9 +8,9 @@
 # from injector import simlite_v2
 # from injector import simlite_v4
 
-# from myTests import test_simlite
-# from myTests import test_simlite_2
-from myTests import test_verilog
+# from myTests import test_simlite_1
+from myTests import test_simlite_2
+from myTests import test_verilog_1
 
 
 # class MOD(Module):
@@ -42,12 +42,13 @@ def main():
     # simlite_v2.main()
     # simlite_v4.main()
 
-    # test_simlite.main()
+
     # simlite_2.main()
     # Simlite_task.test()
 
-    # test_simlite_2.main()
-    test_verilog.main()
+    # test_simlite_1.main()
+    test_simlite_2.main()
+    # test_verilog_1.main()
     pass
 
 

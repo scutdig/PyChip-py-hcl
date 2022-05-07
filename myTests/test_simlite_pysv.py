@@ -1,7 +1,6 @@
 from pyhcl import *
 from pysv import sv, DataType, Reference
 from pyhcl.simulator import Simlite, DpiConfig
-from queue import Queue
 import random
 
 
@@ -83,9 +82,9 @@ def main():
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     s = Simlite(Top(), dpiconfig=cfg, debug=True)
 
-    # test_step(s)
+    test_step(s)
     # test_task(s)
-    test_file(s)
+    # test_file(s)
 
     s.close()
 
