@@ -1,9 +1,15 @@
 import os
 import subprocess
-
-from pyhcl import *
-from ..simulator import DpiConfig
 import re
+
+
+class DpiConfig(object):
+    def __init__(self, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
+        self.sv = pkg_sv_path
+        self.lib = lib_path
+        self.bdir = bbox_sv_dir
+        self.bname = " ".join(os.listdir(self.bdir))
+        ...
 
 
 class Simlite(object):

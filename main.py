@@ -1,4 +1,4 @@
-from pyhcl import *
+# from pyhcl import *
 # from example import half_adder
 # from example import simlite
 # from example import simlite_2
@@ -13,25 +13,25 @@ from pyhcl import *
 from myTests import test_verilog
 
 
-class MOD(Module):
-    io = IO(
-        a=Input(U.w(32)),
-        b=Input(U.w(32)),
-        e=Input(Bool),
-        z=Output(U.w(32)),
-    )
-
-    x = RegInit(U.w(32)(0))
-    y = RegInit(U.w(32)(0))
-
-    with when(x >= y):
-        x <<= x - y
-
-    with when(io.e):
-        x <<= io.a
-        y <<= io.b
-
-    io.z <<= x
+# class MOD(Module):
+#     io = IO(
+#         a=Input(U.w(32)),
+#         b=Input(U.w(32)),
+#         e=Input(Bool),
+#         z=Output(U.w(32)),
+#     )
+#
+#     x = RegInit(U.w(32)(0))
+#     y = RegInit(U.w(32)(0))
+#
+#     with when(x >= y):
+#         x <<= x - y
+#
+#     with when(io.e):
+#         x <<= io.a
+#         y <<= io.b
+#
+#     io.z <<= x
 
 
 def main():
