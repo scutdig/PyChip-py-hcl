@@ -11,8 +11,11 @@
 # from myTests import test_simlite
 # from myTests import test_simlite_pysv
 # from myTests import test_simlite_fork
+
 # from myTests import test_verilog
-from myTests import test_verilog_fork
+from myTests import test_verilog_pysv
+# from myTests import test_verilog_fork
+
 
 
 # class MOD(Module):
@@ -53,7 +56,8 @@ def main():
     # test_simlite_fork.main()
 
     # test_verilog.main()
-    test_verilog_fork.main()
+    test_verilog_pysv.main()
+    # test_verilog_fork.main()
     pass
 
 

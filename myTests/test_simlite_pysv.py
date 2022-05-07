@@ -79,7 +79,6 @@ def test_file(s):
 
 def main():
     cfg = DpiConfig()
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     s = Simlite(Top(), dpiconfig=cfg, debug=True)
 
     test_step(s)

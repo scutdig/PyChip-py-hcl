@@ -4,11 +4,11 @@ import re
 
 
 class DpiConfig(object):
-    def __init__(self, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
+    def __init__(self, dut_path, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
         self.sv = pkg_sv_path
         self.lib = lib_path
         self.bdir = bbox_sv_dir
-        self.bname = " ".join(os.listdir(self.bdir))
+        self.bname = " ".join(os.listdir(dut_path))
         ...
 
 
@@ -167,7 +167,7 @@ class Simlite(object):
             # cp .build/libpysv.so ./simulation/libpysv_{dut_name}.so           # 由各python函数编译得到的共享库
             os.system("cp {} ./simulation/libpysv_{}.so".format(dpiconfig.lib, self.dut_name))
             # cp .sv/bbox/ ./simulation/                                        # 使用了python函数的SV文件（使用pysv）
-            os.system("cp {}* ./simulation/".format(dpiconfig.bdir))
+            # os.system("cp {}* ./simulation/".format(dpiconfig.bdir))
             # 转换目录到./simulation文件夹下
             os.chdir("./simulation")
 
@@ -180,10 +180,13 @@ class Simlite(object):
             # .so为 与 Verilog 代码链接的可选对象或库文件
             # In the verilator command, include the shared library and the generated binding file
             # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv {bbx} Top.v libpysv_Top.so Top-harness.cpp
-            # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv Adder.sv Top.v libpysv_Top.so Top-harness.cpp
+            # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv Add.sv Top.v libpysv_Top.so Top-harness.cpp
+            print("verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
+                            prefix=efn))
             os.system(
-                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
-                    .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
+                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
                             prefix=efn))
             # cp libpysv_Top.so ./obj_dir/
             os.system("cp {} ./obj_dir/".format(pysv_lib))

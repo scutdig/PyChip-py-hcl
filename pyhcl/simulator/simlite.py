@@ -162,7 +162,10 @@ class Simlite(object):
             # .so为 与 Verilog 代码链接的可选对象或库文件
             # In the verilator command, include the shared library and the generated binding file
             # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv {bbx} Top.v libpysv_Top.so Top-harness.cpp
-            # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv Adder.sv Top.v libpysv_Top.so Top-harness.cpp
+            # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv Add.sv Top.v libpysv_Top.so Top-harness.cpp
+            print("verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
+                            prefix=efn))
             os.system(
                 "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
                     .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,

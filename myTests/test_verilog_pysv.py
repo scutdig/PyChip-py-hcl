@@ -1,5 +1,5 @@
-from pyhcl import *
-from pyhcl.simulator.simlite_verilog import Simlite
+from pyhcl.util.pysvtools import compile_and_binding_all_func
+from pyhcl.simulator.simlite_verilog import Simlite, DpiConfig
 from pysv import sv, DataType, Reference
 import random
 
@@ -9,8 +9,7 @@ def fn(a, b):
     return a + b
 
 
-# addpysvmodule(Add, fn)      # 黑盒与函数     # 转换得到.sv/bbox/Add.sv，（SV里调用python函数）
-compile_and_binding_all()   # 编译得到共享库 到.build文件夹下, 生成 SV binding文件 （.sv/pkg/pysv_pkg.sv）
+compile_and_binding_all_func([fn])   # 编译得到共享库 到.build文件夹下, 生成 SV binding文件 （.sv/pkg/pysv_pkg.sv）
 
 
 # 每次给输入端口赋值, 跑一个时间单位
@@ -58,8 +57,9 @@ def test_file(s):
 def main():
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     top_module_name = 'Top.v'
-    dut_path = 'myTests/tmp/dut/'
-    s = Simlite(top_module_name, dut_path, debug=True)
+    dut_path = 'myTests/tmp/dut_pysv/'
+    cfg = DpiConfig(dut_path)
+    s = Simlite(top_module_name, dut_path, dpiconfig=cfg, debug=True)
 
     # test_step(s)
     # test_task(s)
@@ -70,4 +70,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # randomInput(f"../myTests/tmp/Top_inputs")
+
