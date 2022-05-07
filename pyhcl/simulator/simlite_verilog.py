@@ -17,9 +17,10 @@ class Simlite(object):
     # 根据传入的Simlite对象实例，深度复制得到新的Simlite对象实例
     def __fork_init(self, other):
         import copy
+        self.top_module_name = other.top_module_name
         self.dut_path = other.dut_path
         self.dpiconfig = other.dpiconfig
-        if (hasattr(other, "efn")):
+        if hasattr(other, "efn"):
             self.efn = other.efn
         self.inputs = copy.deepcopy(other.inputs)
         self.outputs = copy.deepcopy(other.outputs)
