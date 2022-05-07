@@ -9,7 +9,9 @@ def fn(a, b):
     return a + b
 
 
-compile_and_binding_all_func([fn])   # 编译得到共享库 到.build文件夹下, 生成 SV binding文件 （.sv/pkg/pysv_pkg.sv）
+# 传入函数列表
+# 编译得到共享库 到.build文件夹下, 生成 SV binding文件 （.sv/pkg/pysv_pkg.sv）
+compile_and_binding_all_func([fn])
 
 
 # 每次给输入端口赋值, 跑一个时间单位

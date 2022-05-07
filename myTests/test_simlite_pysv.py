@@ -81,9 +81,9 @@ def main():
     cfg = DpiConfig()
     s = Simlite(Top(), dpiconfig=cfg, debug=True)
 
-    test_step(s)
+    # test_step(s)
     # test_task(s)
-    # test_file(s)
+    test_file(s)
 
     s.close()
 
