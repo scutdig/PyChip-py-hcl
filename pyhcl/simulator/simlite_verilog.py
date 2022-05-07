@@ -226,7 +226,7 @@ class Simlite(object):
         elif mode == "task":
             args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/V{dut_name}
             infile = open(ifn, "r")
-            outfile = open(ofn, "a")
+            outfile = open(ofn, "w")
             # subprocess 模块允许我们启动一个新进程，并连接到它们的输入/输出/错误管道，从而获取返回值。
             # Popen 是 subprocess的核心，子进程的创建和管理都靠它处理
             # args：shell命令，可以是字符串或者序列类型（如：list，元组）
