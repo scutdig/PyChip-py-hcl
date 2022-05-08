@@ -39,12 +39,13 @@ def test_step(s):
     s.start()
 
     s.step([20, 20])
-    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    print("cnt: %d\t\tresult:%s" % (s.cnt, s.getRes()))
     s.step([15, 10])
-    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    print("cnt: %d\t\tresult:%s" % (s.cnt, s.getRes()))
     s.step([1000, 1])
-    print("time: %d\t\tresult:%s" % (s.cnt, s.getRes()))
+    print("cnt: %d\t\tresult:%s" % (s.cnt, s.getRes()))
     s.step([999, 201])
+    print("cnt: %d\t\tresult:%s" % (s.cnt, s.getRes()))
 
     s.stop()
 
@@ -90,7 +91,7 @@ def main():
 
 if __name__ == '__main__':
     cfg = DpiConfig()
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Add.fir"))
     s = Simlite(Top(), dpiconfig=cfg, debug=True)
     s.start()
     s.step([20, 20])

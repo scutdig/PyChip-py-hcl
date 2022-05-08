@@ -45,7 +45,7 @@ def test_file(s):
 
 
 def main():
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Add.fir"))
     top_module_name = 'Top.v'
     dut_path = 'myTests/tmp/dut/'
     s = Simlite(top_module_name, dut_path, debug=True)
@@ -59,4 +59,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # randomInput(f"../myTests/tmp/Top_inputs")
+

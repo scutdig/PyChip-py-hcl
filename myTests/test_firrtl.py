@@ -1,16 +1,34 @@
 from pyhcl import *
+from pyhcl.util.firrtltools import addfirrtlmodule
 from pyhcl.simulator import Simlite
 import random
 
 
-class Top(Module):
+class Add(BlackBox):
+    io = IO(
+        in1=Input(U.w(32)),
+        in2=Input(U.w(32)),
+        out=Output(U.w(32)),
+    )
+
+
+class M(Module):
     io = IO(
         a=Input(U.w(32)),
         b=Input(U.w(32)),
-        c=Output(U.w(32))
+        c=Output(U.w(32)),
     )
 
-    io.c <<= io.a + io.b
+    bbox = Add()
+    bbox.io.in1 <<= io.a
+    bbox.io.in2 <<= io.b
+    io.c <<= bbox.io.out
+
+
+fd = open(f"myTests/tmp/firrtl/Add.fir", "r")
+firrtl_code = "".join(fd.readlines())
+# print(firrtl_code)
+addfirrtlmodule(Add, firrtl_code)
 
 
 # 每次给输入端口赋值, 跑一个时间单位
@@ -49,27 +67,19 @@ def randomInput(ifn):
     fd.close()
 
 
-def test_file(s, num):
-    ifn = f"../myTests/tmp/Top_inputs" + str(num)
-    ofn = f"../myTests/tmp/Top_outputs" + str(num)
+def test_file(s):
+    ifn = f"../myTests/tmp/Top_inputs"
+    ofn = f"../myTests/tmp/Top_outputs"
     randomInput(ifn)
     s.start(mode="task", ofn=ofn, ifn=ifn)
     pass
 
 
 def main():
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Add.fir"))
-    s1 = Simlite(Top(), debug=True)
-    s2 = Simlite(s1)
+    s = Simlite(M())
 
     # test_step(s)
     # test_task(s)
-    test_file(s1, 1)
-    test_file(s2, 2)
+    test_file(s)
 
-    s1.close()
-    s2.close()
-
-
-if __name__ == '__main__':
-    main()
+    s.close()

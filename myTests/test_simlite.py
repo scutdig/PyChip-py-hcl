@@ -58,7 +58,7 @@ def test_file(s):
 
 
 def main():
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Add.fir"))
     s = Simlite(Top(), debug=True)
 
     # test_step(s)

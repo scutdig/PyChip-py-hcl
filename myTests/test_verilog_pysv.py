@@ -57,9 +57,10 @@ def test_file(s):
 
 
 def main():
-    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
+    # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Add.fir"))
     top_module_name = 'Top.v'
     dut_path = 'myTests/tmp/dut_pysv/'
+    # 创建 DpiConfig对象，传入调用Python函数的SV文件名列表
     cfg = DpiConfig(['Add.sv'])
     s = Simlite(top_module_name, dut_path, dpiconfig=cfg, debug=True)
 
