@@ -4,10 +4,10 @@ import re
 
 
 class DpiConfig(object):
-    def __init__(self, dut_path, pkg_sv_path=".sv/pkg/pysv_pkg.sv", lib_path=".build/libpysv.so"):
+    def __init__(self, pysv_li, pkg_sv_path=".sv/pkg/pysv_pkg.sv", lib_path=".build/libpysv.so"):
         self.sv = pkg_sv_path
         self.lib = lib_path
-        self.bname = " ".join(os.listdir(dut_path))
+        self.bname = " ".join(pysv_li)
         ...
 
 
@@ -44,7 +44,7 @@ class Simlite(object):
     # dpiconfig对象
     # self.sv = pkg_sv_path     # .sv/pkg/pysv_pkg.sv
     # self.lib = lib_path       # .build/libpysv.so
-    # self.bname = " ".join(os.listdir(dut_path))  # dut_path路径文件夹包含的文件或文件夹的名字的列表
+    # self.bname = " ".join(pysv_li)  # pysv_li存放调用了python函数的SV列表 (Add.sv)
     def __init__(self, top_module_name='', dut_path='', harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0", module=None):
         self.raw_in = None
         self.efn = None
@@ -138,6 +138,7 @@ class Simlite(object):
         except FileExistsError:
             pass
 
+        # 把所有dut文件复制到simulation文件夹下
         os.system("cp {}* ./simulation/".format(self.dut_path))
 
         # 在simulation文件夹下创建dut_name-harness.cpp，写入harness代码
@@ -155,7 +156,7 @@ class Simlite(object):
             # dpiconfig对象
             # self.sv = pkg_sv_path     # .sv/pkg/pysv_pkg.sv
             # self.lib = lib_path       # .build/libpysv.so
-            # self.bname = " ".join(os.listdir(dut_path))  # dut_path路径文件夹包含的文件或文件夹的名字的列表
+            # self.bname = " ".join(pysv_li)  # pysv_li存放调用了python函数的SV列表 (Add.sv)
             pysv_pkg = "{}_pysv_pkg.sv".format(self.dut_name)       # {dut_name}_pysv_pkg.sv
             pysv_lib = "libpysv_{}.so".format(self.dut_name)        # libpysv_{dut_name}.so
 
@@ -177,9 +178,13 @@ class Simlite(object):
             # In the verilator command, include the shared library and the generated binding file
             # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv {bbx} libpysv_Top.so Top-harness.cpp
             # verilator --cc --trace --exe --prefix VTop --top-module Top Top_pysv_pkg.sv Add.sv Top.v libpysv_Top.so Top-harness.cpp
+            print(
+                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
+                            prefix=efn))
             os.system(
-                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {lib} {hfn}" \
-                    .format(top=self.dut_name, bbx=dpiconfig.bname, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
+                "verilator --cc --trace --exe --prefix {prefix} --top-module {top} {pkg} {bbx} {vfn} {lib} {hfn}" \
+                    .format(top=self.dut_name, bbx=dpiconfig.bname, vfn=vfn, hfn=hfn, pkg=pysv_pkg, lib=pysv_lib,
                             prefix=efn))
             # cp libpysv_Top.so ./obj_dir/
             os.system("cp {} ./obj_dir/".format(pysv_lib))

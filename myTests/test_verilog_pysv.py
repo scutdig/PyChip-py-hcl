@@ -60,7 +60,7 @@ def main():
     # Emitter.dumpVerilog(Emitter.dump(Emitter.emit(Top()), "Top.fir"))
     top_module_name = 'Top.v'
     dut_path = 'myTests/tmp/dut_pysv/'
-    cfg = DpiConfig(dut_path)
+    cfg = DpiConfig(['Add.sv'])
     s = Simlite(top_module_name, dut_path, dpiconfig=cfg, debug=True)
 
     # test_step(s)
