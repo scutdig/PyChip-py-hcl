@@ -76,6 +76,7 @@ class Simlite(object):
 
             self.inputs, self.outputs = self.verilog_parse(dut_path, top_module_name)
 
+            # dut_name: Top     top_module_name: Top.v
             self.dut_name = top_module_name.split('.')[0]         # 模块名
 
             # 通过harness代码开始仿真
@@ -85,33 +86,44 @@ class Simlite(object):
                 # 传入module_name和ports生成harness代码，然后仿真
                 self.compile(self.codegen(self.dut_name))
 
+    # 解析verilog代码, 返回输入端口名列表 和 输出端口名列表
     def verilog_parse(self, dut_path, top_module_name):
+        dut_name = top_module_name.split('.')[0]  # 模块名
         top_module_path = dut_path + top_module_name
-        with open(top_module_path, "r") as file:
-            verilog_code = file.readlines()
-            verilog_code = ''.join(verilog_code)
-            # module_name_match = re.compile(r"module\s*([a-zA-Z0-9_]+)")
+        # print(top_module_path)
+        module_begin_match = r"module\s*([a-zA-Z0-9_]+)"
+        # 匹配输入端口        input clock, input [31:0] io_a
+        input_port_match = r"input\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)"
+        # 匹配输出端口        output [31:0] io_c
+        output_port_match = r"output\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)"
 
-            # 匹配输入端口        input clock, input [31:0] io_a
-            input_port_match = re.compile(r"input\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
-            # 匹配输出端口        output [31:0] io_c
-            output_port_match = re.compile(r"output\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)")
+        input_ports_name = []
+        output_ports_name = []
+        with open(top_module_path, "r") as verilog_file:
+            while verilog_file:
+                verilog_line = verilog_file.readline().strip(' ')  # 读取一行
+                # print(verilog_line)
+                if verilog_line == "":  # 注：如果是空行，为'\n'
+                    break
 
-            # module_name = re.search(module_name_match, verilog_code).group(1)
-            input_ports = re.findall(input_port_match, verilog_code)
-            output_ports = re.findall(output_port_match, verilog_code)
-            try:
-                # 输入端口名列表
-                input_ports_name = [input_port[2] for input_port in input_ports]
-                # 输出端口名列表
-                output_ports_name = [output_port[2] for output_port in output_ports]
-                # print(input_ports)
-                # print(output_ports)
-                # print(input_ports_name)
-                # print(output_ports_name)
-                # print(verilog_code)
-            except:
-                print("can't find input or output ports")
+                module_begin = re.search(module_begin_match, verilog_line)
+
+                if module_begin:
+                    current_module_name = module_begin.group(1)
+                    # print(current_module_name)
+
+                if current_module_name == dut_name:
+                    input_port = re.search(input_port_match, verilog_line)
+                    output_port = re.search(output_port_match, verilog_line)
+                    if input_port:
+                        # 输入端口名列表
+                        input_ports_name.append(input_port.group(3))
+                    if output_port:
+                        # 输出端口名列表
+                        output_ports_name.append(output_port.group(3))
+        # print(dut_name)
+        # print(input_ports_name)
+        # print(output_ports_name)
         return input_ports_name, output_ports_name
 
     def stop(self):

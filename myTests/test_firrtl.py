@@ -12,6 +12,12 @@ class Add(BlackBox):
     )
 
 
+fd = open(f"myTests/tmp/firrtl/Add.fir", "r")
+firrtl_code = "".join(fd.readlines())
+# print(firrtl_code)
+addfirrtlmodule(Add, firrtl_code)
+
+
 class M(Module):
     io = IO(
         a=Input(U.w(32)),
@@ -23,12 +29,6 @@ class M(Module):
     bbox.io.in1 <<= io.a
     bbox.io.in2 <<= io.b
     io.c <<= bbox.io.out
-
-
-fd = open(f"myTests/tmp/firrtl/Add.fir", "r")
-firrtl_code = "".join(fd.readlines())
-# print(firrtl_code)
-addfirrtlmodule(Add, firrtl_code)
 
 
 # 每次给输入端口赋值, 跑一个时间单位
