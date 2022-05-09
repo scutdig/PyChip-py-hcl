@@ -221,3 +221,12 @@ def compile_and_binding_all():
     lib_path = compile_lib(funclist, cwd=".build")
     # generate SV binding
     generate_sv_binding(funclist, filename=".sv/pkg/pysv_pkg.sv")
+
+
+def compile_and_binding_all_func(funclist):
+    print("\n\n-----------------------pysv build info---------------------------\n")
+    # funclist = bboxs_list.values()
+    # compile the a shared_lib into build folder
+    lib_path = compile_lib(funclist, cwd=".build")
+    # generate SV binding
+    generate_sv_binding(funclist, filename=".sv/pkg/pysv_pkg.sv")

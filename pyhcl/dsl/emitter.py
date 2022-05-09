@@ -10,14 +10,17 @@ from pyhcl.util.firrtltools import replacewithfirmod
 
 
 class Emitter:
+    # 传入模块对象，返回str---firrtl代码
     @staticmethod
     def emit(m: Module, toverilog=False) -> str:
         circuit = Emitter.elaborate(m)
+        # 将Circuit对象转化为str
         if(toverilog):
             return circuit.verilog_serialize()
         else:
-            return circuit.serialize()
+            return circuit.serialize()      # firrtl代码
 
+    # 传入模块对象，返回Circuit对象
     @staticmethod
     def elaborate(m: Module) -> low_ir.Circuit:
         ec: EmitterContext = EmitterContext(m, {}, Counter())
@@ -27,6 +30,7 @@ class Emitter:
         DynamicContext.clearScope()
         return circuit
 
+    # 传入firrtl代码和文件名，将firrtl代码写入文件中，并返回文件路径
     @staticmethod
     def dump(s, filename) -> str:
         if not os.path.exists('.fir'):
@@ -38,6 +42,7 @@ class Emitter:
 
         return f
 
+    # 传入firrtl文件路径，执行firrtl命令，将firrtl代码编译为verilog代码
     @staticmethod
     def dumpVerilog(filename):
         os.system('firrtl -i %s -o %s -X verilog' % (filename, filename))
