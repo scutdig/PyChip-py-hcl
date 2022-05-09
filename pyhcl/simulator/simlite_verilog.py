@@ -96,7 +96,7 @@ class Simlite(object):
         input_port_match = r"input\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)"
         # 匹配输出端口        output [31:0] io_c
         output_port_match = r"output\s*(reg|wire)*\s*(\[[0-9]+\:[0-9]+\]*)*\s*([a-zA-Z0-9_]+)"
-
+        current_module_name = ''
         input_ports_name = []
         output_ports_name = []
         with open(top_module_path, "r") as verilog_file:
@@ -125,6 +125,11 @@ class Simlite(object):
         # print(input_ports_name)
         # print(output_ports_name)
         return input_ports_name, output_ports_name
+
+    # --timescale <timescale>     Sets default timescale
+    # --timescale <timeunit>/<timeprecision>
+    def setTimeScale(self, timescale):
+        pass
 
     def stop(self):
         instr = '-1'.encode(encoding="utf-8") + b'\n'
