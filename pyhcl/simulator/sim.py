@@ -126,6 +126,7 @@ class Handler:
     def __hash__(self):
         return hash(self.sig)
 
+
 class DpiConfig(object):
     def __init__(self, pkg_sv_path=".sv/pkg/pysv_pkg.sv", bbox_sv_dir=".sv/bbox/", lib_path=".build/libpysv.so"):
         self.sv = pkg_sv_path

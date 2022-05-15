@@ -3,7 +3,7 @@ import subprocess
 
 from pyhcl import *
 from ..simulator import DpiConfig
-
+import re
 
 class Simlite(object):
     # init for fork method
@@ -40,7 +40,7 @@ class Simlite(object):
     # self.lib = lib_path       # .build/libpysv.so
     # self.bdir = bbox_sv_dir   # .sv/bbox/
     # self.bname = " ".join(os.listdir(self.bdir))  # .sv/bbox/文件夹包含的文件或文件夹的名字的列表
-    def __init__(self, module, harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0"):
+    def __init__(self, firrtl_path, module=None, harness_code=None, dpiconfig: DpiConfig = None, debug=False, name="sim0"):
         self.raw_in = None
         self.efn = None
         self.ofn = None
@@ -50,14 +50,10 @@ class Simlite(object):
             self.__fork_init(module)
         else:
             # self.low_module为Circuit对象
-            self.low_module = Emitter.elaborate(module)
-            self.dpiconfig = dpiconfig
-            # 模块名
-            module_name = self.low_module.main
-            # ports = next(m.typ for m in low_module.modules if m.name == module_name)
+            fd = open(firrtl_path, "r")
+            self.firrtl_code = "".join(fd.readlines())
 
-            # 模块端口--字典  _ios: Dict[str, Union[Input, Output]]
-            ports = module.io.value._ios
+            self.dpiconfig = dpiconfig
 
             # 输入端口名列表
             self.inputs = []
@@ -76,21 +72,54 @@ class Simlite(object):
             self.debug = debug
             self.fork_cnt = 0
 
-            # k为键，v为值
-            for k, v in ports.items():
-                if (type(v) == Input):
-                    self.inputs.append(k)       # 输入端口名
-                elif (type(v) == Output):
-                    self.outputs.append(k)      # 输出端口名
-
-            self.dut_name = module_name         # 模块名
+            self.dut_name, self.inputs, self.outputs = self.firrtl_parse(firrtl_path)
 
             # 通过harness代码开始仿真
             if harness_code:
                 self.compile(harness_code)
             else:
                 # 传入module_name和ports生成harness代码，然后仿真
-                self.compile(self.codegen(module_name, ports))
+                self.compile(self.codegen(self.dut_name))
+
+    # 解析FIRRTL代码, 返回输入端口名列表 和 输出端口名列表
+    def firrtl_parse(self, firrtl_path):
+        circuit_begin_match = r"circuit\s*([a-zA-Z0-9_]+)"
+        module_begin_match = r"module\s*([a-zA-Z0-9_]+)"
+        input_port_match = r"input\s*([a-zA-Z0-9_]+)"
+        output_port_match = r"output\s*([a-zA-Z0-9_]+)"
+        input_ports_name = []
+        output_ports_name = []
+        top_module_name = '0'
+        current_module_name = '1'
+        with open(firrtl_path, "r") as firrtl_file:
+            while firrtl_file:
+                firrtl_line = firrtl_file.readline().strip(' ')  # 读取一行
+                # print(firrtl_line)
+                if firrtl_line == "":  # 注：如果是空行，为'\n'
+                    break
+
+                circuit_begin = re.search(circuit_begin_match, firrtl_line)
+                module_begin = re.search(module_begin_match, firrtl_line)
+
+                if circuit_begin:
+                    top_module_name = circuit_begin.group(1)
+                    # print(top_module_name)
+
+                if module_begin:
+                    current_module_name = module_begin.group(1)
+                    # print(current_module_name)
+
+                if current_module_name == top_module_name:
+                    input_port = re.search(input_port_match, firrtl_line)
+                    output_port = re.search(output_port_match, firrtl_line)
+                    if input_port:
+                        input_ports_name.append(input_port.group(1))
+                    if output_port:
+                        output_ports_name.append(output_port.group(1))
+        print(top_module_name)
+        print(input_ports_name)
+        print(output_ports_name)
+        return top_module_name, input_ports_name, output_ports_name
 
     def stop(self):
         instr = '-1'.encode(encoding="utf-8") + b'\n'
@@ -120,21 +149,20 @@ class Simlite(object):
         with open(f"./simulation/{self.dut_name}-harness.cpp", "w+") as f:
             f.write(harness_code)
 
-        # 调用FIRRTL工具链
-        # with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
-        #     f.write(self.low_module.serialize())
+        # 在simulation文件夹下创建dut_name-harness.fir，写入firrtl代码
+        with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
+            f.write(self.firrtl_code)
 
-        # os.system(
-        #     f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
-        
-        # # 调用PyHCL编译链
-        with open(f"./simulation/{self.dut_name}.v", "w+") as f:
-            f.write(Verilog(self.low_module).emit())
+        # 调用firrtl命令，传入firrtl代码，得到verilog代码
+        # firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog
+        # print(f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
+        os.system(
+            f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
 
-        vfn = "{}.v".format(self.dut_name)              # {dut_name}.v
-        hfn = "{}-harness.cpp".format(self.dut_name)    # {dut_name}-harness.cpp
-        mfn = "V{}.mk".format(self.dut_name)            # V{dut_name}.mk
-        efn = "V{}".format(self.dut_name)               # V{dut_name}
+        vfn = "{}.v".format(self.dut_name)  # {dut_name}.v
+        hfn = "{}-harness.cpp".format(self.dut_name)  # {dut_name}-harness.cpp
+        mfn = "V{}.mk".format(self.dut_name)  # V{dut_name}.mk
+        efn = "V{}".format(self.dut_name)  # V{dut_name}
 
         # dpi
         if self.dpiconfig:
@@ -143,8 +171,8 @@ class Simlite(object):
             # self.lib = lib_path       # .build/libpysv.so
             # self.bdir = bbox_sv_dir   # .sv/bbox/
             # self.bname = " ".join(os.listdir(self.bdir))  # .sv/bbox/文件夹包含的文件或文件夹的名字的列表
-            pysv_pkg = "{}_pysv_pkg.sv".format(self.dut_name)       # {dut_name}_pysv_pkg.sv
-            pysv_lib = "libpysv_{}.so".format(self.dut_name)        # libpysv_{dut_name}.so
+            pysv_pkg = "{}_pysv_pkg.sv".format(self.dut_name)  # {dut_name}_pysv_pkg.sv
+            pysv_lib = "libpysv_{}.so".format(self.dut_name)  # libpysv_{dut_name}.so
 
             # cp .sv/pkg/pysv_pkg.sv ./simulation/{dut_name}_pysv_pkg.sv        # 由各python函数生成得到的SV binding文件
             os.system("cp {} ./simulation/{}_pysv_pkg.sv".format(dpiconfig.sv, self.dut_name))
@@ -196,22 +224,22 @@ class Simlite(object):
         else:
             os.system("./obj_dir/{}&".format(efn))
         """
-        self.efn = efn      # V{dut_name}
+        self.efn = efn  # V{dut_name}
 
     # 开启仿真，默认模式为ia
     def start(self, mode="ia", ofn=None, ifn=None):
         env = None
         if self.dpiconfig:
             # 确保 libpysv.so（共享库） 在 LD_LIBRARY_PATH 中--  pysv要求的
-            env = {"LD_LIBRARY_PATH": "."}          # 环境变量
+            env = {"LD_LIBRARY_PATH": "."}  # 环境变量
         if mode == "ia":
-            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/VAdder
+            args = [f"./obj_dir/{self.efn}"]  # ./obj_dir/VAdder
 
             # 创建子进程执行./obj_dir/VAdder
             self.p = subprocess.Popen(args, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             self.dropinfo()
         elif mode == "task":
-            args = [f"./obj_dir/{self.efn}"]        # ./obj_dir/VAdder
+            args = [f"./obj_dir/{self.efn}"]  # ./obj_dir/VAdder
             infile = open(ifn, "r")
             outfile = open(ofn, "w")
             # subprocess 模块允许我们启动一个新进程，并连接到它们的输入/输出/错误管道，从而获取返回值。
@@ -247,7 +275,7 @@ class Simlite(object):
             inputs = [str(x) for x in inputs]
             # 输入端口值--str
             self.raw_in = " ".join(inputs)
-            self.raw_in = "0 " + self.raw_in        # 0表示状态值，状态值小于0会退出
+            self.raw_in = "0 " + self.raw_in  # 0表示状态值，状态值小于0会退出
             instr += self.raw_in + "\n"
         # 所有输入端口值，每一次以\n分隔
         instr += "-1\n"
@@ -306,7 +334,7 @@ class Simlite(object):
         return self.results
 
     # 传入module_name和ports，生成harness代码
-    def codegen(self, name, ports):
+    def codegen(self, name):
         tempfile = """#include "V{modname}.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
@@ -354,12 +382,12 @@ void output_handler(){{
 int main(int argc, char** argv, char** env) {{
     Verilated::commandArgs(argc, argv);
     ioinit();
-    
+
     V{modname}* top = new V{modname};
-    
+
     Verilated::internalsDump();  // See scopes to help debug
     Verilated::traceEverOn(true);
-    
+
     VerilatedVcdC* tfp = new VerilatedVcdC;
     top->trace(tfp, 99);
     tfp->open("wave.vcd");
@@ -390,7 +418,7 @@ int main(int argc, char** argv, char** env) {{
         taps = "        "
         i = 0
         for n in self.inputs:
-            res += taps + f"top->io_{n} = inputs[{i}];\n"       # 对输入端口进行赋值
+            res += taps + f"top->{n} = inputs[{i}];\n"  # 对输入端口进行赋值
             i += 1
         return res
 
@@ -400,6 +428,6 @@ int main(int argc, char** argv, char** env) {{
         taps = "        "
         i = 0
         for n in self.outputs:
-            res += taps + f"outputs[{i}] = top->io_{n};\n"      # 对输出端口进行取值
+            res += taps + f"outputs[{i}] = top->{n};\n"  # 对输出端口进行取值
             i += 1
         return res
