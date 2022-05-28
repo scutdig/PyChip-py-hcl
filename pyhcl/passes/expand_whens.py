@@ -15,8 +15,6 @@ class ExpandWhens(Pass):
         def flatten(s: Statement) -> List[Statement]:
             new_stmts = []
             conseq, alt = s.conseq, s.alt
-            if isinstance(conseq, EmptyStmt) or isinstance(alt, EmptyStmt):
-                ...
             if isinstance(conseq, Conditionally):
                 new_stmts += flatten(conseq)
             if isinstance(alt, Conditionally):
@@ -38,13 +36,20 @@ class ExpandWhens(Pass):
         def expand_whens(stmt: Statement, stmts: List[Statement], reference: Dict[str, Expression]):
             if isinstance(stmt, Conditionally):
                 flat_cond = flatten(stmt)
+                has_gen = {}
                 for pred, sx in flat_cond:
                     if isinstance(sx, Connect):
-                        name = auto_gen_name()
-                        loc_name = sx.loc.verilog_serialize() if isinstance(sx.loc, SubIndex) else sx.loc.serialize()
-                        loc = sx.loc if loc_name not in reference else reference[loc_name]
-                        stmts.append(DefNode(name, Mux(pred, sx.expr, loc, sx.expr.typ)))
-                        reference[loc_name] = Reference(name, sx.loc.typ)
+                        if pred.serialize() in has_gen:
+                            s = stmts.pop()
+                            stmts.append(DefNode(s.name, Mux(pred, has_gen[pred.serialize()], sx.expr, sx.expr.typ)))
+                            has_gen[pred.serialize()] = sx.expr
+                        else:
+                            name = auto_gen_name()
+                            loc_name = sx.loc.verilog_serialize() if isinstance(sx.loc, SubIndex) else sx.loc.serialize()
+                            loc = sx.loc if loc_name not in reference else reference[loc_name][1]
+                            stmts.append(DefNode(name, Mux(pred, sx.expr, loc, sx.expr.typ)))
+                            reference[loc_name] = (sx.loc, Reference(name, sx.loc.typ))
+                            has_gen[pred.serialize()] = sx.expr
                     else:
                         stmts.append(sx)
             else:
@@ -56,7 +61,7 @@ class ExpandWhens(Pass):
             for stmt in stmts:
                 expand_whens(stmt, new_stmts, reference)
             for ref in reference:
-                new_stmts.append(Connect(Reference(ref, reference[ref].typ), reference[ref]))
+                new_stmts.append(Connect(reference[ref][0], reference[ref][1]))
             return new_stmts
 
         def expand_whens_m(m: DefModule) -> DefModule:

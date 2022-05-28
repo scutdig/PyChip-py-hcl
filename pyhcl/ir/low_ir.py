@@ -586,10 +586,12 @@ class DefRegister(Statement):
     info: Info = NoInfo()
 
     def serialize(self) -> str:
-        i: str = indent(f' with : \nreset => ({self.reset.serialize()}, {self.init.serialize()})') \
-            if self.init is not None else ""
-        # i: str = indent(f' with : \nreset => ({self.reset.serialize()})') \
-        #     if self.reset is not None else ""
+        if self.init:
+            i: str = indent(f' with : \nreset => ({self.reset.serialize()}, {self.init.serialize()})') \
+                if self.init is not None else ""
+        else:
+            i: str = indent(f' with : \nreset => ({self.reset.serialize()})') \
+                if self.reset is not None else ""
         return f'reg {self.name} : {self.typ.serialize()}, {self.clock.serialize()}{i}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
@@ -925,7 +927,7 @@ class Block(Statement):
         new_body = self.merge_node_s(self, {}, set())
         manager = PassManager(new_body)
         new_blocks = manager.renew()
-        CheckCombLoop.run(new_blocks)
+        # CheckCombLoop.run(new_blocks)
         always_blocks = manager.gen_all_always_block()
 
         return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_blocks.stmts else ""

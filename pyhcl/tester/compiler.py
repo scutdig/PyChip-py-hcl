@@ -73,6 +73,7 @@ class TesterCompiler:
                 lambda table=None: get_func(table),
                 lambda s, table=None: set_func(s, table))
         elif isinstance(expr, SubIndex):
+            # size = expr.expr.typ.size-1
             names.append(expr.value)
             e = self.gen_working_ir(mname, names, expr.expr)
             get_func, set_func = e.get_func, e.set_func
@@ -136,7 +137,14 @@ class TesterCompiler:
                 return int(value, 2)
             return lambda table=None: bits(args, consts, table)
         elif isinstance(op, Cat):
-            return lambda table=None: int(bin(args[0].get_value(table))[2:]+bin(args[1].get_value(table))[2:], 2)
+            def cat(args, table):
+                hi = args[0].get_value(table) if isinstance(args[0].get_value(table), str) else bin(args[0].get_value(table))[2:]
+                lo = args[1].get_value(table) if isinstance(args[1].get_value(table), str) else bin(args[1].get_value(table))[2:]
+                # max_len = len(hi) if len(hi) >= len(lo) else len(lo)
+                # hi = '{:032b}'.format(args[0].get_value(table))[-max_len:]
+                # lo = '{:032b}'.format(args[1].get_value(table))[-max_len:]
+                return hi+lo
+            return lambda table=None: cat(args, table)
         elif isinstance(op, (AsUInt, AsSInt)):
             return lambda table=None: int(args[0].get_value(table))
         elif isinstance(op, AsClock):

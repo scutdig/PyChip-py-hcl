@@ -78,8 +78,13 @@ class ReplaceSubaccess(Pass):
                         stmts.append(node)
                         nodes.append(node)
                     else:
-                        node = DefNode(auto_gen_name(), Mux(exprs[i], index[i],
-                        Reference(nodes[-1].name, nodes[-1].value.typ), get_groud_type(get_type(target_e))))
+                        if isinstance(nodes[-1].value, ValidIf):
+                            node = DefNode(auto_gen_name(), Mux(exprs[i], index[i],
+                                nodes[-1].value.value, get_groud_type(get_type(target_e))))
+                            stmts.pop()
+                        else:
+                            node = DefNode(auto_gen_name(), Mux(exprs[i], index[i],
+                                Reference(nodes[-1].name, nodes[-1].value.typ), get_groud_type(get_type(target_e))))
                         stmts.append(node)
                         nodes.append(node)
                 return Reference(nodes[-1].name, nodes[-1].value.typ)

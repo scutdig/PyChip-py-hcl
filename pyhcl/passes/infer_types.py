@@ -33,8 +33,8 @@ class InferTypes(Pass):
             if isinstance(s, DefRegister):
                 typs[s.name] = s.typ
                 clock = infer_types_e(typs, s.clock) if hasattr(s, 'clock') and isinstance(s.clock, Expression) else None
-                reset = UIntLiteral(0, IntWidth(1))
-                init = Reference(s.name, s.typ)
+                reset = s.reset if hasattr(s, 'reset') and isinstance(s.init, Expression) else Reference('reset', ResetType())
+                init = s.init if hasattr(s, 'init') and isinstance(s.init, Expression) else Reference(s.name, s.typ)
                 return DefRegister(s.name, s.typ, clock, reset, init, s.info)
             elif isinstance(s, DefWire):
                 typs[s.name] = s.typ

@@ -3,6 +3,7 @@ from pyhcl.ir.low_ir import *
 @dataclass(frozen=True)
 class SymbolTable:
     table = {}
+    clock_table = {}
 
     def gen_typ(self, typ: Type):
         if isinstance(typ, (AsyncResetType, ResetType, ClockType, UIntType, SIntType)):
@@ -22,6 +23,8 @@ class SymbolTable:
     
     def set_symbol(self, mname: str, symbol):
         if isinstance(symbol, Port):
+            if isinstance(symbol.typ, ClockType):
+                self.clock_table[mname][symbol.name] = self.gen_typ(symbol.typ)
             self.table[mname][symbol.name] = self.gen_typ(symbol.typ)
         if isinstance(symbol, DefWire):
             self.table[mname][symbol.name] = self.gen_typ(symbol.typ)

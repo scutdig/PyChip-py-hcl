@@ -8,12 +8,17 @@ class Tester:
         self.main = ec.main
         self.executer = TesterExecuter(ec)
         self.executer.init_executer()
+        
     
-    def peek(self, name: str, value: int):
+    def poke(self, name: str, value: int):
         self.executer.set_value(self.main, name, value)
     
-    def poke(self, name: str):
-        print(self.executer.get_value(self.main, name))
+    def peek(self, name: str) -> int:
+        res = self.executer.get_value(self.main, name)
+        return int(res, 2) if isinstance(res, str) else res
+    
+    def expect(self, a, b) -> bool:
+        return a == b
 
-    def step(self):
-        self.executer.execute(self.main)
+    def step(self, n):
+        self.executer.step(n, self.main)
