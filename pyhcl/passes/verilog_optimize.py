@@ -68,7 +68,7 @@ class VerilogOptimize(Pass):
                 return stmt
 
 
-        def verilog_optimize_m(m: Module) -> Module:
+        def verilog_optimize_m(m: DefModule) -> DefModule:
             node_map: Dict[str, DefNode] = {}
             filter_nodes: set = set()
             if isinstance(m, Module):

@@ -4,12 +4,12 @@ from dataclasses import dataclass
 from pyhcl.ir import low_ir
 from pyhcl.dsl.check_and_infer import CheckAndInfer
 from pyhcl.passes.replace_subaccess import ReplaceSubaccess
-from pyhcl.passes.replace_subindex import ReplaceSubindex
 from pyhcl.passes.expand_aggregate import ExpandAggregate
 from pyhcl.passes.expand_whens import ExpandWhens
 from pyhcl.passes.expand_memory import ExpandMemory
 from pyhcl.passes.optimize import Optimize
 from pyhcl.passes.verilog_optimize import VerilogOptimize
+from pyhcl.passes.remove_access import RemoveAccess
 from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
@@ -41,7 +41,7 @@ class LowForm(Form):
         self.c = ReplaceSubaccess().run(self.c)
         self.c = ExpandAggregate().run(self.c)
         self.c = ExpandWhens().run(self.c)
-        self.c = ReplaceSubindex().run(self.c)
+        self.c = RemoveAccess().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.serialize()
 
@@ -53,7 +53,7 @@ class Verilog(Form):
         self.c = CheckAndInfer.run(self.c)
         self.c = ExpandAggregate().run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
-        self.c = ReplaceSubindex().run(self.c)
+        self.c = RemoveAccess().run(self.c)
         self.c = VerilogOptimize().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.verilog_serialize()

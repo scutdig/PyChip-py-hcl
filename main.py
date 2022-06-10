@@ -17,8 +17,8 @@ class FullAdder(Module):
 
 if __name__ == '__main__':
     # emit high firrtl
-    Emitter.dump(Emitter.emit(FullAdder(), HighForm), "FullAdder.fir")
+    # Emitter.dump(Emitter.emit(FullAdder(), HighForm), "FullAdder.fir")
     # emit lowered firrtl
-    Emitter.dump(Emitter.emit(FullAdder(), LowForm), "FullAdder.lo.fir")
+    # Emitter.dump(Emitter.emit(FullAdder(), LowForm), "FullAdder.lo.fir")
     # emit verilog
     Emitter.dump(Emitter.emit(FullAdder(), Verilog), "FullAdder.v")
