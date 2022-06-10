@@ -238,8 +238,15 @@ def has_width(t: Type) -> bool:
 
 class AutoName:
     endwith: int = -1
+    names: List[str] = []
 
     @staticmethod
     def auto_gen_name():
         AutoName.endwith += 1
-        return f"GEN_{AutoName.endwith}"
+        gen_name = f"GEN_{AutoName.endwith}"
+        AutoName.names.append(gen_name)
+        return gen_name
+    
+    @staticmethod
+    def last_name():
+        return AutoName.names[-1]
