@@ -848,86 +848,9 @@ class Block(Statement):
     def serialize(self) -> str:
         return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
 
-    def auto_gen_node(self, stmt):
-        return isinstance(stmt, DefNode) and stmt.name.startswith("_T")
-
-    def get_name(self, e: Expression) -> str:
-        if isinstance(e, (SubIndex, SubField, SubAccess)):
-            return self.get_name(e.expr)
-        elif isinstance(e, Reference):
-            return e.name
-
-    def merge_node_e(self, expr: Expression, node_exp_map: Dict[str, Statement], filter_node: set) -> Expression:
-        if isinstance(expr, (UIntLiteral, SIntLiteral)):
-            return expr
-        elif isinstance(expr, Reference):
-            en = self.get_name(expr)
-            if en in node_exp_map:
-                filter_node.add(en)
-                return self.merge_node_e(node_exp_map[en].value, node_exp_map, filter_node)
-            else:
-                return expr
-        elif isinstance(expr, (SubField, SubIndex, SubAccess)):
-            return expr
-        elif isinstance(expr, Mux):
-            return Mux(
-                self.merge_node_e(expr.cond, node_exp_map, filter_node),
-                self.merge_node_e(expr.tval, node_exp_map, filter_node),
-                self.merge_node_e(expr.fval, node_exp_map, filter_node),
-                expr.typ)
-        elif isinstance(expr, ValidIf):
-            return ValidIf(
-                self.merge_node_e(expr.cond, node_exp_map, filter_node),
-                self.merge_node_e(expr.value, node_exp_map, filter_node),
-                expr.typ)
-        elif isinstance(expr, DoPrim):
-            args = list(map(lambda arg: self.merge_node_e(arg, node_exp_map, filter_node), expr.args))
-            return DoPrim(expr.op, args, expr.consts, expr.typ)
-        else:
-            raise TransformException("Unknown Expression.")
-    
-    def merge_node_s(self, stmt: Statement, node_exp_map: Dict[str, Statement], filter_node: set) -> Statement:
-        if isinstance(stmt, EmptyStmt):
-            return stmt
-        elif isinstance(stmt, Conditionally):
-            return Conditionally(
-                self.merge_node_e(stmt.pred, node_exp_map, filter_node),
-                self.merge_node_s(stmt.conseq, node_exp_map, filter_node),
-                self.merge_node_s(stmt.alt, node_exp_map, filter_node),
-                stmt.info)
-        elif isinstance(stmt, Block):
-            node_exp_map = {**node_exp_map, **{s.name: s for s in stmt.stmts if self.auto_gen_node(s)}}
-            stmts = []
-            for s in stmt.stmts:
-                if isinstance(s, Connect):
-                    stmts.append(Connect(
-                        self.merge_node_e(s.loc, node_exp_map, filter_node),
-                        self.merge_node_e(s.expr, node_exp_map, filter_node),
-                        s.info, s.blocking, s.bidirection, s.mem))
-                elif isinstance(s, DefNode):
-                    stmts.append(DefNode(
-                        s.name,
-                        self.merge_node_e(s.value, node_exp_map, filter_node),
-                        s.info))
-                elif isinstance(s, Conditionally):
-                    stmts.append(Conditionally(
-                        self.merge_node_e(s.pred, node_exp_map, filter_node),
-                        self.merge_node_s(s.conseq, node_exp_map, filter_node),
-                        self.merge_node_s(s.alt, node_exp_map, filter_node),
-                        s.info))
-                else:
-                    stmts.append(s)
-                
-            stmts = [s for s in stmts if not (isinstance(s, DefNode) and s.name in filter_node)]
-            return Block(stmts)
-        else:
-            raise TransformException(f"{stmt} is unexpected statement.")
-
     def verilog_serialize(self) -> str:
-        new_body = self.merge_node_s(self, {}, set())
-        manager = PassManager(new_body)
+        manager = PassManager(self)
         new_blocks = manager.renew()
-        # CheckCombLoop.run(new_blocks)
         always_blocks = manager.gen_all_always_block()
 
         return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_blocks.stmts else ""

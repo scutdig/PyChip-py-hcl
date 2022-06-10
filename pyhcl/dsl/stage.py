@@ -9,6 +9,7 @@ from pyhcl.passes.expand_aggregate import ExpandAggregate
 from pyhcl.passes.expand_whens import ExpandWhens
 from pyhcl.passes.expand_memory import ExpandMemory
 from pyhcl.passes.optimize import Optimize
+from pyhcl.passes.verilog_optimize import VerilogOptimize
 from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
@@ -53,5 +54,6 @@ class Verilog(Form):
         self.c = ExpandAggregate().run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = ReplaceSubindex().run(self.c)
+        self.c = VerilogOptimize().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.verilog_serialize()

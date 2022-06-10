@@ -110,7 +110,6 @@ class ExpandAggregate(Pass):
                     expand_aggregate_wire(stmt, new_stmts)
                 elif isinstance(stmt, DefNode):
                     expand_aggregate_node(stmt, new_stmts)
-                    # new_stmts.append(stmt)
                 elif isinstance(stmt, DefRegister):
                     expand_aggregate_reg(stmt, new_stmts)
                 else:
