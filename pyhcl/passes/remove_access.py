@@ -10,11 +10,17 @@ class RemoveAccess(Pass):
 
         def remove_access(e: Expression, type: Type = None, name: str = None) -> Expression:
             if isinstance(e, Reference):
-                return Reference(f"{e.name}{name}", type)
+                return Reference(f"{e.name}_{name}", type)
             elif isinstance(e, SubIndex):
-                return remove_access(e.expr, type, f"_{e.value}")
+                if name is None:
+                    return remove_access(e.expr, type, f"{e.value}")
+                else:
+                    return remove_access(e.expr, type, f"{e.value}_{name}")
             elif isinstance(e, SubField):
-                return remove_access(e.expr, type, f"_{e.name}")
+                if name is None:
+                    return remove_access(e.expr, type, f"{e.name}")
+                else:
+                    return remove_access(e.expr, type, f"{e.name}_{name}")
             else:
                 return e
 

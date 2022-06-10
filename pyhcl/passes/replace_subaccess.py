@@ -1,3 +1,4 @@
+from sqlite3 import connect
 from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
@@ -79,17 +80,8 @@ class ReplaceSubaccess(Pass):
                 if is_sink:
                     cons, exps = replace_subaccess(e)
                     gen_nodes: Dict[str, DefNode] = {}
-                    connects: Dict[str, Connect] = {}
-                    new_stats: List[Expression] = []
-                    e_name = get_ref_name(e)
-                    for stmt in stmts:
-                        if isinstance(stmt, Connect) and get_ref_name(stmt.lexp) == e_name:
-                            connects[e.verilog_serialize()] = stmt.expr
-                        else:
-                            new_stats.append(stmt)
-                    stats = new_stats
                     for i in range(len(cons)):
-                        stats.append(Connect(exps[i], Mux(cons[i], source, connects[exps[i].verilog_serialize()], e.typ)))
+                        stmts.append(Connect(exps[i], Mux(cons[i], source, exps[i], e.typ)))
                     return
                 else:
                     cons, exps = replace_subaccess(e)
@@ -124,7 +116,7 @@ class ReplaceSubaccess(Pass):
                     elif isinstance(stmt, DefNode):
                         stmts.append(DefNode(stmt.name, replace_subaccess_e(stmt.value, stmts), stmt.info))
                     elif isinstance(stmt, DefRegister):
-                        stmts.append(DefRegister(stmt.name, stmt.typ, stmt.clock, stmt.reset, replace_subaccess_e(stmt.init), stmt.info))
+                        stmts.append(DefRegister(stmt.name, stmt.typ, stmt.clock, stmt.reset, replace_subaccess_e(stmt.init, stmts), stmt.info))
                     elif isinstance(stmt, Conditionally):
                         stmts.append(replace_subaccess_s(stmt))
                     else:
