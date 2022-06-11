@@ -93,7 +93,7 @@ class SubField(Expression):
         return f"{self.expr.serialize()}.{self.name}"
 
     def verilog_serialize(self) -> str:
-        return f"{self.expr.verilog_serialize()}_{self.name}"
+        return self.serialize()
 
 
 @dataclass(frozen=True)
@@ -107,7 +107,7 @@ class SubIndex(Expression):
         return f"{self.expr.serialize()}[{self.value}]"
 
     def verilog_serialize(self) -> str:
-        return f"{self.expr.verilog_serialize()}_{self.value}"
+        return self.serialize()
 
 
 @dataclass(frozen=True)
@@ -120,61 +120,7 @@ class SubAccess(Expression):
         return f"{self.expr.serialize()}[{self.index.serialize()}]"
 
     def verilog_serialize(self):
-        sub_access_declares: List[str] = []
-
-        def auto_gen_name(endwith: int):
-            if endwith < 0:
-                endwith = 0
-            return f'_GEN_{endwith}'
-        
-        def gen_sub_access(s: str, i: str) -> str:
-            return f'{auto_gen_name(i)} = {s} : '
-
-        def verilog_serializes(e: Expression):
-            # TODO: remove dead code
-            conds_rec: List[str] = []
-            conds: List[str] = []
-            vecs_rec: List[str] = []
-            vecs: List[str] = []
-            cond_declares: List[str] = []
-            vec_declares: List[str] = []
-            if type(e.expr) == SubAccess:
-                conds_rec, vecs_rec = verilog_serializes(e.expr)
-            if type(e.expr.typ) == VectorType:
-                typ_size = e.expr.typ.size
-                for i in range(typ_size):
-                    cond = f'{e.index.verilog_serialize()} == {UIntLiteral(i, IntWidth(get_binary_width(typ_size - 1))).verilog_serialize()}'
-                    conds.append(cond)
-                    vecs.append(f'{e.expr.name}_{i}') if hasattr(e.expr, 'name') else vecs.append(f'_{i}')
-
-            for c in conds:
-                if len(conds_rec) > 0:
-                    for cr in conds_rec:
-                        cond_declares.append(f'{cr} & {c}')
-                else:
-                    cond_declares.append(c)
-            
-            for v in vecs:
-                if len(vecs_rec) > 0:
-                    for vr in vecs_rec:
-                        vec_declares.append(f'{vr}{v}')
-                else:
-                    vec_declares.append(v)
-
-            return cond_declares, vec_declares
-
-        cond_declares, vec_declares = verilog_serializes(self)
-        declares = list(zip(cond_declares, vec_declares))
-        count = SubAccessGenCounter.get_count()
-
-        for i in range(count, len(declares) + count):
-            cond, vec = declares[i - count]
-            sub_access_declare = f'{cond} ? {vec}'
-            gsa = gen_sub_access(sub_access_declare, i)
-            sub_access_declares.append(f'wire {self.typ.verilog_serialize()} {gsa}{auto_gen_name(i-1)}')
-            SubAccessGenCounter.increase()
-        
-        return '\n'.join(sub_access_declares), auto_gen_name(len(declares) - 1)
+        return self.serialize()
 
 @dataclass(frozen=True)
 class Mux(Expression):
@@ -186,8 +132,8 @@ class Mux(Expression):
     def serialize(self) -> str:
         return f"mux({self.cond.serialize()}, {self.tval.serialize()}, {self.fval.serialize()})"
 
-    def verilog_serialize(self, ext: str = '') -> str:
-        return f"{self.cond.verilog_serialize()} ? {self.tval.verilog_serialize()}{ext} : {self.fval.verilog_serialize()}{ext}"
+    def verilog_serialize(self) -> str:
+        return f"{self.cond.verilog_serialize()} ? {self.tval.verilog_serialize()} : {self.fval.verilog_serialize()}"
     
 @dataclass(frozen=True)
 class ValidIf(Expression):
@@ -199,7 +145,7 @@ class ValidIf(Expression):
         return f"validif({self.cond.serialize()}, {self.value.serialize()})"
     
     def verilog_serialize(self) -> str:
-        return f"{self.cond.verilog_serialize()} ? {self.value.verilog_serialize()} : z"
+        return f"{self.cond.verilog_serialize()} ? {self.value.verilog_serialize()} : Z"
 
 
 @dataclass(frozen=True)
@@ -253,10 +199,10 @@ class UnknownWidth(Width):
     width: int = None
 
     def serialize(self) -> str:
-        return ""
+        return ''
 
     def verilog_serialize(self) -> str:
-        return ""
+        return ''
 
 
 @dataclass(frozen=True, init=False)
@@ -369,8 +315,7 @@ class Flip(Orientation):
         return 'flip '
 
     def verilog_serialize(self) -> str:
-        # no "flip" in verilog, bug here
-        return 'flip'
+        return ''
 
 
 @dataclass(frozen=True)
@@ -384,7 +329,7 @@ class Field(FirrtlNode):
         return f'{self.flip.serialize()}{self.name} : {self.typ.serialize()}'
 
     def verilog_serialize(self) -> str:
-        return f'{self.flip.verilog_serialize()}{self.typ.verilog_serialize()}\t${self.name}'
+        return ''
 
 
 @dataclass(frozen=True)
@@ -395,16 +340,7 @@ class BundleType(AggregateType):
         return '{' + ', '.join([f.serialize() for f in self.fields]) + '}'
 
     def verilog_serialize(self) -> list:
-        # TODO: remove dead code
-        field_list = []
-        for f in self.fields:
-            if type(f.typ) is VectorType:
-                vec_declares, typ = f.typ.verilog_serialize()
-                for t in vec_declares:
-                    field_list.append(f'{typ.verilog_serialize()}\t${f.name}{t}')
-            else:
-                field_list.append(f.verilog_serialize())
-        return field_list
+        return ''
 
 
 @dataclass(frozen=True)
@@ -417,22 +353,7 @@ class VectorType(AggregateType):
 
     
     def verilog_serialize(self):
-        # TODO: remove dead code
-        index_list = []
-        in_index_list = []
-        if type(self.typ) == VectorType:
-            in_index_list, typ = self.typ.verilog_serialize()
-        if len(in_index_list) > 0:
-            for i in range(self.size):
-                for ii in in_index_list:
-                    index_list.append(f'_{i}{ii}')
-            
-            return index_list, typ
-        else:
-            for i in range(self.size):
-                index_list.append(f'_{i}')
-            
-            return index_list, self.typ
+        return ''
 
     def irWithIndex(self, index):
         if isinstance(index, int):
@@ -464,7 +385,7 @@ class ClockType(GroundType):
         return 'Clock'
 
     def verilog_serialize(self) -> str:
-        return ""
+        return ''
 
 
 @dataclass(frozen=True, init=False)
@@ -475,8 +396,7 @@ class ResetType(GroundType):
         return "UInt<1>"
 
     def verilog_serialize(self) -> str:
-        # Todo
-        return "Reset"
+        return ''
 
 
 @dataclass(frozen=True, init=False)
@@ -487,8 +407,7 @@ class AsyncResetType(GroundType):
         return "AsyncReset"
 
     def verilog_serialize(self) -> str:
-        # Todo
-        return "AsyncReset"
+        return ''
 
 
 class Direction(FirrtlNode, ABC):
@@ -530,19 +449,7 @@ class Port(FirrtlNode):
         return f'{self.direction.serialize()} {self.name} : {self.typ.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        if type(self.typ.verilog_serialize()) is str:
-            return f'{self.direction.verilog_serialize()}\t{self.typ.verilog_serialize()}\t{self.name},\n'
-        else:
-            portdeclares = ''
-            seq = self.typ.verilog_serialize()
-            for s in seq:
-                ns = s.replace('$', f'{self.name}_')
-                if "flip" in ns:
-                    ns = ns.replace('flip', "")
-                    portdeclares += f'{self.direction.verilog_serialize(True)}\t{ns},\n'
-                else:
-                    portdeclares += f'{self.direction.verilog_serialize()}\t{ns},\n'
-            return portdeclares
+        return f'{self.direction.verilog_serialize()}\t{self.typ.verilog_serialize()}\t{self.name},\t{self.info.verilog_serialize()}'
 
 class Statement(FirrtlNode, ABC):
     ...
@@ -554,7 +461,7 @@ class EmptyStmt(Statement):
         return 'skip'
 
     def verilog_serialize(self) -> str:
-        return '// skip'
+        return ''
 
 
 @dataclass(frozen=True)
@@ -567,13 +474,7 @@ class DefWire(Statement):
         return f'wire {self.name} : {self.typ.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        if type(self.typ) ==  VectorType:
-            wire_declares = ''
-            vec_declares, typ = self.typ.verilog_serialize()
-            for i in vec_declares:
-                wire_declares += f'wire\t{typ.verilog_serialize()}\t{self.name}{i};\n'
-            return wire_declares
-        return f'wire\t{self.typ.verilog_serialize()}\t{self.name}{self.info.verilog_serialize()};'
+        return f'wire\t{self.typ.verilog_serialize()}\t{self.name};\t{self.info.verilog_serialize()}'
 
 
 @dataclass(frozen=True)
@@ -595,8 +496,7 @@ class DefRegister(Statement):
         return f'reg {self.name} : {self.typ.serialize()}, {self.clock.serialize()}{i}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        return f'reg {self.typ.verilog_serialize()}\t{self.name}{self.info.verilog_serialize()};'
-
+        return f'reg\t{self.typ.verilog_serialize()}\t{self.name};\t{self.info.verilog_serialize()}'
 
 @dataclass(frozen=True)
 class DefInstance(Statement):
@@ -609,15 +509,14 @@ class DefInstance(Statement):
         return f'inst {self.name} of {self.module}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        instdeclares = ''
-        portdeclares = ''
-        ports = InstanceManager._getInstancePorts(self.module)
+        instdeclares: List[str] = []
+        portdeclares: List[str] = []
+        ports: List[Port] = InstanceManager._getInstancePorts(self.module)
         for p in ports:
-            portdeclares += f'wire\t{p.typ.verilog_serialize()}\t{self.name}_{p.name};\n'
-            instdeclares += indent(f'\n.{p.name}({self.name}_{p.name}),')
-        return f'{portdeclares}{self.module} {self.name} ({instdeclares[:-1]}\n);'
-
-
+            portdeclares.append(f'wire\t{p.typ.verilog_serialize()}\t{self.name}_{p.name};')
+            instdeclares.append(indent(f'\n.{p.name}({self.name}_{p.name}),'))
+        port_decs = '\n'.join(portdeclares)
+        return f"{port_decs}\n{self.module}\t{self.name}(\t{self.info.verilog_serialize()}{''.join(instdeclares)});"
 
 @dataclass(frozen=True)
 class WDefMemory(Statement):
@@ -656,10 +555,7 @@ class DefMemory(Statement):
         return f'cmem {self.name} : {self.memType.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        memorydeclares = ''
-        memorydeclares += f'{self.memType.verilog_serialize()}\n'
-        # memorydeclares += f'{self.info.verilog_serialize()}\n'
-        return memorydeclares
+        return f'{self.memType.verilog_serialize()}\t{self.info.verilog_serialize()}'
 
 
 @dataclass(frozen=True)
@@ -672,7 +568,7 @@ class DefNode(Statement):
         return f'node {self.name} = {self.value.serialize()}{self.info.serialize()}'
 
     def verilog_serialize(self) -> str:
-        return f'wire {self.value.typ.verilog_serialize()} {self.name} = {self.value.verilog_serialize()}{self.info.verilog_serialize()};'
+        return f'wire\t{self.value.typ.verilog_serialize()}\t{self.name} = {self.value.verilog_serialize()};\t{self.info.verilog_serialize()}'
 
 
 @dataclass(frozen=True)
@@ -700,8 +596,6 @@ class DefMemPort(Statement):
             memportdeclares += f'wire {self.mem.verilog_serialize()}_{self.name}_mask;\n'
         return memportdeclares
 
-
-# stmt pass will change the conseq and alt
 @dataclass(frozen=False)
 class Conditionally(Statement):
     pred: Expression
@@ -716,130 +610,9 @@ class Conditionally(Statement):
 
 
     def verilog_serialize(self) -> str:
-        s = indent(f'\n{self.conseq.verilog_serialize()}') + \
-            ('' if self.alt == EmptyStmt() else '\nelse' + indent(f'\n{self.alt.verilog_serialize()}'))
-        return f'if ({self.pred.verilog_serialize()}) {self.info.verilog_serialize()}{s}'
-
-class ValTracer:
-    ...
-
-
-class RegTracer(ValTracer):
-    def __init__(self, reg: DefRegister):
-        self.stmt = reg
-        self.clock = reg.clock
-        self.reset = reg.reset
-        self.conds = {}
-
-    def add_cond(self, signal: str, action):
-        if signal not in self.conds:
-            self.conds[signal] = [action]
-        else:
-            self.conds[signal].append(action)
-
-    def gen_body(self):
-        stmts = []
-        final_map = {}
-        for k, v in self.conds.items():
-            if(k == "default"):
-                stmts.append(Block(self.conds[k]))
-            else:
-                stmts.append(Conditionally(Reference(k, UIntType(IntWidth(1))), Block(self.conds[k]), EmptyStmt()))
-        self.body = Block(stmts)
-
-    def gen_always_block(self):
-        self.gen_body()
-        res =  (f'always @(posedge {self.clock.verilog_serialize()}) begin\n' + \
-               deleblankline(indent(f'\n{self.body.verilog_serialize()}')) + \
-               f'\nend') if len(self.body.stmts) > 0 else ''
-        return res
-
-class MemTracer(ValTracer):
-    def __init__(self, mem_port: DefMemPort):
-        self.stmt = mem_port
-        self.clock = mem_port.clk
-        self.rw = mem_port.rw
-    
-    def get_mem_port(self):
-        return self.stmt
-
-    def gen_always_block(self):
-        if self.rw:
-            return ''
-        res = f'always @(posedge {self.clock.verilog_serialize()}) begin' + \
-            indent(f'\nif ({self.stmt.mem.name}_{self.stmt.name}_en & {self.stmt.mem.name}_{self.stmt.name}_mask) begin') + \
-            indent(f'\n{self.stmt.mem.name}[{self.stmt.mem.name}_{self.stmt.name}_addr] <= {self.stmt.mem.name}_{self.stmt.name}_data;', 2) + \
-            indent(f'\nend') + \
-            f'\nend'
-        return res
-
-class PassManager:
-    def __init__(self, target_block):
-        self.block = target_block
-
-        self.reg_map = {}
-
-        self.mem_map = {}
-
-        self.define_pass()
-
-    def renew(self):
-        return self.stmts_pass(self.block)
-
-    # find out all reg definition and its clock and reset infos
-    def define_pass(self):
-        reg_tracers = [RegTracer(stmt) for stmt in self.block.stmts if type(stmt) == DefRegister]
-        self.reg_map = {x.stmt.name: x for x in reg_tracers}
-
-        mem_tracers = [MemTracer(stmt) for stmt in self.block.stmts if type(stmt) == DefMemPort]
-        self.mem_map = {x.stmt.name: x for x in mem_tracers}
-
-    # nest
-    def stmts_pass(self, block, signal: str = "default") -> Block:
-        if type(block) == EmptyStmt:
-            return EmptyStmt()
-        if type(block) == Conditionally:
-            conseq = self.stmts_pass(block.conseq, block.pred.verilog_serialize())
-            alt = self.stmts_pass(block.alt, "!" + block.pred.verilog_serialize())
-            return Conditionally(block.pred, conseq, alt, block.info)
-        for stmt in block.stmts:
-            if type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name in self.reg_map:
-                stmt.blocking = False
-                self.reg_map[stmt.loc.name].add_cond(signal, stmt)
-            elif type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name in self.mem_map:
-                stmt.mem = { 'loc': self.mem_map[stmt.loc.name].get_mem_port()}
-            elif type(stmt) == Connect and hasattr(stmt.expr, 'name') and stmt.expr.name in self.mem_map:
-                stmt.mem = { 'expr': self.mem_map[stmt.expr.name].get_mem_port()}
-            elif type(stmt) == Conditionally:
-                stmt.conseq = self.stmts_pass(stmt.conseq, stmt.pred.verilog_serialize())
-                stmt.alt = self.stmts_pass(stmt.alt, f"!({stmt.pred.verilog_serialize()})")
-            elif type(stmt) == DefInstance:
-                ...
-            else:
-                pass
-        stmts = [stmt for stmt in block.stmts if self.pass_check(stmt)]
-        return Block(stmts) if stmts else EmptyStmt()
-
-    def pass_check(self, stmt):
-        return type(stmt) != Conditionally and type(stmt) != Connect \
-               or type(stmt) == Connect and hasattr(stmt.loc, 'name') and stmt.loc.name not in self.reg_map \
-               or type(stmt) == Conditionally and type(stmt.conseq) != EmptyStmt
-
-    def gen_all_always_block(self):
-        res = ""
-        for reg, tracer in self.reg_map.items():
-            always_block = tracer.gen_always_block()
-            if len(always_block) > 0:
-                res += f'\n// handle register {reg}'
-                res += f'\n{always_block}'
-        for mem, tracer in self.mem_map.items():
-            always_block = tracer.gen_always_block()
-            if len(always_block) > 0:
-                if tracer.rw is False:
-                    res += f'\n// handle memory port {mem}'
-                res += f'\n{tracer.gen_always_block()}'
-        return res
-
+        s = indent(f"\n{self.conseq.verilog_serialize()}") + "\nend" + \
+            ("" if self.alt == EmptyStmt() else "\nelse begin" + indent(f"\n{self.alt.verilog_serialize()}") + "\nend")
+        return f"if ({self.pred.verilog_serialize()}) begin\t{self.info.verilog_serialize()}{s}"
 
 @dataclass(frozen=True)
 class Block(Statement):
@@ -849,14 +622,28 @@ class Block(Statement):
         return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
-        manager = PassManager(self)
-        new_blocks = manager.renew()
-        always_blocks = manager.gen_all_always_block()
+        return '\n'.join([stmt.verilog_serialize() for stmt in self.stmts])
 
-        return '\n'.join([stmt.verilog_serialize() for stmt in new_blocks.stmts]) + f'\n{always_blocks}' if new_blocks.stmts else ""
+@dataclass(frozen=True)
+class AlwaysBlock(Statement):
+    stmts: List[Statement]
+    clk: Expression = None
 
+    def serialize(self) -> str:
+        pass
 
-# pass will change the  "blocking" feature of Connect Stmt
+    def verilog_serialize(self) -> str:
+        cat_table: List[str] = []
+        for stmt in self.stmts:
+            cat_table.append(stmt.verilog_serialize())
+        
+        if self.clk is None:
+            declares = '\n' + "\n".join(cat_table)
+            return deleblankline(f"always @(posedge clock) begin\n{indent(declares)}"+ "\nend")
+        else:
+            declares = '\n' + "\n".join(cat_table)
+            return deleblankline(f"always @(posedge {self.clk.verilog_serialize()}) begin\n{indent(declares)}" + "\nend")
+
 @dataclass(frozen=False)
 class Connect(Statement):
     loc: Expression
@@ -875,22 +662,9 @@ class Connect(Statement):
 
     def verilog_serialize(self) -> str:
         op = "=" if self.blocking else "<="
-        if type(self.expr) == SubAccess:
-            rec, sub_access = self.expr.verilog_serialize()
-            return f'{rec}\nassign {self.loc.verilog_serialize()} {op} {sub_access};'
-
-        for attr, memport in self.mem.items():
-            if attr == 'loc':
-                return f'assign {memport.mem.name}_{self.loc.verilog_serialize()}_data' + \
-                    f' {op} {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
-            if attr == 'expr':
-                return f'assign {self.loc.verilog_serialize()}' + \
-                    f' {op} {memport.mem.name}_{self.expr.verilog_serialize()}_data{self.info.verilog_serialize()};'
-        
         if self.blocking is False:
-            return f'{self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
-       
-        return f'assign {self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()}{self.info.verilog_serialize()};'
+            return f'{self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()};\t{self.info.verilog_serialize()}'
+        return f'assign\t{self.loc.verilog_serialize()} {op} {self.expr.verilog_serialize()};\t{self.info.verilog_serialize()}'
 
 
 # Verification
@@ -947,8 +721,10 @@ class DefModule(FirrtlNode, ABC):
         return f'{typ} {self.name} :{self.info.serialize()}{moduledeclares}\n'
 
     def verilog_serializeHeader(self, typ: str) -> str:
-        moduledeclares = '  ' + indent(''.join([f'{p.verilog_serialize()}' for p in self.ports]))
-        return f'{typ} {self.name}(\n{deleblankline(moduledeclares)[:-1]}\n);\n'
+        port_declares: List[str] = []
+        for p in self.ports:
+            port_declares.append(indent("\n"+  p.verilog_serialize()))
+        return f"{typ} {self.name}(\t{self.info.verilog_serialize()}{''.join(port_declares)}\n);\n"
 
 
 @dataclass(frozen=True)
@@ -979,8 +755,7 @@ class ExtModule(DefModule):
         return f'{self.serializeHeader("extmodule")}{s}'
 
     def verilog_serialize(self) -> str:
-        # return f'{self.verilog_serializeHeader("module")}endmodule\n'
-        return ''
+        return ""
 
 
 @dataclass(frozen=True)
@@ -1002,7 +777,6 @@ class Circuit(FirrtlNode):
     def requires(self):
         InstanceManager(self)
         CheckCombLoop()
-        SubAccessGenCounter()
 
 class InstanceManager:
     _modules: Dict[str, DefModule] = {}
@@ -1096,14 +870,3 @@ class CheckCombLoop:
         check_comb_loop_s(stmt)
 
         return stmt
-
-class SubAccessGenCounter:
-    count = 0
-
-    @staticmethod
-    def increase():
-        SubAccessGenCounter.count += 1
-    
-    @staticmethod
-    def get_count():
-        return SubAccessGenCounter.count

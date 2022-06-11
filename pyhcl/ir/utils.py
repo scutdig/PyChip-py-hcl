@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 from copy import copy, deepcopy
 
 def indent(string: str, space: int = 1) -> str:
-    return string.replace('\n', '\n' + '  ' * space)
+    return string.replace('\n', '\n' + '\t' * space)
 
 
 def backspace(string: str) -> str:

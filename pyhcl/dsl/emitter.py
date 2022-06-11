@@ -26,10 +26,11 @@ class Emitter:
 
     @staticmethod
     def dump(s, filename) -> str:
-        if not os.path.exists('.fir'):
-            os.mkdir('.fir')
+        dir_name = "." + filename.split(".")[-1]
+        if not os.path.exists(dir_name):
+            os.mkdir(dir_name)
 
-        f = os.path.join('.fir', filename)
+        f = os.path.join(dir_name, filename)
         with open(f, "w+") as fir_file:
             fir_file.write(s)
 

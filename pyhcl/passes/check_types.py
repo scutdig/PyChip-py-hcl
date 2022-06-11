@@ -260,7 +260,7 @@ class CheckTypes(Pass):
                 
                 if isinstance(s.init, Expression) and self.legal_reset_type(s.reset.typ) is False:
                     errors.append(IllegalResetType(get_info(s), mname, s.name))
-                if isinstance(s.clock.typ, ClockType) is False or isinstance(s.clock.typ.width, IntWidth) is False or s.clock.typ.width.width != 1:
+                if not isinstance(s.clock.typ, ClockType) or not isinstance(s.clock.typ.width, IntWidth) or s.clock.typ.width.width != 1:
                     errors.append(RegReqClk(get_info(s), mname, s.name))
             elif isinstance(s, Conditionally) and self.legal_cond_type(s.pred.typ) is False:
                 errors.append(PredNotUInt(get_info(s), mname))

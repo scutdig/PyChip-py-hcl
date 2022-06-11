@@ -109,10 +109,11 @@ class ReplaceSubaccess(Pass):
                     if isinstance(stmt, Connect):
                         expr = replace_subaccess_e(stmt.expr, stmts)
                         loc = replace_subaccess_e(stmt.loc, stmts, True, expr)
-                        if expr is not None:
+                        if loc is not None:
                             stmts.append(Connect(loc, expr, stmt.info, stmt.blocking, stmt.bidirection, stmt.mem))
                         else:
-                            stmts.append(stmt)
+                            ...
+                            # stmts.append(stmt)
                     elif isinstance(stmt, DefNode):
                         stmts.append(DefNode(stmt.name, replace_subaccess_e(stmt.value, stmts), stmt.info))
                     elif isinstance(stmt, DefRegister):

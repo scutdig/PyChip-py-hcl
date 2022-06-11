@@ -53,7 +53,7 @@ class AutoInferring:
                 else:
                     return e
             elif isinstance(e, Reference):
-                typ = inferring_map[e.name] if inferring_map[e.name] else auto_inferring_t(e.typ)
+                typ = inferring_map[e.name] if not isinstance(inferring_map[e.name], UnknownType) else auto_inferring_t(e.typ)
                 return Reference(e.name, typ)
             elif isinstance(e, SubField):
                 expr = auto_inferring_e(e.expr, inferring_map)
@@ -100,7 +100,11 @@ class AutoInferring:
             elif isinstance(s, DefMemPort):
                 clk = auto_inferring_e(s.clk, inferring_map)
                 index = auto_inferring_e(s.index, inferring_map)
+                inferring_map[s.name] = UnknownType()
                 return DefMemPort(s.name, s.mem, index, clk, s.rw, s.info)
+            elif isinstance(s, DefInstance):
+                inferring_map[s.name] = UnknownType()
+                return s
             elif isinstance(s, Connect):
                 return Connect(auto_inferring_e(s.loc, inferring_map), auto_inferring_e(s.expr, inferring_map), s.info, s.blocking, s.bidirection, s.mem)
             else:

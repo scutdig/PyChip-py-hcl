@@ -10,6 +10,7 @@ from pyhcl.passes.expand_memory import ExpandMemory
 from pyhcl.passes.optimize import Optimize
 from pyhcl.passes.verilog_optimize import VerilogOptimize
 from pyhcl.passes.remove_access import RemoveAccess
+from pyhcl.passes.expand_sequential import ExpandSequential
 from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
@@ -50,10 +51,12 @@ class Verilog(Form):
     c: low_ir.Circuit
 
     def emit(self) -> str:
+        AutoName()
         self.c = CheckAndInfer.run(self.c)
         self.c = ExpandAggregate().run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = RemoveAccess().run(self.c)
         self.c = VerilogOptimize().run(self.c)
+        self.c = ExpandSequential().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.verilog_serialize()
