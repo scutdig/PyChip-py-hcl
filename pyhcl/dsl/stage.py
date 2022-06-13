@@ -2,7 +2,11 @@ from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
 
 from pyhcl.ir import low_ir
-from pyhcl.dsl.check_and_infer import CheckAndInfer
+from pyhcl.passes.check_form import CheckHighForm
+from pyhcl.passes.check_types import CheckTypes
+from pyhcl.passes.check_flows import CheckFlow
+from pyhcl.passes.check_widths import CheckWidths
+from pyhcl.passes.auto_inferring import AutoInferring
 from pyhcl.passes.replace_subaccess import ReplaceSubaccess
 from pyhcl.passes.expand_aggregate import ExpandAggregate
 from pyhcl.passes.expand_whens import ExpandWhens
@@ -23,7 +27,11 @@ class HighForm(Form):
     c: low_ir.Circuit
 
     def emit(self) -> str:
-        self.c = CheckAndInfer.run(self.c)
+        # self.c = CheckHighForm(self.c).run()
+        # self.c = AutoInferring().run(self.c)
+        # self.c = CheckTypes().run(self.c)
+        # self.c = CheckFlow().run(self.c)
+        # self.c = CheckWidths().run(self.c)
         return self.c.serialize()
 
 @dataclass
@@ -37,7 +45,11 @@ class LowForm(Form):
 
     def emit(self) -> str:
         AutoName()
-        self.c = CheckAndInfer.run(self.c)
+        self.c = CheckHighForm(self.c).run()
+        self.c = AutoInferring().run(self.c)
+        self.c = CheckTypes().run(self.c)
+        self.c = CheckFlow().run(self.c)
+        self.c = CheckWidths().run(self.c)
         self.c = ExpandMemory().run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = ExpandAggregate().run(self.c)
@@ -52,7 +64,11 @@ class Verilog(Form):
 
     def emit(self) -> str:
         AutoName()
-        self.c = CheckAndInfer.run(self.c)
+        self.c = CheckHighForm(self.c).run()
+        self.c = AutoInferring().run(self.c)
+        self.c = CheckTypes().run(self.c)
+        self.c = CheckFlow().run(self.c)
+        self.c = CheckWidths().run(self.c)
         self.c = ExpandAggregate().run(self.c)
         self.c = ReplaceSubaccess().run(self.c)
         self.c = RemoveAccess().run(self.c)

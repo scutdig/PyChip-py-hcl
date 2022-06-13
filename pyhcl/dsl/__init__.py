@@ -10,5 +10,4 @@ from .funcs import CatVecL2H, CatVecH2L, CatBits, OneDimensionalization, Sum, De
 from .memory import Mem
 from .clockdomin import clockdomin
 from .verifaction import doAssert, doAssume, doCover
-from .check_and_infer import CheckAndInfer
 from .stage import Form, HighForm, MidForm, LowForm, Verilog
