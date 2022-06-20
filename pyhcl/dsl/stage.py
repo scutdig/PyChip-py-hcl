@@ -15,6 +15,7 @@ from pyhcl.passes.optimize import Optimize
 from pyhcl.passes.verilog_optimize import VerilogOptimize
 from pyhcl.passes.remove_access import RemoveAccess
 from pyhcl.passes.expand_sequential import ExpandSequential
+from pyhcl.passes.handle_instance import HandleInstance
 from pyhcl.passes.utils import AutoName
 
 class Form(ABC):
@@ -27,11 +28,11 @@ class HighForm(Form):
     c: low_ir.Circuit
 
     def emit(self) -> str:
-        # self.c = CheckHighForm(self.c).run()
-        # self.c = AutoInferring().run(self.c)
-        # self.c = CheckTypes().run(self.c)
-        # self.c = CheckFlow().run(self.c)
-        # self.c = CheckWidths().run(self.c)
+        self.c = CheckHighForm(self.c).run()
+        self.c = AutoInferring().run(self.c)
+        self.c = CheckTypes().run(self.c)
+        self.c = CheckFlow().run(self.c)
+        self.c = CheckWidths().run(self.c)
         return self.c.serialize()
 
 @dataclass
@@ -55,6 +56,7 @@ class LowForm(Form):
         self.c = ExpandAggregate().run(self.c)
         self.c = ExpandWhens().run(self.c)
         self.c = RemoveAccess().run(self.c)
+        self.c = HandleInstance().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.serialize()
 
@@ -74,5 +76,6 @@ class Verilog(Form):
         self.c = RemoveAccess().run(self.c)
         self.c = VerilogOptimize().run(self.c)
         self.c = ExpandSequential().run(self.c)
+        self.c = HandleInstance().run(self.c)
         self.c = Optimize().run(self.c)
         return self.c.verilog_serialize()

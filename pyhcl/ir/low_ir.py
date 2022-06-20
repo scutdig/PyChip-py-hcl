@@ -511,8 +511,7 @@ class DefInstance(Statement):
     def verilog_serialize(self) -> str:
         instdeclares: List[str] = []
         portdeclares: List[str] = []
-        ports: List[Port] = InstanceManager._getInstancePorts(self.module)
-        for p in ports:
+        for p in self.ports:
             portdeclares.append(f'wire\t{p.typ.verilog_serialize()}\t{self.name}_{p.name};')
             instdeclares.append(indent(f'\n.{p.name}({self.name}_{p.name}),'))
         port_decs = '\n'.join(portdeclares)
@@ -775,30 +774,7 @@ class Circuit(FirrtlNode):
         return ms
     
     def requires(self):
-        InstanceManager(self)
         CheckCombLoop()
-
-class InstanceManager:
-    _modules: Dict[str, DefModule] = {}
-    _extModules: Dict[str, DefModule] = {}
-
-    def __init__(self, c: Circuit):
-        self._c = c
-        self._dealExtModules()
-
-    def _dealExtModules(self):
-        for m in self._c.modules:
-            if isinstance(m, Module):
-                InstanceManager._modules[m.name] = m
-            if isinstance(m, ExtModule):
-                InstanceManager._extModules[m.name] = m
-    
-    @staticmethod
-    def _getInstancePorts(name):
-        if name in InstanceManager._modules:
-            return InstanceManager._modules[name].ports
-        if name in InstanceManager._extModules:
-            return InstanceManager._extModules[name].ports
 
 class CheckCombLoop:
     connect_graph = DAG()
