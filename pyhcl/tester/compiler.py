@@ -12,6 +12,54 @@ class TesterCompiler:
     dags = {}
     modules = {}
 
+    def get_in_port_name(self, name: str, t: Type, d: Direction) -> List[str]:
+            if isinstance(d, Input) and isinstance(t, (UIntType, SIntType, ClockType, ResetType, AsyncResetType)):
+                return [name]
+            elif isinstance(d, Input) and isinstance(t, (VectorType, MemoryType)):
+                names = []
+                pnames = self.get_in_port_name(name, t.typ, d)
+                for pn in pnames:
+                    for i in range(t.size):
+                        names.append(f"{pn}[{i}]")
+                return names
+            elif isinstance(t, BundleType):
+                names = []
+                for f in t.fields:
+                    pnames = []
+                    if isinstance(d, Input) and isinstance(f.flip, Default):
+                        pnames += self.get_in_port_name(f.name, f.typ, d)
+                    elif isinstance(d, Output) and isinstance(f.flip, Flip):
+                        pnames += self.get_in_port_name(f.name, f.typ, Input())
+                    for pn in pnames:
+                        names.append(f"{name}.{pn}")
+                return names
+            else:
+                return []
+        
+    def get_out_port_name(self, name: str, t: Type, d: Direction) -> List[str]:
+        if isinstance(d, Output) and isinstance(t, (UIntType, SIntType)):
+            return [name]
+        elif isinstance(d, Output) and isinstance(t, (VectorType, MemoryType)):
+            names = []
+            pnames = self.get_in_port_name(name, t.typ, d)
+            for pn in pnames:
+                for i in range(t.size):
+                    names.append(f"{pn}[{i}]")
+            return names
+        elif isinstance(t, BundleType):
+            names = []
+            for f in t.fields:
+                pnames = []
+                if isinstance(d, Output) and isinstance(f.flip, Default):
+                    pnames += self.get_out_port_name(f.name, f.typ, d)
+                elif isinstance(d, Input) and isinstance(f.flip, Flip):
+                    pnames += self.get_out_port_name(f.name, f.typ, Output())
+                for pn in pnames:
+                    names.append(f"{name}.{pn}")
+            return names
+        else:
+            return []
+
     def gen_dag_nodes(self, name: str, typ: Type):
         if isinstance(typ, (UIntType, SIntType, ClockType, ResetType, AsyncResetType)):
             return [name]
@@ -182,10 +230,14 @@ class TesterCompiler:
         elif isinstance(s, Conditionally):
             return Conditionally(self.compile_e(mname, s.pred), self.compile_s(mname, s.conseq), self.compile_s(mname, s.alt), s.info)
         elif isinstance(s, Block):
-            new_stmts = []
-            for stmt in s.stmts:
-                new_stmts.append(self.compile_s(mname, stmt))
-            return Block(new_stmts)
+            insts = [sx for sx in s.stmts if isinstance(sx, DefInstance)]
+            nodes = [sx for sx in s.stmts if isinstance(sx, DefNode)]
+            wires = [sx for sx in s.stmts if isinstance(sx, DefWire)]
+            regs = [sx for sx in s.stmts if isinstance(sx, DefRegister)]
+            mems = [sx for sx in s.stmts if isinstance(sx, WDefMemory)]
+            cons = [sx for sx in s.stmts if isinstance(sx, Connect)]
+            stmts = regs + mems + insts + wires + nodes + cons
+            return Block([self.compile_s(mname, sx) for sx in stmts])
         elif isinstance(s, DefRegister):
             self.add_dag_node(mname, s.name, s.typ)
             self.symbol_table.set_symbol(mname, s)
@@ -195,22 +247,15 @@ class TesterCompiler:
                 self.compile_e(mname, s.reset),
                 self.compile_e(mname, s.init),
                 s.info)
-        elif isinstance(s, DefMemory):
+        elif isinstance(s, WDefMemory):
             self.add_dag_node(mname, s.name, s.memType)
             self.symbol_table.set_symbol(mname, s)
             return s
         elif isinstance(s, DefInstance):
-            for p in self.modules[s.module].ports:
-                self.add_dag_node(mname, f"{s.name}.{p.name}", p.typ)
-            self.symbol_table.set_symbol(mname, DefInstance(s.name, s.module, self.modules[s.module].ports, s.info))
-            return DefInstance(s.name, s.module, self.modules[s.module].ports, s.info)
-        elif isinstance(s, DefMemPort):
-            return DefMemPort(s.name,
-                s.mem,
-                self.compile_e(mname, s.index),
-                self.compile_e(mname, s.clk),
-                s.rw,
-                s.info)
+            for p in s.ports:
+                self.add_dag_node(mname, f"{s.name}_{p.name}", p.typ)
+            self.symbol_table.set_symbol(mname, s)
+            return s
         elif isinstance(s, DefWire):
             self.add_dag_node(mname, s.name, s.typ)
             self.symbol_table.set_symbol(mname, s)
@@ -241,7 +286,8 @@ class TesterCompiler:
             return Module(m.name, ports, body, m.typ, m.info)
         elif isinstance(m, ExtModule):
             self.symbol_table.set_module(m.name)
-            ...
+            ports = list(map(lambda p: self.compile_p(m.name, p), m.ports))
+            return ExtModule(m.name, ports, m.defname, m.typ, m.info)
     
     def compile(self, c: Circuit):
         for m in c.modules:

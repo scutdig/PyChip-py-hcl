@@ -2,7 +2,6 @@ from abc import ABC, abstractclassmethod
 from typing import List
 from pyhcl.ir.low_ir import *
 from pyhcl.tester.symbol_table import SymbolTable
-from pyhcl.tester.executer import TesterExecuter
 
 class ClockStepper(ABC):
     @abstractclassmethod
@@ -22,10 +21,10 @@ class ClockStepper(ABC):
         ...
 
 class SingleClockStepper(ClockStepper):
-    def __init__(self, mname: str, symbol: str, executor: TesterExecuter, table: SymbolTable):
+    def __init__(self, mname: str, symbol: str, executor, table: SymbolTable):
         self.mname: str = mname
         self.clock_symbol: str = symbol
-        self.executor: TesterExecuter = executor
+        self.executor = executor
         self.table: SymbolTable = table
         self.clock_cycles = 0
         self.combinational_bumps = 0

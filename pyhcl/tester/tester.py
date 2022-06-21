@@ -3,10 +3,10 @@ from pyhcl.ir.low_ir import *
 from pyhcl.dsl.emitter import Emitter
 
 class Tester:
-    def __init__(self, c: Circuit):
-        ec = Emitter.elaborate(c)
-        self.main = ec.main
-        self.executer = TesterExecuter(ec)
+    def __init__(self, m: Module):
+        circuit = Emitter.elaborate(m)
+        self.main = circuit.main
+        self.executer = TesterExecuter(circuit)
         self.executer.init_executer()
         
     

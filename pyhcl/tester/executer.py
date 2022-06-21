@@ -7,6 +7,20 @@ from pyhcl.tester.compiler import TesterCompiler
 from pyhcl.tester.symbol_table import SymbolTable
 from pyhcl.tester.clock_stepper import SingleClockStepper
 
+from pyhcl.passes.check_form import CheckHighForm
+from pyhcl.passes.check_types import CheckTypes
+from pyhcl.passes.check_flows import CheckFlow
+from pyhcl.passes.check_widths import CheckWidths
+from pyhcl.passes.auto_inferring import AutoInferring
+from pyhcl.passes.replace_subaccess import ReplaceSubaccess
+from pyhcl.passes.expand_aggregate import ExpandAggregate
+from pyhcl.passes.expand_whens import ExpandWhens
+from pyhcl.passes.expand_memory import ExpandMemory
+from pyhcl.passes.handle_instance import HandleInstance
+from pyhcl.passes.optimize import Optimize
+from pyhcl.passes.remove_access import RemoveAccess
+from pyhcl.passes.utils import AutoName
+
 class TesterExecuter:
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
@@ -34,20 +48,47 @@ class TesterExecuter:
             return e.name
     
     def execute_stmt(self, m: Module, stmt: Statement, table=None):
+        mem_table: List[str] = []
         if isinstance(stmt, Connect):
-            stmt.loc.set_value(stmt.expr.get_value(table), table)
+            if isinstance(stmt.loc, DefRegister):
+                if stmt.loc.reset.get_value(table) == 0:
+                    stmt.loc.set_value(stmt.expr.get_value(table), table)
+                else:
+                    self.symbol_table.set_symbol_value(m.name, self.handle_name(stmt.loc.name), stmt.loc.init.get_value(table), table)
+            elif stmt.loc.serialize() in mem_table:
+                mem_data = stmt.loc.serialize()
+                mem = mem_data.split("_")[0]
+                mem_addr = mem_data.replace("data", "addr")
+                mem_en = mem_data.replace("data", "en")
+                mem_mask = mem_data.replace("data", "mask")
+                if self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_en), table) > 0 and \
+                    self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_mask), table) > 0:
+                    self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)]\
+                        = self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)
+            elif stmt.expr.serialize() in mem_table:
+                mem_data = stmt.expr.serialize()
+                mem = mem_data.split("_")[0]
+                mem_addr = mem_data.replace("data", "addr")
+                mem_en = mem_data.replace("data", "en")
+                if self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_en), table) > 0:
+                    self.symbol_table.set_symbol_value(m.name, self.handle_name(mem_data),
+                    self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)], table)
+            else:
+                stmt.loc.set_value(stmt.expr.get_value(table), table)
         elif isinstance(stmt, DefNode):
             self.symbol_table.set_symbol_value(m.name, self.handle_name(stmt.name), stmt.value.get_value(table), table)
+        elif isinstance(stmt, WDefMemory):
+            for rw in stmt.writers:
+                mem_table.append(f"{stmt.name}_{rw}_data")
+            for re in stmt.readers:
+                mem_table.append(f"{stmt.name}_{re}_data")
         elif isinstance(stmt, Block):
             for s in stmt.stmts:
                 self.execute_stmt(s, table)
-        else:
-            ...
     
     def execute_module(self, m: Module, ms: Dict[str, DefModule], table=None):
         execute_stmts = OrderedDict()
         instances = OrderedDict()
-        conds = []
 
         def get_in_port_name(name: str, t: Type, d: Direction) -> List[str]:
             if isinstance(d, Input) and isinstance(t, (UIntType, SIntType, ClockType, ResetType, AsyncResetType)):
@@ -96,40 +137,22 @@ class TesterExecuter:
                 return names
             else:
                 return []
-
+        
         def _deal_stmt(s: Statement):
             if isinstance(s, Block):
                 for stmt in s.stmts:
                     _deal_stmt(stmt)
-            if isinstance(s, Connect):
+            elif isinstance(s, Connect):
                 execute_stmts[s.loc.expr.serialize()] = s
             elif isinstance(s, DefNode):
                 execute_stmts[s.name] = s
             elif isinstance(s, DefInstance):
                 instances[s.name] = s
-            elif isinstance(s, Conditionally):
-                _deal_stmt(s.conseq)
-                _deal_stmt(s.alt)
-                conds.append(s)
-            else:
-                ...
 
         _deal_stmt(m.body)
 
-        inputs = []
-        for p in m.ports:
-            inputs += get_in_port_name(p.name, p.typ, p.direction)
-
-        for v in self.dags[m.name].travel_graph(inputs):
-            if v in execute_stmts:
-               self.execute_stmt(m, execute_stmts[v], table)
-        
-        while len(conds) > 0:
-            cond = conds.pop(0)
-            if cond.pred.get_value(table):
-                _deal_stmt(cond.conseq)
-                for execute_stmt in execute_stmts.values():
-                    self.execute_stmt(m, execute_stmt, table)
+        for sx in m.body.stmts:
+            self.execute_stmt(m, sx, table)
 
         for ins in instances:
             ref_module_name = instances[ins].module
@@ -139,7 +162,7 @@ class TesterExecuter:
             module_inputs = []
             for p in ref_module.ports:
                 module_inputs += get_in_port_name(p.name, p.typ, p.direction)
-            ref_inputs = [f"{ins}.{mi}" for mi in module_inputs]
+            ref_inputs = [f"{ins}_{mi}" for mi in module_inputs]
 
             for i in range(len(module_inputs)):
                 self.symbol_table.set_symbol_value(ref_module_name,
@@ -152,7 +175,7 @@ class TesterExecuter:
             module_outputs = []
             for p in ref_module.ports:
                 module_outputs += get_out_port_name(p.name, p.typ, p.direction)
-            ref_outputs = [f"{ins}.{mi}" for mi in module_outputs]
+            ref_outputs = [f"{ins}_{mi}" for mi in module_outputs]
 
             for i in range(len(module_outputs)):
                 self.symbol_table.set_symbol_value(m.name,
@@ -162,24 +185,30 @@ class TesterExecuter:
             for v in self.dags[m.name].travel_graph(ref_outputs):
                 if v in execute_stmts:
                     self.execute_stmt(m, execute_stmts[v], table)
-            
-            while len(conds) > 0:
-                cond = conds.pop(0)
-                if cond.pred.get_value(table):
-                    _deal_stmt(cond.conseq)
-                    for execute_stmt in execute_stmts.values():
-                        self.execute_stmt(m, execute_stmt, table)
     
     def init_clock(self, table = None):
         if table is None:
-            table = self.symbol_table
-        for mname in self.symbol_table:
+            table = self.symbol_table.table
+        for mname in table:
             if mname not in self.clock_table:
                 self.clock_table[mname] = {}
-            for symbol in self.symbol_table[mname]:
+            for symbol in table[mname]:
                 self.clock_table[mname][symbol] = SingleClockStepper(mname, symbol, self, table)
 
     def init_executer(self):
+        AutoName()
+        self.circuit = CheckHighForm(self.circuit).run()
+        self.circuit = AutoInferring().run(self.circuit)
+        self.circuit = CheckTypes().run(self.circuit)
+        self.circuit = CheckFlow().run(self.circuit)
+        self.circuit = CheckWidths().run(self.circuit)
+        self.circuit = ExpandMemory().run(self.circuit)
+        self.circuit = ReplaceSubaccess().run(self.circuit)
+        self.circuit = ExpandAggregate().run(self.circuit)
+        self.circuit = ExpandWhens().run(self.circuit)
+        self.circuit = RemoveAccess().run(self.circuit)
+        self.circuit = HandleInstance().run(self.circuit)
+        self.circuit = Optimize().run(self.circuit)
         self.compiler = TesterCompiler(self.symbol_table)
         self.compiled_circuit, self.dags = self.compiler.compile(self.circuit)
         self.init_clock()

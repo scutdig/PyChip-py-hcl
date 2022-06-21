@@ -20,6 +20,7 @@ class SymbolTable:
     
     def set_module(self, mname: str):
         self.table[mname] = {}
+        self.clock_table[mname] = {}
     
     def set_symbol(self, mname: str, symbol):
         if isinstance(symbol, Port):
@@ -30,12 +31,26 @@ class SymbolTable:
             self.table[mname][symbol.name] = self.gen_typ(symbol.typ)
         elif isinstance(symbol, DefRegister):
             self.table[mname][symbol.name] = self.gen_typ(symbol.typ)
-        elif isinstance(symbol, DefMemory):
+        elif isinstance(symbol, WDefMemory):
             self.table[mname][symbol.name] = self.gen_typ(symbol.memType)
+            for rw in symbol.writers:
+                self.table[mname][f"{symbol.name}_{rw}_data"] = self.gen_typ(symbol.dataType)
+                self.table[mname][f"{symbol.name}_{rw}_addr"] = self.gen_typ(UIntType(IntWidth(get_binary_width(symbol.depth))))
+                self.table[mname][f"{symbol.name}_{rw}_clk"] = self.gen_typ(ClockType())
+                self.table[mname][f"{symbol.name}_{rw}_en"] = self.gen_typ(UIntType(IntWidth(1)))
+                self.table[mname][f"{symbol.name}_{rw}_mask"] = self.gen_typ(UIntType(IntWidth(1)))
+            
+            for rr in symbol.readers:
+                self.table[mname][f"{symbol.name}_{rr}_data"] = self.gen_typ(symbol.dataType)
+                self.table[mname][f"{symbol.name}_{rr}_addr"] = self.gen_typ(UIntType(IntWidth(get_binary_width(symbol.depth))))
+                self.table[mname][f"{symbol.name}_{rr}_clk"] = self.gen_typ(ClockType())
+                self.table[mname][f"{symbol.name}_{rr}_en"] = self.gen_typ(UIntType(IntWidth(1)))
         elif isinstance(symbol, DefNode):
             self.table[mname][symbol.name] = self.gen_typ(symbol.value.typ)
         elif isinstance(symbol, DefInstance):
-            self.table[mname][symbol.name] = {p.name: self.gen_typ(p.typ) for p in symbol.ports}
+            for p in symbol.ports:
+                name = f"{symbol.name}_{p.name}"
+                self.table[mname][name] = self.gen_typ(p.typ)
         else:
             ...
     
