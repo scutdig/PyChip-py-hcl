@@ -1,4 +1,6 @@
 from typing import List
+
+from numpy import isin
 from pyhcl.ir.low_ir import *
 from pyhcl.ir.low_prim import *
 from pyhcl.passes._pass import Pass
@@ -11,68 +13,57 @@ class ExpandWhens(Pass):
 
         def auto_gen_name():
             return AutoName.auto_gen_name()
+        
+        def last_name():
+            return AutoName.last_name()
 
-        def flatten(s: Statement) -> List[Statement]:
-            new_stmts = []
-            conseq, alt = s.conseq, s.alt
-            if isinstance(conseq, Conditionally):
-                new_stmts += flatten(conseq)
-            if isinstance(alt, Conditionally):
-                new_stmts += flatten(alt)
-            if isinstance(conseq, Block):
-                for sx in conseq.stmts:
-                    if isinstance(sx, Conditionally):
-                        new_stmts = new_stmts + flatten(sx)
-                    else:
-                        new_stmts.append((s.pred, sx))
-            if isinstance(alt, Block):
-                for sx in alt.stmts:
-                    if isinstance(sx, Conditionally):
-                        new_stmts += flatten(sx)
-                    else:
-                        new_stmts.append((s.pred, sx))
-            return new_stmts
-
-        def expand_whens(stmt: Statement, stmts: List[Statement], reference: Dict[str, Expression]):
-            if isinstance(stmt, Conditionally):
-                flat_cond = flatten(stmt)
-                has_gen = {}
-                for pred, sx in flat_cond:
-                    if isinstance(sx, Connect):
-                        if pred.serialize() in has_gen:
-                            s = stmts.pop()
-                            stmts.append(DefNode(s.name, Mux(pred, has_gen[pred.serialize()], sx.expr, sx.expr.typ)))
-                            has_gen[pred.serialize()] = sx.expr
-                        else:
-                            name = auto_gen_name()
-                            loc_name = sx.loc.verilog_serialize() if isinstance(sx.loc, SubIndex) else sx.loc.serialize()
-                            loc = sx.loc if loc_name not in reference else reference[loc_name][1]
-                            stmts.append(DefNode(name, Mux(pred, sx.expr, loc, sx.expr.typ)))
-                            reference[loc_name] = (sx.loc, Reference(name, sx.loc.typ))
-                            has_gen[pred.serialize()] = sx.expr
-                    else:
-                        stmts.append(sx)
+        def expand_whens(s: Statement, stmts: List[Statement], refs: Dict[str, List[Statement]], pred: Expression = None):
+            if isinstance(s, Conditionally):
+                expand_whens(s.conseq, stmts, refs, s.pred)
+                expand_whens(s.alt, stmts, refs, DoPrim(Not(), [s.pred], [], s.pred.typ))
+            elif isinstance(s, Block):
+                for sx in s.stmts:
+                    expand_whens(sx, stmts, refs, pred)
+            elif isinstance(s, EmptyStmt):
+                ...
+            elif isinstance(s, Connect):
+                if s.loc.serialize() not in refs:
+                    refs[s.loc.serialize()] = []
+                refs[s.loc.serialize()].append(Conditionally(pred, Block([s]), EmptyStmt()))
             else:
-                stmts.append(stmt)
+                stmts.append(s)
 
-        def expand_whens_s(stmts: List[Statement]) -> List[Statement]:
-            new_stmts = []
-            reference: Dict[str, Expression] = {}
-            for stmt in stmts:
-                expand_whens(stmt, new_stmts, reference)
-            for ref in reference:
-                new_stmts.append(Connect(reference[ref][0], reference[ref][1]))
-            return new_stmts
+        def expand_whens_s(ss: List[Statement]) -> List[Statement]:
+            stmts: List[Statement] = []
+            refs: Dict[str, List[Statement]] = {}
+            for sx in ss:
+                if isinstance(sx, Conditionally):
+                    expand_whens(sx, stmts, refs)
+                else:
+                    stmts.append(sx)
+            for sx in refs.values():
+                if len(sx) <= 1:
+                    sxx = sx.pop()
+                    con = sxx.conseq.stmts.pop()
+                    stmts.append(Connect(con.loc, ValidIf(sxx.pred, con.expr, con.expr.typ)))
+                else:
+                    sxx = sx.pop()
+                    con = sxx.conseq.stmts.pop()
+                    stmts.append(DefNode(auto_gen_name(), ValidIf(sxx.pred, con.expr, con.expr.typ)))
+                    while len(sx) > 1:
+                        sxx = sx.pop()
+                        con = sxx.conseq.stmts.pop()
+                        stmts.append(DefNode(auto_gen_name(), Mux(sxx.pred, con.expr, Reference(AutoName.last_name(), con.expr.typ), con.expr.typ)))
+                    sxx = sx.pop()
+                    con = sxx.conseq.stmts.pop()
+                    stmts.append(Connect(con.loc, Mux(sxx.pred, con.expr, Reference(last_name(), con.expr.typ), con.expr.typ)))
+            return stmts
 
         def expand_whens_m(m: DefModule) -> DefModule:
-            if isinstance(m, ExtModule):
+            if isinstance(m, Module):
+                return Module(m.name, m.ports, Block(expand_whens_s(m.body.stmts)), m.typ, m.info)
+            else:
                 return m
-            if not hasattr(m, 'body') or not isinstance(m.body, Block):
-                return m
-            if not hasattr(m.body, 'stmts') or not isinstance(m.body.stmts, list):
-                return m
-            
-            return Module(m.name, m.ports, Block(expand_whens_s(m.body.stmts)), m.typ, m.info)
 
         for m in c.modules:
             modules.append(expand_whens_m(m))
