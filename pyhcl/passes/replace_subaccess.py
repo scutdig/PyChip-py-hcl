@@ -90,12 +90,11 @@ class ReplaceSubaccess(Pass):
                         if i == 0:
                             name = auto_gen_name()
                             gen_node = DefNode(name, ValidIf(cons[i], exps[i], e.typ))
-                            stmts.append(gen_node)
                             gen_nodes[name] = gen_node
                         else:
                             last_node = gen_nodes[last_name()]
                             name = auto_gen_name()
-                            gen_node = DefNode(name, Mux(cons[i], exps[i], Reference(last_node.name, last_node.value.typ), e.typ))
+                            gen_node = DefNode(name, Mux(cons[i], exps[i], last_node.value.value if i == 1 else Reference(last_node.name, last_node.value.typ), e.typ))
                             stmts.append(gen_node)
                             gen_nodes[name] = gen_node
                     return Reference(gen_nodes[last_name()].name, e.typ)

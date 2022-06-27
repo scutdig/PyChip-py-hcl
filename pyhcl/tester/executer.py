@@ -25,6 +25,8 @@ class TesterExecuter:
     def __init__(self, circuit: Circuit):
         self.circuit = circuit
         self.symbol_table = SymbolTable()
+        self.reg_table = {}
+        self.mem_table = {}
         self.clock_table = {}
         self.inputchange = False
     
@@ -48,33 +50,37 @@ class TesterExecuter:
             return e.name
     
     def execute_stmt(self, m: Module, stmt: Statement, table=None):
-        mem_table: List[str] = []
         if isinstance(stmt, Connect):
-            if isinstance(stmt.loc, DefRegister):
-                if stmt.loc.reset.get_value(table) == 0:
-                    stmt.loc.set_value(stmt.expr.get_value(table), table)
+            if stmt.loc.expr.serialize() in self.reg_table:
+                if self.reg_table[stmt.loc.expr.serialize()].reset.get_value(table) == 0:
+                    if stmt.expr.get_value(table) is not None:
+                        stmt.loc.set_value(stmt.expr.get_value(table), table)
                 else:
-                    self.symbol_table.set_symbol_value(m.name, self.handle_name(stmt.loc.name), stmt.loc.init.get_value(table), table)
-            elif stmt.loc.serialize() in mem_table:
-                mem_data = stmt.loc.serialize()
+                    self.symbol_table.set_symbol_value(m.name, self.handle_name(stmt.loc.expr.name),
+                    self.reg_table[stmt.loc.expr.serialize()].init.get_value(table), table)
+            elif stmt.loc.expr.serialize() in self.mem_table:
+                mem_data = stmt.loc.expr.serialize()
                 mem = mem_data.split("_")[0]
                 mem_addr = mem_data.replace("data", "addr")
                 mem_en = mem_data.replace("data", "en")
                 mem_mask = mem_data.replace("data", "mask")
                 if self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_en), table) > 0 and \
                     self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_mask), table) > 0:
-                    self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)]\
-                        = self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)
-            elif stmt.expr.serialize() in mem_table:
-                mem_data = stmt.expr.serialize()
+                    if self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table) is not None:
+                        self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)]\
+                            = self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)
+            elif stmt.expr.expr.serialize() in self.mem_table:
+                mem_data = stmt.expr.expr.serialize()
                 mem = mem_data.split("_")[0]
                 mem_addr = mem_data.replace("data", "addr")
                 mem_en = mem_data.replace("data", "en")
                 if self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_en), table) > 0:
-                    self.symbol_table.set_symbol_value(m.name, self.handle_name(mem_data),
-                    self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)], table)
+                    if self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)] is not None:
+                        self.symbol_table.set_symbol_value(m.name, self.handle_name(mem_data),
+                        self.symbol_table[m.name][mem][self.symbol_table.get_symbol_value(m.name, self.handle_name(mem_addr), table)], table)
             else:
-                stmt.loc.set_value(stmt.expr.get_value(table), table)
+                if stmt.expr.get_value(table) is not None:
+                    stmt.loc.set_value(stmt.expr.get_value(table), table)
         elif isinstance(stmt, DefNode):
             self.symbol_table.set_symbol_value(m.name, self.handle_name(stmt.name), stmt.value.get_value(table), table)
         elif isinstance(stmt, WDefMemory):
@@ -146,6 +152,10 @@ class TesterExecuter:
                 execute_stmts[s.loc.expr.serialize()] = s
             elif isinstance(s, DefNode):
                 execute_stmts[s.name] = s
+            elif isinstance(s, DefRegister):
+                self.reg_table[s.name] = s
+            elif isinstance(s, WDefMemory):
+                self.mem_table[s.name] = s
             elif isinstance(s, DefInstance):
                 instances[s.name] = s
 
@@ -188,7 +198,7 @@ class TesterExecuter:
     
     def init_clock(self, table = None):
         if table is None:
-            table = self.symbol_table.table
+            table = self.symbol_table.clock_table
         for mname in table:
             if mname not in self.clock_table:
                 self.clock_table[mname] = {}
@@ -205,8 +215,8 @@ class TesterExecuter:
         self.circuit = ExpandMemory().run(self.circuit)
         self.circuit = ReplaceSubaccess().run(self.circuit)
         self.circuit = ExpandAggregate().run(self.circuit)
-        self.circuit = ExpandWhens().run(self.circuit)
         self.circuit = RemoveAccess().run(self.circuit)
+        self.circuit = ExpandWhens().run(self.circuit)
         self.circuit = HandleInstance().run(self.circuit)
         self.circuit = Optimize().run(self.circuit)
         self.compiler = TesterCompiler(self.symbol_table)

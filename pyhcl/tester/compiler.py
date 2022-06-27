@@ -98,9 +98,9 @@ class TesterCompiler:
             self.add_dag_edge(mname, ind, dep.fval)
         elif isinstance(dep, ValidIf):
             self.add_dag_edge(mname, ind, dep.value)
-        elif isinstance(dep, DoPrim):
-            for arg in dep.args:
-                self.add_dag_edge(mname, ind, arg)
+        # elif isinstance(dep, DoPrim):
+        #     for arg in dep.args:
+        #         self.add_dag_edge(mname, ind, arg)
             
 
     def gen_working_ir(self, mname: str, names: list, expr: Expression) -> Expression:

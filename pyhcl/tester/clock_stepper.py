@@ -46,13 +46,13 @@ class SingleClockStepper(ClockStepper):
     
     def run(self, steps: int):
         def raise_clock():
-            self.table.set_symbol_value(self.mname, self.handle_name(self.clock_symbol), 1)
+            self.table[self.mname][self.clock_symbol] ^= 1
             self.executor.execute(self.mname)
 
             self.combinational_bumps = 0
 
         def lower_clock():
-            self.table.set_symbol_value(self.mname, self.handle_name(self.clock_symbol), 0)
+            self.table[self.mname][self.clock_symbol] ^= 1
             self.combinational_bumps = 0
         
         for _ in range(steps):
