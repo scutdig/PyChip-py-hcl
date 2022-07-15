@@ -65,7 +65,7 @@ class Module(metaclass=MetaModule):
 
             # auto connect
             scopeId = get_attr(self, "scopeId")
-            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name), scopeId)
+            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name, mod.ports), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
                                                     ctx.getClock(self)), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
