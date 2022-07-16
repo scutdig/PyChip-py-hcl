@@ -15,4 +15,4 @@ class FullAdder(Module):
 
 
 if __name__ == '__main__':
-    Emitter.dumpVerilog(Emitter.dump(Emitter.emit(FullAdder()), "FullAdder.fir"))
+    Emitter.dump(Emitter.emit(FullAdder(), True), "FullAdder.v")

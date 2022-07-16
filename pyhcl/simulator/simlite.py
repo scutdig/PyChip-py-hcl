@@ -120,15 +120,16 @@ class Simlite(object):
         with open(f"./simulation/{self.dut_name}-harness.cpp", "w+") as f:
             f.write(harness_code)
 
-        # 在simulation文件夹下创建dut_name-harness.fir，写入firrtl代码
-        with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
-            f.write(self.low_module.serialize())
+        # 调用FIRRTL工具链
+        # with open(f"./simulation/{self.dut_name}.fir", "w+") as f:
+        #     f.write(self.low_module.serialize())
 
-        # 调用firrtl命令，传入firrtl代码，得到verilog代码
-        # firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog
-        # print(f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
-        os.system(
-            f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
+        # os.system(
+        #     f"firrtl -i ./simulation/{self.dut_name}.fir -o ./simulation/{self.dut_name}.v -X verilog")
+        
+        # # 调用PyHCL编译链
+        with open(f"./simulation/{self.dut_name}.v", "w+") as f:
+            f.write(Verilog(self.low_module).emit())
 
         vfn = "{}.v".format(self.dut_name)              # {dut_name}.v
         hfn = "{}-harness.cpp".format(self.dut_name)    # {dut_name}-harness.cpp

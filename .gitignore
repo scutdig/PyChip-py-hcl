@@ -10,6 +10,7 @@ simulation/
 
 # firrtl
 .fir/
+.v/
 
 # obj
 obj_dir/*
@@ -122,10 +123,7 @@ venv.bak/
 
 
 temp
+
+# jar
+*.jar
 main.py
-
-
-# docs
-/docs/_site/
-/docs/Gemfile.lock
-.jekyll-cache
