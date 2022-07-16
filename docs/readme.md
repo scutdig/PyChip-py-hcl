@@ -15,7 +15,6 @@ The goal of PyHCL is providing a complete design and verification tool flow for 
 PyHCL is powered by [FIRRTL](https://github.com/freechipsproject/firrtl), an intermediate representation for digital circuit design. With the FIRRTL 
 compiler framework, PyHCL-generated circuits can be compiled to the widely-used HDL Verilog.  
 
-## Advantage of using SpinalHDL over Verilog/VHDL
 
 ## Similar Projects
 
