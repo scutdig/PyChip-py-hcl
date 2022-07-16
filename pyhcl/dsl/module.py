@@ -1,6 +1,7 @@
 from pyhcl.core._dynamic_ctx import DynamicContext
 from pyhcl.core._utils import get_attr
 from pyhcl.core._repr import SubField
+from pyhcl.core._clock_manager import Clock_manager
 from pyhcl.dsl.cdatatype import Clock, U
 from pyhcl.dsl.cio import Input, IO
 from pyhcl.core._emit_context import EmitterContext
@@ -13,9 +14,71 @@ shared_reset = Input(U.w(1))
 class MetaModule(type):
     def __init__(cls, name, bases, dct):
         super().__init__(name, bases, dct)
-
+        cls.raw = False
         cls.clock = shared_clock
         cls.reset = shared_reset
+        Clock_manager.defaultclock()
+
+        rawTable = {}
+        # rawTable is used to get name for obj
+        for k, v in cls.__dict__.items():
+            r = get_attr(v, 'extractForName')
+            if r is not None:
+                rawTable[id(r())] = k
+
+        cls._rawTable = rawTable
+        cls._statements = DynamicContext.get()
+
+
+class Module(metaclass=MetaModule):
+    def __init__(self):
+        object.__setattr__(self, "scopeId", DynamicContext.currentScope())
+        Clock_manager.register(id(self))
+
+    def __getattribute__(self, item: str):
+        res = get_attr(self, item)
+        res2 = get_attr(res, "public")
+        if res2 is not None:
+            return SubField(res2(), item, self)
+        elif item == "mapToIR" or item.startswith("__"):
+            return res
+        else:
+            return None
+
+    def extractForName(self):
+        return self
+
+    def mapToIR(self, ctx: EmitterContext):
+        name = ctx.getName(self)
+        mod = self.__class__
+        # ref = ctx._innerRef.get(id(mod))
+        ref = ctx._innerRef.get(id(self))
+        if ref is not None:
+            return ref
+        else:
+            if id(mod) not in ctx._emittedModules:
+                newEnv = ctx.extendNewEnv(self)
+                newEnv.emit()
+
+            mod = ctx._emittedModules[id(mod)]
+            ref = low_ir.Reference(name, mod.typ)
+
+            # auto connect
+            scopeId = get_attr(self, "scopeId")
+            ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name, mod.ports), scopeId)
+            ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
+                                                    ctx.getClock(self)), scopeId)
+            ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
+                                                    ctx.getReset(self)), scopeId)
+            ctx.updateRef(self, ref)
+
+            return ref
+
+
+class MetaRawModule(type):
+    def __init__(cls, name, bases, dct):
+        super().__init__(name, bases, dct)
+        cls.raw = True
 
         rawTable = {}
         for k, v in cls.__dict__.items():
@@ -27,7 +90,7 @@ class MetaModule(type):
         cls._statements = DynamicContext.get()
 
 
-class Module(metaclass=MetaModule):
+class RawModule(metaclass=MetaRawModule):
     def __init__(self):
         object.__setattr__(self, "scopeId", DynamicContext.currentScope())
 
@@ -58,14 +121,16 @@ class Module(metaclass=MetaModule):
 
             mod = ctx._emittedModules[id(mod)]
             ref = low_ir.Reference(name, mod.typ)
-
+            """
+            # auto connect
             scopeId = get_attr(self, "scopeId")
             ctx.appendFinalStatement(low_ir.DefInstance(name, mod.name), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'clock', low_ir.ClockType()),
-                                                    ctx.getClock()), scopeId)
+                                                    ctx.getClock(self)), scopeId)
             ctx.appendFinalStatement(low_ir.Connect(low_ir.SubField(ref, 'reset', low_ir.UIntType(low_ir.IntWidth(1))),
-                                                    ctx.getReset()), scopeId)
+                                                    ctx.getReset(self)), scopeId)
             ctx.updateRef(self, ref)
+            """
 
             return ref
 
@@ -122,7 +187,7 @@ class BlackBox(metaclass=MetaBlackBox):
             ref = low_ir.Reference(insName, mod.typ)
 
             scopeId = get_attr(self, "scopeId")
-            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name), scopeId)
+            ctx.appendFinalStatement(low_ir.DefInstance(insName, mod.name, mod.ports), scopeId)
             ctx.updateRef(self, ref)
 
             return ref

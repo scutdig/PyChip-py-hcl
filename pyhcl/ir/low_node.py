@@ -7,3 +7,7 @@ class FirrtlNode(ABC):
     @abstractmethod
     def serialize(self) -> str:
         ...
+
+    @abstractmethod
+    def verilog_serialize(self) -> str:
+        ...

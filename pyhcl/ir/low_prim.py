@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from dataclasses import dataclass
 
@@ -10,6 +11,13 @@ class PrimOp(FirrtlNode, ABC):
     def serialize(self) -> str:
         return self.__repr__()
 
+    def verilog_op(self):
+        logging.error(f"No {self.__repr__()} in verilog")
+        exit(-1)
+
+    def verilog_serialize(self) -> str:
+        return self.verilog_op()
+
 
 @dataclass(frozen=True, init=False)
 class Add(PrimOp):
@@ -18,12 +26,18 @@ class Add(PrimOp):
     def __repr__(self):
         return 'add'
 
+    def verilog_op(self):
+        return " + "
+
 
 # Subtraction
 @dataclass(frozen=True, init=False)
 class Sub(PrimOp):
     def __repr__(self):
         return 'sub'
+
+    def verilog_op(self):
+        return " - "
 
 
 # Multiplication
@@ -32,12 +46,18 @@ class Mul(PrimOp):
     def __repr__(self):
         return 'mul'
 
+    def verilog_op(self):
+        return " * "
+
 
 # Division
 @dataclass(frozen=True, init=False)
 class Div(PrimOp):
     def __repr__(self):
         return 'div'
+
+    def verilog_op(self):
+        return " / "
 
 
 # Remainder
@@ -46,12 +66,19 @@ class Rem(PrimOp):
     def __repr__(self):
         return 'rem'
 
+    def verilog_op(self):
+        return " % "
+
 
 # Less Than
 @dataclass(frozen=True, init=False)
 class Lt(PrimOp):
     def __repr__(self):
         return 'lt'
+
+    def verilog_op(self):
+        return " < "
+
 
 
 # Less Than Or Equal To
@@ -60,12 +87,18 @@ class Leq(PrimOp):
     def __repr__(self):
         return 'leq'
 
+    def verilog_op(self):
+        return " <= "
+
 
 # Greater Than
 @dataclass(frozen=True, init=False)
 class Gt(PrimOp):
     def __repr__(self):
         return 'gt'
+
+    def verilog_op(self):
+        return " > "
 
 
 # Greater Than Or Equal To
@@ -74,12 +107,18 @@ class Geq(PrimOp):
     def __repr__(self):
         return 'geq'
 
+    def verilog_op(self):
+        return " >= "
+
 
 # Equal To
 @dataclass(frozen=True, init=False)
 class Eq(PrimOp):
     def __repr__(self):
         return 'eq'
+
+    def verilog_op(self):
+        return " == "
 
 
 # Not Equal To
@@ -89,6 +128,10 @@ class Neq(PrimOp):
         return 'neq'
 
 
+    def verilog_op(self):
+        return " != "
+
+
 # Padding
 @dataclass(frozen=True, init=False)
 class Pad(PrimOp):
@@ -96,11 +139,13 @@ class Pad(PrimOp):
         return 'pad'
 
 
+
 # Interpret As UInt
 @dataclass(frozen=True, init=False)
 class AsUInt(PrimOp):
     def __repr__(self):
         return 'asUInt'
+
 
 
 # Interpret As SInt
@@ -123,12 +168,18 @@ class Shl(PrimOp):
     def __repr__(self):
         return 'shl'
 
+    def verilog_op(self):
+        return " << "
+
 
 # Static Shift Right
 @dataclass(frozen=True, init=False)
 class Shr(PrimOp):
     def __repr__(self):
         return 'shr'
+
+    def verilog_op(self):
+        return " >> "
 
 
 # Dynamic Shift Left
@@ -158,12 +209,18 @@ class Neg(PrimOp):
     def __repr__(self):
         return 'neg'
 
+    def verilog_op(self):
+        return " - "
+
 
 # Bitwise Complement
 @dataclass(frozen=True, init=False)
 class Not(PrimOp):
     def __repr__(self):
         return 'not'
+
+    def verilog_op(self):
+        return "!"
 
 
 # Bitwise And
@@ -172,6 +229,9 @@ class And(PrimOp):
     def __repr__(self):
         return 'and'
 
+    def verilog_op(self):
+        return " & "
+
 
 # Bitwise Or
 @dataclass(frozen=True, init=False)
@@ -179,12 +239,18 @@ class Or(PrimOp):
     def __repr__(self):
         return 'or'
 
+    def verilog_op(self):
+        return " | "
+
 
 # Bitwise Exclusive Or
 @dataclass(frozen=True, init=False)
 class Xor(PrimOp):
     def __repr__(self):
         return 'xor'
+
+    def verilog_op(self):
+        return " ^ "
 
 
 # Bitwise And Reduce
@@ -213,6 +279,9 @@ class Xorr(PrimOp):
 class Cat(PrimOp):
     def __repr__(self):
         return 'cat'
+    
+    def verilog_op(self):
+        return self.__repr__()
 
 
 # Bit Extraction
@@ -220,6 +289,9 @@ class Cat(PrimOp):
 class Bits(PrimOp):
     def __repr__(self):
         return 'bits'
+    
+    def verilog_op(self):
+        return self.__repr__()
 
 
 # Head

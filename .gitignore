@@ -3,6 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# pysv
+.sv/
+.build/
+simulation/
+
+# firrtl
+.fir/
+.v/
+
+# obj
+obj_dir/*
+
 # C extensions
 *.so
 
@@ -14,7 +26,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -111,3 +123,7 @@ venv.bak/
 
 
 temp
+
+# jar
+*.jar
+main.py

@@ -84,7 +84,7 @@ class VecInit(Node):
 
         # Connect Elements
         for i, node in enumerate(self.lst):
-            for idx, elem in self.subIdxs(low_ir.SubIndex(ref, i, typ.typ), node, ctx):
+            for idx, elem in self.subIdxs(low_ir.SubIndex('', ref, i, typ.typ), node, ctx):
                 con = low_ir.Connect(idx, elem)
                 ctx.appendFinalStatement(con, self.scopeId)
 
@@ -93,7 +93,7 @@ class VecInit(Node):
     def subIdxs(self, idx, node, ctx):
         if isinstance(node, VecInit):
             return [(nIdx, elem) for i, n in enumerate(node.lst)
-                    for nIdx, elem in node.subIdxs(low_ir.SubIndex(idx, i, node.typ.mapToIR(ctx)), n, ctx)]
+                    for nIdx, elem in node.subIdxs(low_ir.SubIndex('', idx, i, node.typ.mapToIR(ctx)), n, ctx)]
         else:
             return [(idx, node.mapToIR(ctx))]
 

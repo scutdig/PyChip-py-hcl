@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -8,6 +9,7 @@ from pyhcl.core._utils import get_attr, has_attr
 from pyhcl.dsl.funcs import OneDimensionalization
 from pyhcl.ir import low_ir
 from pyhcl.ir import low_prim
+from pyhcl.util.functions import  debug_info
 
 
 class Node:
@@ -19,8 +21,25 @@ class Node:
         self.scopeId = DynamicContext.currentScope()
 
     def __ilshift__(self, other):
-        connect = Connect(self, other)
+        info = debug_info(2)
+        connect = Connect(self, other, info)
         DynamicContext.push(connect)
+        return self
+
+    def __irshift__(self, other):
+        biconnect = BiConnect(self, other)
+        DynamicContext.push(biconnect)
+        return self
+
+    def __imatmul__(self, other):
+        info = debug_info(2)
+        connect = Connect(self, other, info)
+        DynamicContext.push(connect)
+        return self
+
+    def __matmul__(self, other):
+        biconnect = BiConnect(self, other)
+        DynamicContext.push(biconnect)
         return self
 
     def __and__(self, other):
@@ -667,7 +686,9 @@ class Index(VecOps, Node):
         elif "inPort" in v:
             # memory type
             name = ctx.getName(self)
-            memPort = ir(name, rf, ctx.getClock(), self._mem_rw if has_attr(self, "_mem_rw") else True)
+            # Bug there : ctx.getClock
+            # Fix : add register action on Mem's __post_init__
+            memPort = ir(name, rf, ctx.getClock(self.ref), self._mem_rw if has_attr(self, "_mem_rw") else True)
             ctx.appendFinalStatement(memPort, self.scopeId)
             ref = low_ir.Reference(name, rf.typ.typ)
             ctx.updateRef(self, ref)
@@ -685,6 +706,7 @@ class Declare:
 class Connect(Declare):
     lhs: Node
     rhs: Node
+    info: str
 
     def __post_init__(self):
         super().__post_init__()
@@ -703,8 +725,12 @@ class Connect(Declare):
                 raise Exception("vector size does not match")
 
             for l, r in zip(lhs, rhs):
-                Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId)
+                Connect._doConnect(ctx, l.mapToIR(ctx), r.mapToIR(ctx), self.scopeId, self.info)
 
+        else:
+            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId, self.info)
+
+        """
         # A trick to do inheriting connect
         elif has_attr(self.lhs, "value") and has_attr(self.rhs, "value") \
                 and (isinstance(self.lhs.value, IO) or isinstance(self.rhs.value, IO)):
@@ -721,37 +747,70 @@ class Connect(Declare):
                             Connect(lhs, rhs).mapToIR(ctx)
                         else:
                             Connect(rhs, lhs).mapToIR(ctx)
-
-        else:
-            Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+        """
 
     @staticmethod
-    def _doConnect(ctx, lref, rref, scopeId):
+    def _doConnect(ctx, lref, rref, scopeId, info=""):
         if isinstance(lref.typ, low_ir.UIntType) and isinstance(rref.typ, low_ir.UIntType):
             if lref.typ.width.width is not None and rref.typ.width.width is not None:
                 if lref.typ.width.width >= rref.typ.width.width:
-                    Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                    Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
                 else:
                     bits = low_ir.DoPrim(low_ir.Bits(), [rref], [lref.typ.width.width - 1, 0], lref.typ)
-                    Connect._unsafeConnect(lref, bits, ctx, scopeId)
+                    Connect._unsafeConnect(lref, bits, ctx, scopeId, info)
             else:
-                Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
         elif isinstance(lref.typ, low_ir.SIntType) and isinstance(rref.typ, low_ir.SIntType):
             if lref.typ.width.width is not None and rref.typ.width.width is not None:
                 if lref.typ.width.width >= rref.typ.width.width:
-                    Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                    Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
                 else:
                     bits = low_ir.DoPrim(low_ir.Bits(), [rref], [lref.typ.width.width - 1, 0], lref.typ)
-                    Connect._unsafeConnect(lref, bits, ctx, scopeId)
+                    Connect._unsafeConnect(lref, bits, ctx, scopeId, info)
             else:
-                Connect._unsafeConnect(lref, rref, ctx, scopeId)
+                Connect._unsafeConnect(lref, rref, ctx, scopeId, info)
         else:
             raise Exception("type does not match")
 
     @staticmethod
-    def _unsafeConnect(lref, rref, ctx, scopeId):
-        c = low_ir.Connect(lref, rref)
+    def _unsafeConnect(lref, rref, ctx, scopeId, info=""):
+        if info:
+            c = low_ir.Connect(lref, rref, low_ir.FileInfo(low_ir.StringLit(info)))
+        else:
+            c = low_ir.Connect(lref, rref)
         ctx.appendFinalStatement(c, scopeId)
+
+
+@dataclass(eq=False)
+class BiConnect(Declare):
+    lhs: Node
+    rhs: Node
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.lhs._mem_rw = False
+
+    def mapToIR(self, ctx):
+        from ..dsl.cio import IO
+        from ..dsl.bundle import Bundle, SubField
+        if not (has_attr(self.lhs, "typ") and has_attr(self.rhs, "typ")\
+                and has_attr(self.lhs, "value") and has_attr(self.rhs,"value")\
+                and self.lhs.typ == Bundle and self.lhs == self.rhs):
+            from ..dsl.cio import Input
+            if type(self.lhs.value) == Input:
+                return Connect._doConnect(ctx, ctx.getRef(self.lhs), ctx.getRef(self.rhs), self.scopeId)
+            else:
+                return Connect._doConnect(ctx, ctx.getRef(self.rhs), ctx.getRef(self.lhs), self.scopeId)
+
+        left_ios = self.lhs.value._ios
+        right_ios = self.rhs.value._ios
+        same_key = left_ios.keys() & right_ios.keys()
+        for k in same_key:
+            lhs = getattr(self.lhs, k)
+            rhs = getattr(self.rhs, k)
+            BiConnect(lhs, rhs).mapToIR(ctx)
+
+
 
 
 @dataclass(eq=False)
