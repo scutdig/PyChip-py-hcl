@@ -17,6 +17,7 @@ compiler framework, PyHCL-generated circuits can be compiled to the widely-used 
 
 #### Writing A Full Adder
 PyHCL defines modules using only simple Python syntax that looks like this:
+
 ```python
 from pyhcl import *
 
@@ -76,6 +77,7 @@ Emitter.dumpVerilog(Emitter.dump(Emitter.emit(FullAdder()), "FullAdder.fir"))
 ```
 
 Then `FullAdder.v` will be generated:
+
 ```verilog
 module FullAdder(
   input   clock,

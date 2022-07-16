@@ -127,7 +127,3 @@ temp
 # jar
 *.jar
 main.py
-
-# example
-example/simulation
-example/riscv-m4f
