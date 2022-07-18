@@ -13,13 +13,13 @@ class FullAdder(Module):
 
     # Generate the sum
     a_xor_b = io.a ^ io.b
-    io.sum <<= a_xor_b ^ io.cin
+    io.sum @= a_xor_b ^ io.cin
 
     # Generate the carry
     a_and_b = io.a & io.b
     b_and_cin = io.b & io.cin
     a_and_cin = io.a & io.cin
-    io.cout <<= a_and_b | b_and_cin | a_and_cin
+    io.cout @= a_and_b | b_and_cin | a_and_cin
 
 
 def adder(n: int):
@@ -36,17 +36,17 @@ def adder(n: int):
         carry = Wire(Vec(n + 1, Bool))
         sum = Wire(Vec(n, Bool))
 
-        carry[0] <<= io.cin
+        carry[0] @= io.cin
 
         for i in range(n):
-            FAs[i].a <<= io.a[i]
-            FAs[i].b <<= io.b[i]
-            FAs[i].cin <<= carry[i]
-            carry[i + 1] <<= FAs[i].cout
-            sum[i] <<= FAs[i].sum
+            FAs[i].a @= io.a[i]
+            FAs[i].b @= io.b[i]
+            FAs[i].cin @= carry[i]
+            carry[i + 1] @= FAs[i].cout
+            sum[i] @= FAs[i].sum
 
-        io.sum <<= CatVecH2L(sum)
-        io.cout <<= carry[n]
+        io.sum @= CatVecH2L(sum)
+        io.cout @= carry[n]
 
     return Adder()
 

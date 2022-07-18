@@ -17,7 +17,7 @@ def matrixMul(x: int, y: int, z: int):
 
         for i, a_row in enumerate(io.a):
             for j, b_col in enumerate(zip(*io.b)):
-                io.o[i][j] <<= Sum(a * b for a, b in zip(a_row, b_col))
+                io.o[i][j] @= Sum(a * b for a, b in zip(a_row, b_col))
 
     return MatrixMul()
 
@@ -42,10 +42,10 @@ def neurons(w, b):
             o=Output(U.w(W))
         )
         m = matrixMul(1, len(w), 1).io
-        m.a <<= io.i
+        m.a @= io.i
 
-        m.b <<= w
-        io.o <<= m.o[0][0] + b
+        m.b @= w
+        io.o @= m.o[0][0] + b
 
     return Unit()
 

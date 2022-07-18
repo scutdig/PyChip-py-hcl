@@ -26,9 +26,9 @@ class M(Module):
     )
 
     bbox = Add()
-    bbox.io.in1 <<= io.a
-    bbox.io.in2 <<= io.b
-    io.c <<= bbox.io.out
+    bbox.io.in1 @= io.a
+    bbox.io.in2 @= io.b
+    io.c @= bbox.io.out
 
 
 # 每次给输入端口赋值, 跑一个时间单位

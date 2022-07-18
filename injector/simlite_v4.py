@@ -31,9 +31,9 @@ from injector.reader import read_wave
 #     )
 #
 #     add = Add()
-#     add.io.in1 <<= io.a
-#     add.io.in2 <<= io.b
-#     io.c <<= add.io.out
+#     add.io.in1 @= io.a
+#     add.io.in2 @= io.b
+#     io.c @= add.io.out
 
 
 from random import randint

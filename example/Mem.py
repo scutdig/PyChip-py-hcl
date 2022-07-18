@@ -8,8 +8,8 @@ class MemDemo(Module):
     )
 
     m = Mem(10, U.w(8))
-    m[U(2)] <<= io.i
-    io.o <<= m[U(2)]
+    m[U(2)] @= io.i
+    io.o @= m[U(2)]
 
 
 def main():

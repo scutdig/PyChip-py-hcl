@@ -14,9 +14,9 @@ class M(Module):
     )
 
     bbox = Add()
-    bbox.io.in1 <<= io.i
-    bbox.io.in2 <<= io.i
-    io.o <<= bbox.io.out
+    bbox.io.in1 @= io.i
+    bbox.io.in2 @= io.i
+    io.o @= bbox.io.out
 
 fircode = """module Add :
     input in1 : UInt<32>

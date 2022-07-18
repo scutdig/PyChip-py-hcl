@@ -13,12 +13,12 @@ def maxN(n: int, w: int):
             out=Output(U.w(w)),
         )
 
-        io.out <<= reduce(_max2, io.ins)
+        io.out @= reduce(_max2, io.ins)
 
         # temp = io.ins[0]
         # for x in io.ins[1:]:
         #     temp = Mux(temp > x, temp, x)
-        # io.out <<= temp
+        # io.out @= temp
 
     return MaxN()
 

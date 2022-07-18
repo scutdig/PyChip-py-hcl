@@ -45,8 +45,8 @@ counter = RegInit(U.w(32)(0))
 
 ```python
 m = Mem(10, U.w(8))
-m[U(2)] <<= io.i
-io.o <<= m[U(2)]
+m[U(2)] @= io.i
+io.o @= m[U(2)]
 ```
 
 ## Circuits
@@ -67,13 +67,13 @@ class FullAdder(Module):
 
     # Generate the sum
     a_xor_b = io.a ^ io.b
-    io.sum <<= a_xor_b ^ io.cin
+    io.sum @= a_xor_b ^ io.cin
 
     # Generate the carry
     a_and_b = io.a & io.b
     b_and_cin = io.b & io.cin
     a_and_cin = io.a & io.cin
-    io.cout <<= a_and_b | b_and_cin | a_and_cin
+    io.cout @= a_and_b | b_and_cin | a_and_cin
 ```
 **Usage**: circuits are used by instancing them inside another definitions and
   their ports are accessed using dot notation
@@ -99,17 +99,17 @@ def adder(n: int):
         carry = Wire(Vec(n + 1, Bool))
         sum = Wire(Vec(n, Bool))
 
-        carry[0] <<= io.cin
+        carry[0] @= io.cin
 
         for i in range(n):
-            FAs[i].a <<= io.a[i]
-            FAs[i].b <<= io.b[i]
-            FAs[i].cin <<= carry[i]
-            carry[i + 1] <<= FAs[i].cout
-            sum[i] <<= FAs[i].sum
+            FAs[i].a @= io.a[i]
+            FAs[i].b @= io.b[i]
+            FAs[i].cin @= carry[i]
+            carry[i + 1] @= FAs[i].cout
+            sum[i] @= FAs[i].sum
 
-        io.sum <<= CatVecH2L(sum)
-        io.cout <<= carry[n]
+        io.sum @= CatVecH2L(sum)
+        io.cout @= carry[n]
 
     return Adder()
 ```
@@ -145,7 +145,7 @@ an arithmetic shift right operator (which replicates the sign bit as it shifts r
 
 ```python
 # Mux(<选择信号>, <真输出>, <假输出>)
-io.z <<= Mux(io.sel, io.b, io.a)
+io.z @= Mux(io.sel, io.b, io.a)
 ```
 
 ## Sequential
@@ -157,6 +157,6 @@ class Register(Module):
     )
 
     counter = RegInit(U.w(32)(0))
-    counter <<= counter + U(1)
-    io.out <<= counter
+    counter @= counter + U(1)
+    io.out @= counter
 ```

@@ -15,10 +15,10 @@ def myManyDynamicElementVecFir(length: int, consts: List):
         taps = [io.i] + [RegInit(U.w(8)(0)) for _ in range(length)]
         for a, b in zip(taps, taps[1:]):
             with when(io.valid):
-                b <<= a
+                b @= a
 
         m = map(lambda x: x[0] * x[1], zip(taps, consts))
-        io.o <<= reduce(lambda x, y: x + y, m)
+        io.o @= reduce(lambda x, y: x + y, m)
 
     return MyManyDynamicElementVecFir()
 

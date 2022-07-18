@@ -16,9 +16,9 @@ class M(Module):
     )
 
     bbox = BBox()
-    bbox.io.in1 <<= io.i
-    bbox.io.in2 <<= io.i
-    io.o <<= bbox.io.out
+    bbox.io.in1 @= io.i
+    bbox.io.in2 @= io.i
+    io.o @= bbox.io.out
 
 
 if __name__ == '__main__':

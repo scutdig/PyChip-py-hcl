@@ -47,11 +47,11 @@ class Top(Module):
 
     r = Rand()
     add = Add()
-    r.io.in1 <<= io.a
-    r.io.in2 <<= io.b
-    wire <<= r.io.out
-    add.io.in1 <<= wire
-    io.c <<= add.io.out
+    r.io.in1 @= io.a
+    r.io.in2 @= io.b
+    wire @= r.io.out
+    add.io.in1 @= wire
+    io.c @= add.io.out
 
 
 

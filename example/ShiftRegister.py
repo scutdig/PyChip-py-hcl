@@ -14,12 +14,12 @@ class ShiftRegister(Module):
     r3 = RegInit(U(0))
 
     with when(io.en):
-        r0 <<= io.i
-        r1 <<= r0
-        r2 <<= r1
-        r3 <<= r2
+        r0 @= io.i
+        r1 @= r0
+        r2 @= r1
+        r3 @= r2
 
-    io.o <<= r3
+    io.o @= r3
 
 
 def main():

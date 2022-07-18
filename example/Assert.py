@@ -10,7 +10,7 @@ class AND(RawModule):
 
     myclock = Input(Clock())
     myreset = Input(Bool)
-    io.s <<= io.a ^ io.b
+    io.s @= io.a ^ io.b
     _ = doAssert(myclock, io.a, io.s, "IF io.a is HIGH then io.s is HIGH")
 
 

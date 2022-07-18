@@ -13,7 +13,7 @@ class Addr_Buffer(Module):
     counter = Mem(3, U.w(2))
     is_used = Mem(3, Bool)
 
-    io.front <<= Mux(counter[U(0)] > counter[U(1)],
+    io.front @= Mux(counter[U(0)] > counter[U(1)],
                      Mux(counter[U(0)] > counter[U(2)], buffer[U(0)], buffer[U(2)]),
                      Mux(counter[U(1)] > counter[U(2)], buffer[U(1)], buffer[U(2)]))
 
@@ -26,15 +26,15 @@ class Addr_Buffer(Module):
                                   is_used[U(i)]))
 
     for i in range(0, 3):
-        is_used[U(i)] <<= Mux(io.flush.to_bool(), Bool(0), Mux(counter[U(i)] == U(2), Bool(0), temp_used_list[i]))
+        is_used[U(i)] @= Mux(io.flush.to_bool(), Bool(0), Mux(counter[U(i)] == U(2), Bool(0), temp_used_list[i]))
 
     for i in range(0, 3):
-        counter[U(i)] <<= Mux(io.flush.to_bool(), U(0),
+        counter[U(i)] @= Mux(io.flush.to_bool(), U(0),
                               Mux(counter[U(i)] == U(2), U(0),
                                   Mux(is_used[U(i)], counter[U(i)] + U(1), counter[U(i)])))
 
     for i in range(0, 3):
-        buffer[U(i)] <<= Mux(io.flush.to_bool(), U(0),
+        buffer[U(i)] @= Mux(io.flush.to_bool(), U(0),
                              Mux(counter[U(i)] == U(2), U(0),
                                  Mux(io.record.to_bool(),
                                      Mux(write_index == U(i), io.addr_input, buffer[U(i)]), buffer[U(i)])))

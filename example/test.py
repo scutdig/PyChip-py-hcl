@@ -16,8 +16,8 @@ class ModuleA(Module):
         ready=Output(Bool)
     )
 
-    io.in_data <<= io.t_data
-    io.ready <<= Bool(True)
+    io.in_data @= io.t_data
+    io.ready @= Bool(True)
 
 
 class ModuleB(Module):
@@ -28,8 +28,8 @@ class ModuleB(Module):
         ready=Input(Bool)
     )
 
-    io.out_data <<= Mux(io.ready, io.in_data, U(0))
-    io.valid <<= Bool(True)
+    io.out_data @= Mux(io.ready, io.in_data, U(0))
+    io.valid @= Bool(True)
 
 
 class TopModule(Module):
@@ -42,8 +42,8 @@ class TopModule(Module):
     mb = ModuleB()
 
     auto_connect(ma.io, mb.io)
-    io <<= ma.io
-    io <<= mb.io
+    io @= ma.io
+    io @= mb.io
 
 
 if __name__ == '__main__':
