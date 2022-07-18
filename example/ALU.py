@@ -17,7 +17,7 @@ class ALU(Module):
         out=Output(U.w(32)),
     )
 
-    io.out <<= LookUpTable(io.ctl, {
+    io.out @= LookUpTable(io.ctl, {
         ALU_Op.ALU_ADD: io.a + io.b,
         ALU_Op.ALU_SUB: io.a - io.b,
         ALU_Op.ALU_AND: io.a & io.b,
@@ -42,7 +42,7 @@ class ALU2(Module):
         ...: VecInit([io.a + io.b, io.a - io.b, io.a & io.b, io.a | io.b])
     })
 
-    io.out <<= Sum(lut) + sum
+    io.out @= Sum(lut) + sum
 
 
 def main():

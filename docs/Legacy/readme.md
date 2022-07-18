@@ -1,7 +1,7 @@
 ---
-sort: 8
+sort: 13
 ---
 
-# Other Features
+# Legacy
 
 {% include list.liquid %}

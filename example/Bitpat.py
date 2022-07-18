@@ -64,12 +64,12 @@ class BitPadTest(Module):
 
     sum = Sum(io.v)
 
-    io.out <<= Sum(stmt_list) + sum
+    io.out @= Sum(stmt_list) + sum
 
     ctrl_signal = LookUpTable(io.inst, Control.map)
 
     v = VecInit([io.ALUOP, io.MEM_READ, io.MEM_WRITE, io.REG_WRITE])
-    v <<= ctrl_signal
+    v @= ctrl_signal
 
 
 if __name__ == '__main__':

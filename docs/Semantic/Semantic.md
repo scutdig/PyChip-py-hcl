@@ -1,10 +1,10 @@
 # Semantic
 
 ## Assignments
-* `<<=` and `@=` 
+* `@=` and `@=` 
 ```python
 # io.sum @= a_xor_b ^ io.cin
-io.sum <<= a_xor_b ^ io.cin
+io.sum @= a_xor_b ^ io.cin
 ```
 
 ## Control Flow
@@ -13,7 +13,7 @@ io.sum <<= a_xor_b ^ io.cin
 * `Mux`
   
 ```python
-io.o <<= Mux(io.i, a, b)
+io.o @= Mux(io.i, a, b)
 ```
 
 ## Rules

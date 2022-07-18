@@ -14,16 +14,16 @@ class GCD(Module):
     y = Reg(U.w(32))
 
     with when(x > y):
-        x <<= x - y
+        x @= x - y
     with otherwise():
-        y <<= y - x
+        y @= y - x
 
     with when(io.e):
-        x <<= io.a
-        y <<= io.b
+        x @= io.a
+        y @= io.b
 
-    io.z <<= x
-    io.v <<= y == U(0)
+    io.z @= x
+    io.v @= y == U(0)
 
 
 def main():

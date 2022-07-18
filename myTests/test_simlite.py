@@ -10,7 +10,7 @@ class Top(Module):
         c=Output(U.w(32))
     )
 
-    io.c <<= io.a + io.b
+    io.c @= io.a + io.b
 
 
 # 每次给输入端口赋值, 跑一个时间单位

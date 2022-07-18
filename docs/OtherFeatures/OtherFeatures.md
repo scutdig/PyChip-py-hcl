@@ -52,11 +52,11 @@ class Top(Module):
 
     r = Rand()
     add = Add()
-    r.io.in1 <<= io.a
-    r.io.in2 <<= io.b
-    wire <<= r.io.out
-    add.io.in1 <<= wire
-    io.c <<= add.io.out
+    r.io.in1 @= io.a
+    r.io.in2 @= io.b
+    wire @= r.io.out
+    add.io.in1 @= wire
+    io.c @= add.io.out
 
 
 
@@ -89,7 +89,7 @@ class AND(RawModule):
 
     myclock = Input(Clock())
     myreset = Input(Bool)
-    io.s <<= io.a ^ io.b
+    io.s @= io.a ^ io.b
     _ = doAssert(myclock, io.a, io.s, "IF io.a is HIGH then io.s is HIGH")
 
 

@@ -10,8 +10,8 @@ class FullAdder(Module):
         cout=Output(U.w(1))
     )
 
-    io.s <<= io.a ^ io.b ^ io.cin
-    io.cout <<= (io.a & io.b) | (io.a & io.cin) | (io.b & io.cin)
+    io.s @= io.a ^ io.b ^ io.cin
+    io.cout @= (io.a & io.b) | (io.a & io.cin) | (io.b & io.cin)
 
 
 if __name__ == '__main__':

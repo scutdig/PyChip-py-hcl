@@ -29,9 +29,9 @@ class Top(Module):
     )
 
     add = Add()
-    add.io.in1 <<= io.a
-    add.io.in2 <<= io.b
-    io.c <<= add.io.out
+    add.io.in1 @= io.a
+    add.io.in2 @= io.b
+    io.c @= add.io.out
 
 
 # 每次给输入端口赋值, 跑一个时间单位

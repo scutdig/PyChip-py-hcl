@@ -10,7 +10,7 @@ class Top(Module):
         b=Input(U.w(32)),
         c=Output(U.w(32))
     )
-    io.c <<= io.a + io.b
+    io.c @= io.a + io.b
 
 
 from random import randint

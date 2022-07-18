@@ -1,7 +1,7 @@
 ---
-sort: 8
+sort: 11
 ---
 
-# Other Features
+# Formal Verification
 
 {% include list.liquid %}

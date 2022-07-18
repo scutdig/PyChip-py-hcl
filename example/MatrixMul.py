@@ -13,20 +13,20 @@ def matrixMul(x: int, y: int, z: int, width: int):
 
         res = Reg(Vec(x, Vec(z, U.w(width))))
 
-        io.v <<= Bool(False)
-        io.o <<= res
+        io.v @= Bool(False)
+        io.o @= res
         with when(counter == U(x * z)):
-            counter <<= U(0)
-            io.v <<= Bool(True)
+            counter @= U(0)
+            io.v @= Bool(True)
         with otherwise():
-            counter <<= counter + U(1)
+            counter @= counter + U(1)
             row = counter / U(x)
             col = counter % U(x)
-            res[row][col] <<= (lambda io, row, col: Sum(io.a[row][i] * io.b[i][col] for i in range(y)))(io, row, col)
+            res[row][col] @= (lambda io, row, col: Sum(io.a[row][i] * io.b[i][col] for i in range(y)))(io, row, col)
 
 
         # # a trick of solving python3 closure scope problem
-        # io.o <<= (lambda io: VecInit(VecInit(
+        # io.o @= (lambda io: VecInit(VecInit(
         #     Sum(a * b for a, b in zip(a_row, b_col)) for b_col in zip(*io.b)) for a_row in io.a))(io)
 
     return MatrixMul()

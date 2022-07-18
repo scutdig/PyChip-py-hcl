@@ -10,8 +10,8 @@ class HalfAdder(Module):
         cout=Output(U.w(1))
     )
     # 填充完整输出端口s以及cout的逻辑，例如：
-    io.s <<= io.a ^ io.b
-    io.cout <<= io.a & io.b
+    io.s @= io.a ^ io.b
+    io.cout @= io.a & io.b
 
 
 def main():

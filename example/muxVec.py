@@ -10,7 +10,7 @@ class MuxVec(Module):
     a = VecInit(VecInit(U.w(32)(i) for i in range(8)) for _ in range(4))
     b = VecInit(VecInit(U.w(32)(i) for i in range(7, -1, -1)) for _ in range(4))
 
-    io.o <<= Mux(io.i, a, b)
+    io.o @= Mux(io.i, a, b)
 
 
 def main():

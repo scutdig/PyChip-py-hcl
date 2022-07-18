@@ -15,13 +15,13 @@ class FullAdder(Module):
 
     # Generate the sum
     a_xor_b = io.a ^ io.b
-    io.sum <<= a_xor_b ^ io.cin
+    io.sum @= a_xor_b ^ io.cin
 
     # Generate the carry
     a_and_b = io.a & io.b
     b_and_cin = io.b & io.cin
     a_and_cin = io.a & io.cin
-    io.cout <<= a_and_b | b_and_cin | a_and_cin
+    io.cout @= a_and_b | b_and_cin | a_and_cin
 ```
 
 ## Clock domains
@@ -63,9 +63,9 @@ class M(Module):
     )
 
     bbox = BBox()
-    bbox.io.in1 <<= io.i
-    bbox.io.in2 <<= io.i
-    io.o <<= bbox.io.out
+    bbox.io.in1 @= io.i
+    bbox.io.in2 @= io.i
+    io.o @= bbox.io.out
 
 if __name__ == '__main__':
     Emitter.dumpVerilog(Emitter.dump(Emitter.emit(M()), "bbox.fir"))
@@ -85,10 +85,10 @@ def myManyDynamicElementVecFir(length: int, consts: List):
         taps = [io.i] + [RegInit(U.w(8)(0)) for _ in range(length)]
         for a, b in zip(taps, taps[1:]):
             with when(io.valid):
-                b <<= a
+                b @= a
 
         m = map(lambda x: x[0] * x[1], zip(taps, consts))
-        io.o <<= reduce(lambda x, y: x + y, m)
+        io.o @= reduce(lambda x, y: x + y, m)
 
     return MyManyDynamicElementVecFir()
 ```

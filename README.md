@@ -33,10 +33,10 @@ class FullAdder(Module):
     )
 
     # Generate the sum
-    io.sum <<= io.a ^ io.b ^ io.cin
+    io.sum @= io.a ^ io.b ^ io.cin
 
     # Generate the carry
-    io.cout <<= io.a & io.b | io.b & io.cin | io.a & io.cin
+    io.cout @= io.a & io.b | io.b & io.cin | io.a & io.cin
 ```
 
 #### Compiling To High FIRRTL

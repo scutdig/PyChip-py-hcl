@@ -15,13 +15,13 @@ class FullAdder(Module):
 
     # Generate the sum
     a_xor_b = io.a ^ io.b
-    io.sum <<= a_xor_b ^ io.cin
+    io.sum @= a_xor_b ^ io.cin
 
     # Generate the carry
     a_and_b = io.a & io.b
     b_and_cin = io.b & io.cin
     a_and_cin = io.a & io.cin
-    io.cout <<= a_and_b | b_and_cin | a_and_cin
+    io.cout @= a_and_b | b_and_cin | a_and_cin
 ```
 
 ## Advanced ones
@@ -44,10 +44,10 @@ def myManyDynamicElementVecFir(length: int, consts: List):
         taps = [io.i] + [RegInit(U.w(8)(0)) for _ in range(length)]
         for a, b in zip(taps, taps[1:]):
             with when(io.valid):
-                b <<= a
+                b @= a
 
         m = map(lambda x: x[0] * x[1], zip(taps, consts))
-        io.o <<= reduce(lambda x, y: x + y, m)
+        io.o @= reduce(lambda x, y: x + y, m)
 
     return MyManyDynamicElementVecFir()
 
@@ -85,7 +85,7 @@ def matrixMul(x: int, y: int, z: int):
 
         for i, a_row in enumerate(io.a):
             for j, b_col in enumerate(zip(*io.b)):
-                io.o[i][j] <<= Sum(a * b for a, b in zip(a_row, b_col))
+                io.o[i][j] @= Sum(a * b for a, b in zip(a_row, b_col))
 
     return MatrixMul()
 
@@ -110,10 +110,10 @@ def neurons(w, b):
             o=Output(U.w(W))
         )
         m = matrixMul(1, len(w), 1).io
-        m.a <<= io.i
+        m.a @= io.i
 
-        m.b <<= w
-        io.o <<= m.o[0][0] + b
+        m.b @= w
+        io.o @= m.o[0][0] + b
 
     return Unit()
 

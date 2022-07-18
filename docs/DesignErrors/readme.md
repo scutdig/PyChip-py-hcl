@@ -1,7 +1,7 @@
 ---
-sort: 8
+sort: 7
 ---
 
-# Other Features
+# Design Errors
 
 {% include list.liquid %}
