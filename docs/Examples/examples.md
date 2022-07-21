@@ -1,3 +1,75 @@
+# Simple ones
+## APB3 definition
+### Introduction
+### Specification
+### Implementation
+### Usage
+## Carry adder
+## Color summing
+## Counter with clear
+## PLL BlackBox and reset controller
+### The PLL BlackBox definition
+### TopLevel definition
+## RGB to gray
+## Sinus rom
+
+# Intermediates ones
+## Fractal calculator
+### Introduction
+### Specification
+### Elaboration parameters(Generics)
+### Bundle definition
+### Component implementation
+## UART
+### Specification
+### Data structures
+### Implementation
+### Simple usage
+### Example with test bench
+### Bonus: Having fun with Stream
+## VGA
+### Introduction
+### Data structures
+### VGA Controller
+
+
+
+
+# Advanced ones
+## JTAG TAP
+### Introduction
+### JTAG bus
+### JTAG state machine
+### JTAG TAP
+### Jtag instructions
+### User friendly wrapper
+### Usage demonstration
+## Memory mapped UART
+### Instroduction
+### Specification
+### Implementation
+## Pinesec
+## Timer 
+### Introduction
+### Timer
+### Bridging function
+
+
+
+# Introduction
+
+
+
+
+# Getting started
+
+
+
+
+
+
+
+
 # Examples
 
 ## Simple ones
