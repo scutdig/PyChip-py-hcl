@@ -6,7 +6,6 @@ __pycache__/
 # pysv
 .sv/
 .build/
-simulation/
 
 # firrtl
 .fir/
@@ -109,8 +108,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
 
 # mypy
 .mypy_cache/
@@ -125,5 +122,10 @@ venv.bak/
 temp
 
 # jar
-*.jar
+# *.jar
 main.py
+
+# docs
+_site/
+errors/
+*.lock

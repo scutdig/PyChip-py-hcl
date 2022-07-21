@@ -621,6 +621,7 @@ class Block(Statement):
         return '\n'.join([stmt.serialize() for stmt in self.stmts]) if self.stmts else ""
 
     def verilog_serialize(self) -> str:
+        CheckCombLoop.run(self)
         return '\n'.join([stmt.verilog_serialize() for stmt in self.stmts])
 
 @dataclass(frozen=True)
