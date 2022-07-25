@@ -1,12 +1,76 @@
 # Simple ones
 ## APB3 definition
 ### Introduction
+This example will show the syntax to define an APB3 `Bundle`.
 ### Specification
+The specification from ARM could be interpreted as follows:
+
+| Signal Name   | Type                  |  Driver side      |  Comment |
+| :--------     | :----------------     | :--------         | :----------------|
+|PADDR|U.w(addressWidth)|Master|Address in byte|
+|PSEL|U.w(selWidth)|Master|One bit per slave|
+|PENABLE|Bool|Master||
+|PWRITE|Bool|Master||
+|PWDATA|U.w(dataWidth)|Master||
+|PREADY|Bool|Slave||
+|PRDATA|U.w(dataWidth)|Slave||
+|PSLVERROR|Bool|Slave|Optional|
+
 ### Implementation
+
 ### Usage
+
+
 ## Carry adder
+This example defines a component with inputs `a`, `b` and `cin`, and `sum`, `cout` output. At any time, result will be the `a`, `b` and `cin` (combinatorial). The `sum`, `cout` are manually done by a carry adder logic.
+```python
+
+def adder(n: int):
+    class Adder(Module):
+        io = IO(
+            a=Input(U.w(n)),
+            b=Input(U.w(n)),
+            cin=Input(Bool),
+            sum=Output(U.w(n)),
+            cout=Output(Bool),
+        )
+
+        FAs = [FullAdder().io for _ in range(n)]
+        carry = Wire(Vec(n + 1, Bool))
+        sum = Wire(Vec(n, Bool))
+
+        carry[0] @= io.cin
+
+        for i in range(n):
+            FAs[i].a @= io.a[i]
+            FAs[i].b @= io.b[i]
+            FAs[i].cin @= carry[i]
+            carry[i + 1] @= FAs[i].cout
+            sum[i] @= FAs[i].sum
+
+        io.sum @= CatVecH2L(sum)
+        io.cout @= carry[n]
+
+    return Adder()
+```
 ## Color summing
 ## Counter with clear
+```python
+from pyhcl import *
+
+def counter(width: int):
+    class Counter(Module):
+        io = IO(
+            clear=Input(Bool),
+            result=Output(U.w(width))
+        )
+        register = RegInit(U.w(width)(0))
+        register @= register + U(1)
+        with when(io.clear):
+            register @= U(0)
+        io.result @= register
+    return Counter()
+```
 ## PLL BlackBox and reset controller
 ### The PLL BlackBox definition
 ### TopLevel definition
@@ -53,17 +117,6 @@
 ### Introduction
 ### Timer
 ### Bridging function
-
-
-
-# Introduction
-
-
-
-
-# Getting started
-
-
 
 
 

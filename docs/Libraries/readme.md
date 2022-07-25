@@ -2,6 +2,6 @@
 sort: 9
 ---
 
-# Libraries
+# Library
 
 {% include list.liquid %}

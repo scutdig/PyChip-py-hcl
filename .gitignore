@@ -123,9 +123,8 @@ temp
 
 # jar
 # *.jar
-main.py
 
 # docs
 _site/
-errors/
+testfordocs/
 *.lock
