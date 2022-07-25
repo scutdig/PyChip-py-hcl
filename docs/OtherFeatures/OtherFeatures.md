@@ -68,7 +68,9 @@
 
 
 
-<!-- ## Pysv
+
+## Pysv
+
 
 ```python
 import random
@@ -167,6 +169,18 @@ if __name__ == '__main__':
 ```
 
 ## 双向连接  
-* `@`
   
-## 内联FIRRTL -->
+## 内联FIRRTL
+## Features
+As a novel hardware construction framework embedded in Python, PyHCL supports several useful features.
+- Supports multiple data types: `UInt`, `SInt`, `Vector`, `Bundle`, `Clock`, `Memory`, and casual combination between them.
+- Supports object-oriented inheritance, can compose modules by writing fewer codes.
+- Supports functional programming
+- Supports a bunch of convenient operations, such as the addition of `UInt`s, `SInt`s, `Vector`s and `Bundle`s.
+- Supports the parameterization of variables, such as bit width, with the syntax facilities of the host language Python.
+
+
+## TODO
+
+- [ ] Supports more operations
+- [ ] PyHCL's verification facility

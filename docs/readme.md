@@ -1,6 +1,6 @@
 # Welcome to the PyHCL Documentation
 
-## site purpose and structure
+## Site purpose and structure
 
 This site presents the PyHCL language and how to use it on concrete examples.
 

@@ -2,6 +2,6 @@
 sort: 13
 ---
 
-# Legacy
+# Legncy
 
 {% include list.liquid %}

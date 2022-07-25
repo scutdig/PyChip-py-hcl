@@ -2,6 +2,6 @@
 sort: 7
 ---
 
-# Design Errors
+# Design errors
 
 {% include list.liquid %}

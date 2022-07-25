@@ -2,6 +2,6 @@
 sort: 10
 ---
 
-# About Pyhcl
+# Simulation
 
 {% include list.liquid %}
